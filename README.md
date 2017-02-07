@@ -14,7 +14,7 @@ high-dimensional profiles of protein expressions and copy number alterations (CN
 Installation
 ------------
 
-The developmental version of `spacemap` is available from GitHub. Please see the [most recent beta release](https://github.com/topherconley/spacemap/releases/tag/v0.31.0-beta) for installation.
+The developmental version of `spacemap` is available from GitHub. Please see the [most recent beta release](https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta) for installation.
 
 Learning robust networks
 ------------------------
