@@ -1,6 +1,6 @@
 Package: spacemap
 Title: Network inference for integrative genomics through conditional models
-Version: 0.31.0
+Version: 0.45.0
 Authors@R: c(person("Christopher Conley", role = c("aut", "cre"),
     email = "conley.christopher@gmail.com"),
     person("Jie Peng", role = c("aut", "cre")),
