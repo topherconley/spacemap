@@ -1,0 +1,4 @@
+exportPattern("^[^\\.]")
+useDynLib(spacemap)
+importFrom(Rcpp, sourceCpp)
+export(doRemMap, doSpace, doSpaceMap)

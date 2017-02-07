@@ -1,0 +1,21 @@
+#object files
+*.o
+*.so
+#windows dynamically linked library
+*.dll
+#tex files
+*.sty
+*.out
+*.toc
+*.log
+*.pdf
+*.aux
+*.synctex.gz
+#vignette files
+vignettes/*.html
+vignettes/*.pdf
+vignettes/*.Rpres
+#windows build files
+src-*
+#R session files
+.Rhistory

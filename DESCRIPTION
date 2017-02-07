@@ -1,0 +1,36 @@
+Package: spacemap
+Title: Network inference for integrative genomics through conditional models
+Version: 0.31.0
+Authors@R: c(person("Christopher Conley", role = c("aut", "cre"),
+    email = "conley.christopher@gmail.com"),
+    person("Jie Peng", role = c("aut", "cre")),
+    person("Pei Wang", role = c("aut", "cre")),
+    person("UC Davis", role = c("cph", "fnd"))
+    )
+Author: Christopher J. Conley and Jie Peng and Pei Wang
+Maintainer: Christopher J. Conley <conley.christopher@gmail.com>
+Description: A unified framework of space and remMap models for learning
+    undirected graphical models with application to genetic regulatory networks.
+Imports:
+    doRNG,
+    foreach (>= 1.4.3), 
+    Matrix,
+    igraph
+Depends:
+    R (>= 3.0.2),
+    Rcpp (>= 0.11.3),
+    RcppArmadillo (>= 0.4.650.1.1)
+Suggests:
+    ggplot2,
+    remMap,
+    reshape2,
+    space
+License: See LICENSE file
+LazyData: true
+LinkingTo: Rcpp, RcppArmadillo
+Imports:
+    Rcpp,
+    RcppArmadillo
+RoxygenNote: 5.0.1
+URL: https://github.com/topherconley/spacemap
+BugReports: https://github.com/topherconley/spacemap/issues

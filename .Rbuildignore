@@ -1,0 +1,4 @@
+^preppkg/
+^vignettes/
+^.*\.Rproj$
+^\.Rproj\.user$

@@ -1,0 +1,25 @@
+templates:
+  params:
+    bootswatch: flatly 
+
+reference:
+  - title: Package overview
+    desc: By February 6th, 2017 full reproducible documentation will be available. 
+    contents:
+  - title: Fit spacemap
+    desc: Details on how to fit spacemap and space with selected tuning parameters. 
+    contents:
+    - matches("^spacemap$")
+  - title: Model selection
+    contents:
+    - crossValidation
+    - reprodEdge
+  - title: Network Analysis Toolkit
+    contents:
+    - neta
+navbar:
+  left:
+  - text: Model Tuning 
+    href: articles/tune_sim1.html
+  - text: Reference
+    href: reference/index.html

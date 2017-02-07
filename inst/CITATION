@@ -1,0 +1,21 @@
+citHeader("To cite spacemap in publications use:")
+
+citEntry(entry = "Article",
+         title        = "Characterize ample functional consequences of DNA copy number alterations in breast tumors through a new conditional graphical model",
+         author       = personList(as.person("Christopher J. Conley"),
+                                   as.person("Pei Wang"),
+                                   as.person("Jie Peng")),
+         journal      = "Under Review",
+         year         = "2017",
+         volume       = "",
+         number       = "",
+         pages        = "",
+         url          = "",
+         
+         textVersion  =
+           paste("Conley CJ, Wang P, Peng J (2016).",
+                 "Characterize ample functional consequences of DNA copy number alterations in breast tumors through a new conditional graphical model",
+                 "Under Review",
+                 "")
+)
+
