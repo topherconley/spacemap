@@ -1,3 +1,5 @@
-YEAR: 2017--present
-COPYRIGHT HOLDER: Regents of the University of California
-All rights, reserved.
+Copyright, 2017 The Regents of the University of California
+All Rights Reserved.  
+Created by Christopher Conley, Pei Wang, and Jie Peng
+
+This beta release is only for non-commercial evaluation by assigned reviewers of the manuscript \#186 submitted to [ISMB-ECCB 2017](https://www.iscb.org/ismbeccb2017) conference under the title of "Characterizing major functional consequences of DNA copy number alterations in breast tumors through a new conditional graphical model".  The software is waived any warranty and its authors or Regents of the University of California are not held liable from any damages associated with its use.  Sections of the software that are derivative of other works (i.e. Rcpp, RcppArmadillo, Matrix, foreach, doRNG, space, remMap) are licenced under GPL (>= 2.0)  and Apache 2.0 licenses and should be observed under the terms of those licenses.
