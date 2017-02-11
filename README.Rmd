@@ -1,10 +1,18 @@
 ---
 title: "spacemap"
 output: 
-  github_document:
-    toc: true
-    toc_depth: 3
+  github_document
 ---
+
+## Quick Navigation
+
+- [R package documentation](https://topherconley.github.io/spacemap/reference/index.html)
+- [Model Tuning Example](https://topherconley.github.io/spacemap/articles/tune_sim1.html)
+- [Network Analysis Toolkit](https://topherconley.github.io/neta-bcpls/)
+- [Simulations](https://github.com/topherconley/sim-spacemap)
+
+--------------------
+## Model Description
 
 This software enables network learning from heterogenous data types in a high-dimensional context by applying a novel conditional graphical model called spaceMap. The model is motivated by applications in integrative genomics, where two (or more) omic data profiles are modeled jointly to discover their interactions. The penalized multivariate regression framework of spaceMap partitions the high-dimensional omic variables into responses and predictors; then the model learns two types of general interactions (or edges) to form the network. It learns a directed network of predictor->response interactions, which are known to act as perturbations to an undirected network of response--response interactions that is simultaneously learned by the model. Such interactions are learned by conditioning each response variable on predictors and all other responses.  This regression framework is sufficiently general to learn networks in diverse applications that exhibit hub topology. Below, we illustrate the need for such models through a specific application to breast cancer tumor data.   Further details of the model and this specific application will be forthcoming (contingent upon acceptance) in the proceedings of an upcoming conference. This software's documentation and illustration of the breast cancer network analysis is forthcoming. We welcome your feedback and  participation. 
 

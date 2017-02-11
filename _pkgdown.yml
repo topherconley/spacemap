@@ -4,7 +4,7 @@ templates:
 
 reference:
   - title: Package overview
-    desc: By February 6th, 2017 full reproducible documentation will be available. 
+    desc: Full reproducible documentation is in progress.
     contents:
   - title: Fit spacemap
     desc: Details on how to fit spacemap and space with selected tuning parameters. 

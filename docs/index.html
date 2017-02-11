@@ -58,10 +58,25 @@
     
     
 <div class="contents">
+<div id="quick-navigation" class="section level2">
+<h2 class="hasAnchor">
+<a href="#quick-navigation" class="anchor"> </a>Quick Navigation</h2>
+<ul>
+<li><a href="https://topherconley.github.io/spacemap/reference/index.html">R package documentation</a></li>
+<li><a href="https://topherconley.github.io/spacemap/articles/tune_sim1.html">Model Tuning Example</a></li>
+<li><a href="https://topherconley.github.io/neta-bcpls/">Network Analysis Toolkit</a></li>
+<li><a href="https://github.com/topherconley/sim-spacemap">Simulations</a></li>
+</ul>
+<hr>
+</div>
+<div id="model-description" class="section level2">
+<h2 class="hasAnchor">
+<a href="#model-description" class="anchor"> </a>Model Description</h2>
 <p>This software enables network learning from heterogenous data types in a high-dimensional context by applying a novel conditional graphical model called spaceMap. The model is motivated by applications in integrative genomics, where two (or more) omic data profiles are modeled jointly to discover their interactions. The penalized multivariate regression framework of spaceMap partitions the high-dimensional omic variables into responses and predictors; then the model learns two types of general interactions (or edges) to form the network. It learns a directed network of predictor-&gt;response interactions, which are known to act as perturbations to an undirected network of response–response interactions that is simultaneously learned by the model. Such interactions are learned by conditioning each response variable on predictors and all other responses. This regression framework is sufficiently general to learn networks in diverse applications that exhibit hub topology. Below, we illustrate the need for such models through a specific application to breast cancer tumor data. Further details of the model and this specific application will be forthcoming (contingent upon acceptance) in the proceedings of an upcoming conference. This software’s documentation and illustration of the breast cancer network analysis is forthcoming. We welcome your feedback and participation.</p>
 <!---
 high-dimensional profiles of protein expressions and copy number alterations (CNA) in the DNA. In this application spaceMap models one set of variables as responses (i.e. protein expressions) and another set of variables as predictors (i.e. CNA) through a penalized multivariate regression framework. References herafter to protein expressions or CNA variables can be r CNA to predictor and response varaiables can be interpreted as By conditioning each response variable (protein expression) on all other responses we model molecular inter- and intra- actions through a successful  application of spaceMap to breast cancer data. learning a network of protein expressions conditioned on copy number alterations in breast tumors and . In a penalized  multivariate regression framework, we model one set of variables as predictors and another set of variables as responses to the predictors. By conditiong a response variabthe model learns
 -->
+</div>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"> </a>Installation</h2>
