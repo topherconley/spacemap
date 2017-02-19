@@ -62,7 +62,7 @@
 #' net <- spacemap(Y.m = sim1$Y, X.m = sim1$X, slasso = 70, rlasso = 28.8, rgroup = 12.38)
 spacemap <-function(Y.m, X.m, slasso, sridge=0, rlasso, rgroup, sig=NULL, 
                     weight=NULL, remWeight = NULL, iter=3, tol = 1e-6, cd_iter = 1e7L, 
-                    verbose = FALSE) {
+                    verbose = FALSE, iscale = TRUE) {
   
   ####################### return value
   ## A list: the estimated \{\rho^{ij}\}: p by p matrix, and $\{\sigma^{ii}\}$: p by 1 vector
@@ -80,15 +80,21 @@ spacemap <-function(Y.m, X.m, slasso, sridge=0, rlasso, rgroup, sig=NULL,
     stop("Missing values found in input matrix X.m; imputation is required prior to Spacemap fitting.")
   }
   
-  #Standardize the response vector.
-  Y.s <- scale(Y.m)
-  X.s <- scale(X.m)
-  #Keep the same scale as user input:
-  # W = diag(apply(Y, 2, sd))
-  # R = inv(W) \Sigma inv(W)
-  #...Therefore
-  # \Sigma = inv(W) inv(R) inv(W)
-  Y.stddev <- attr(Y.s, "scaled:scale")
+  if(iscale) {
+    #Standardize the response vector.
+    Y.s <- scale(Y.m)
+    X.s <- scale(X.m)
+    #Keep the same scale as user input:
+    # W = diag(apply(Y, 2, sd))
+    # R = inv(W) \Sigma inv(W)
+    #...Therefore
+    # \Sigma = inv(W) inv(R) inv(W)
+    Y.stddev <- attr(Y.s, "scaled:scale")
+  } else { 
+    Y.s <- Y.m
+    X.s <- X.m
+    Y.stddev <- rep(1,p)
+  }
   
   #RemMap Weight 
   if(is.null(remWeight)) {

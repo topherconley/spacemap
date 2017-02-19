@@ -27,7 +27,7 @@ space.nested <- function(Y.m, seq_lam1, lam2=0, sig=NULL, weight=NULL,iter=2, to
 #'  
 #' @usage See space::space.joint
 space.joint <-function(Y.m, lam1, lam2=0, sig=NULL, weight=NULL,iter=2, tol = 1e-6, cd_iter = 1e7L,
-                       verbose = FALSE, rho = NULL)
+                       verbose = FALSE, rho = NULL, iscale = TRUE)
 {
   ########################parameters: 
   ## Y.m: n (sample size) by p (number of variables) data matrix; 
@@ -57,14 +57,20 @@ space.joint <-function(Y.m, lam1, lam2=0, sig=NULL, weight=NULL,iter=2, tol = 1e
     stop("Missing values found in input matrix Y.m; imputation is required prior to Spacemap fitting.")
   } 
   
-  #Standardize the response vector
-  Y.s <- scale(Y.m)
-  #Keep the same scale as user input:
-  # W = diag(apply(Y, 2, sd))
-  # R = inv(W) \Sigma inv(W)
-  #...Therefore
-  # \Sigma = inv(W) inv(R) inv(W)
-  Y.stddev <- attr(Y.s, "scaled:scale")
+  if (iscale) { 
+    #Standardize the response vector
+    Y.s <- scale(Y.m)
+    #Keep the same scale as user input:
+    # W = diag(apply(Y, 2, sd))
+    # R = inv(W) \Sigma inv(W)
+    #...Therefore
+    # \Sigma = inv(W) inv(R) inv(W)
+    Y.stddev <- attr(Y.s, "scaled:scale")  
+  } else { 
+    Y.s <- Y.m
+    Y.stddev <- rep(1,p)
+  }
+  
   
   ################### preparation
   if(!is.null(sig))
