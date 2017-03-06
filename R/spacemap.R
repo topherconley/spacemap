@@ -60,7 +60,7 @@
 #' @examples
 #' data(sim1)
 #' net <- spacemap(Y.m = sim1$Y, X.m = sim1$X, slasso = 70, rlasso = 28.8, rgroup = 12.38)
-spacemap <-function(Y.m, X.m, slasso, sridge=0, rlasso, rgroup, sig=NULL, 
+spacemap <-function(Y.m, X.m, slasso, sridge=0, rlasso, rgroup, sig=NULL, rho = NULL,
                     weight=NULL, remWeight = NULL, iter=3, tol = 1e-6, cd_iter = 1e7L, 
                     verbose = FALSE, iscale = TRUE) {
   
@@ -150,8 +150,17 @@ spacemap <-function(Y.m, X.m, slasso, sridge=0, rlasso, rgroup, sig=NULL,
     X.u <- X.s  #*matrix(sqrt(WEIGHT),n,ncol(X.s),byrow=TRUE)
     sig.u<-SIG/WEIGHT
     
-    mod.fit <- doSpaceMap(Y.u, X.u, remWeight, sig.u^0.5, 
-		    slasso, sridge, rlasso, rgroup, tol, cd_iter)
+    if (!is.null(rho) & is.matrix(rho)) {
+      stopifnot(nrow(rho) == p, ncol(rho) == p)
+      mod.fit <- doSpaceMap(Y.u, X.u, remWeight, sig.u^0.5, 
+                            slasso, sridge, rlasso, rgroup, tol, cd_iter,
+                            as.vector(rho), TRUE)
+    } else {
+      mod.fit <- doSpaceMap(Y.u, X.u, remWeight, sig.u^0.5, 
+                            slasso, sridge, rlasso, rgroup, tol, cd_iter,
+                            as.vector(matrix(0, p, p)), FALSE)
+    }
+    
     ParCor.fit <- matrix(mod.fit$rho, p,p, byrow=T)
     
     diag(ParCor.fit)<-1

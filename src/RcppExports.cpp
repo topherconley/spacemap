@@ -161,8 +161,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // doSpaceMap
-List doSpaceMap(const NumericMatrix& Ym, const NumericMatrix& Xm, const NumericMatrix& Wm, NumericVector& sigma_sr, const double slasso, const double sridge, const double rlasso, const double rgroup, const double tol, const int maxIter);
-RcppExport SEXP spacemap_doSpaceMap(SEXP YmSEXP, SEXP XmSEXP, SEXP WmSEXP, SEXP sigma_srSEXP, SEXP slassoSEXP, SEXP sridgeSEXP, SEXP rlassoSEXP, SEXP rgroupSEXP, SEXP tolSEXP, SEXP maxIterSEXP) {
+List doSpaceMap(const NumericMatrix& Ym, const NumericMatrix& Xm, const NumericMatrix& Wm, NumericVector& sigma_sr, const double slasso, const double sridge, const double rlasso, const double rgroup, const double tol, const int maxIter, const NumericVector& beta_init, const bool init);
+RcppExport SEXP spacemap_doSpaceMap(SEXP YmSEXP, SEXP XmSEXP, SEXP WmSEXP, SEXP sigma_srSEXP, SEXP slassoSEXP, SEXP sridgeSEXP, SEXP rlassoSEXP, SEXP rgroupSEXP, SEXP tolSEXP, SEXP maxIterSEXP, SEXP beta_initSEXP, SEXP initSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -176,7 +176,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const double >::type rgroup(rgroupSEXP);
     Rcpp::traits::input_parameter< const double >::type tol(tolSEXP);
     Rcpp::traits::input_parameter< const int >::type maxIter(maxIterSEXP);
-    rcpp_result_gen = Rcpp::wrap(doSpaceMap(Ym, Xm, Wm, sigma_sr, slasso, sridge, rlasso, rgroup, tol, maxIter));
+    Rcpp::traits::input_parameter< const NumericVector& >::type beta_init(beta_initSEXP);
+    Rcpp::traits::input_parameter< const bool >::type init(initSEXP);
+    rcpp_result_gen = Rcpp::wrap(doSpaceMap(Ym, Xm, Wm, sigma_sr, slasso, sridge, rlasso, rgroup, tol, maxIter, beta_init, init));
     return rcpp_result_gen;
 END_RCPP
 }

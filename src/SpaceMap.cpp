@@ -131,14 +131,21 @@ List doSpace(const NumericMatrix & Ym, NumericVector & sigma_sr, const double la
 
 // [[Rcpp::export]]
 List doSpaceMap(const NumericMatrix & Ym, const NumericMatrix & Xm,
-    const NumericMatrix & Wm, NumericVector & sigma_sr, const double slasso, const double sridge, 
-    const double rlasso, const double rgroup, const double tol, const int maxIter) {
+    const NumericMatrix & Wm, NumericVector & sigma_sr, 
+    const double slasso, const double sridge, const double rlasso, 
+    const double rgroup, const double tol, const int maxIter,
+    const NumericVector & beta_init, const bool init) {
 
   RemMap rmap(Xm.nrow(), Xm.ncol(), Ym.ncol(), rlasso, rgroup, tol);
   Space space(Ym.nrow(), Ym.ncol(), slasso, sridge, tol);
 
   rmap.estimateInitial(Xm, Ym, Wm);
-  space.estimateInitial(Ym, sigma_sr);
+  if (init) { 
+    std::vector<double> beta_init2 = as< std::vector<double> >(beta_init);
+    space.initBeta(Ym, sigma_sr, beta_init2);
+  } else { 
+    space.estimateInitial(Ym, sigma_sr);
+  }
 
   //residual 
   NumericMatrix Em(Ym.nrow(), Ym.ncol()); 
