@@ -1,25 +1,45 @@
-templates:
+template:
   params:
     bootswatch: flatly 
 
+authors: 
+  Christopher Conley: 
+    href: https://github.com/topherconley/
+  Jie Peng:
+    href: http://www.stat.ucdavis.edu/~jie/
+  Pei Wang:
+    href: http://research.mssm.edu/wanglab/index.htm
+
 reference:
-  - title: Package overview
-    desc: Full reproducible documentation is in progress.
+  - title: R package overview
+    desc: The functions of the spacemap R package are perhaps best conceptualized in three categories. The model fitting category concerns functions that learns a network from input data for a given set of parameters. The model selection category encompasses functions that select the optimal parameters of spacemap for a specific dataset. The last category is network analysis, which contains tools to annotate and interpret model output. 
     contents:
-  - title: Fit spacemap
+  - title: Model fitting
     desc: Details on how to fit spacemap and space with selected tuning parameters. 
     contents:
     - matches("^spacemap$")
   - title: Model selection
     contents:
     - crossValidation
-    - reprodEdge
+    - bootEnsemble
+    - bootVote
   - title: Network Analysis Toolkit
     contents:
     - neta
+    
 navbar:
-  left:
-  - text: Model Tuning 
-    href: articles/tune_sim1.html
-  - text: Reference
+  left: 
+  - text: Vignettes
+    menu:
+      - text: "Basics"
+        href: articles/basics.html
+      - text: "Model Tuning"
+        href: articles/tune_sim1.html
+  - text: Network Toolkit
+    href: https://topherconley.github.io/neta-bcpls/
+  - text: R Documentation
     href: reference/index.html
+  - text: Installation
+    href: https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta
+  - text: Contact Us
+    href: https://github.com/topherconley/spacemap/issues

@@ -16,50 +16,70 @@
 # #> [1] "_PACKAGE"
 
 
-#'@title Fit spacemap model
-#'@description Estimate partial correlations between response variables (Y)
-#' and perform model selection of predictors (X) based on the spacemap model 
-#' fitted to multivariate data (Y,X).
-#'@param Y.m A numeric matrix (N x Q) representing the response of Q variables on 
-#'N independent observations.
-#'@param X.m A numeric matrix (N X P) representing P predictor variables on N 
-#'independent observations.  
-#'@param slasso A numeric value, the Space-lasso penalty parameter (l_1 norm). 
-#'@param sridge A numeric value (optional). If not specified, lasso regression 
-#'is used in the Joint Sparse Regression Model (JSRM). Otherwise, elastic net 
-#'regression is used in JSRM and sridge serves as the squared l_2 norm penalty parameter.
-#'@param rlasso The MAP-lasso penalty. 
-#'@param rgroup The MAP-group penalty.
-#'@param sig A numeric vector with length being the same as the number of 
-#'columns of Y.m. It is the vector of \eqn{\sigma^{ii}} (the diagonal of 
-#'the inverse covariance matrix). If not specified, σ^{ii} will be 
-#'estimated during the model fitting with initial values \code{rep(1,p)} and  
-#'the iterations of the model fitting (\code{iter}) \eqn{\ge 2}. 
-#'Note, the scale of \code{sig} does not matter.
-#'@param weight A numeric value or vector (Q x 1) specifying the weights or the type of
+#'@title Fit the spacemap model.
+#'@description The conditional graphical model called spacemap learns a
+#'sparse network encoding the interactions between two high dimensional data inputs denoted as response and predictor variables. 
+#'@details The two data types input are response random vector 
+#'\eqn{\textbf{y} = (y_1, \dots, y_Q)} and predictor random vector \eqn{\textbf{x} = (x_1, \dots, x_P)}. 
+#'Provided \eqn{N} iid samples from \eqn{(\textbf{x},\textbf{y})}, spacemap learns a sparse network, where the degree
+#' of sparsity is determined by tuning penalties \eqn{\lambda_1, \lambda_2, \lambda_3}.
+#'When we fit the spaceMap model, we seek to learn the network comprised of node set \eqn{\textbf{V}= (\textbf{x},\textbf{y})}
+#'and edge set \eqn{\textbf{E}= \{ x_p - y_q \} \cup \{ y_q - y_l : q \neq l \}}. 
+#'@param Y.m Numeric matrix \eqn{(N \times Q)} containing N iid samples of the response vector \eqn{\textbf{y}}. 
+#'@param X.m Numeric matrix \eqn{(N \times P)} containing N iid samples of the predictor vector \eqn{\textbf{x}}. 
+#'@param slasso Non-negative numeric value, the space-lasso penalty corresponding to \eqn{\lambda_1}, 
+#'which subjects the partial correlation vector, \eqn{\bf \rho_{yy}}, to  the \eqn{l_1} norm. 
+#'It induces overall sparsity of \eqn{\{ y_q - y_l : q \neq l \}} edges. 
+#'@param sridge Non-negative numeric value defaults to 0, which is the recommended value. Otherwise, 
+#' a positive value applies an elastic net penalty to \eqn{\bf \rho_{yy}}, 
+#'where \code{sridge} serves as the squared \eqn{l_2} norm penalty parameter.
+#'@param rlasso Non-negative numeric value, the MAP-lasso penalty corresponding to \eqn{\lambda_2}, 
+#'which subjects the regression coefficients in \eqn{ \bf \Gamma}, to the  \eqn{l_1} norm.  
+#'It induces overall sparsity of \eqn{\{ x_p - y_q \}} edges. 
+#'@param rgroup Non-negative numeric value, the MAP-group penalty corresponding to \eqn{\lambda_3},
+#'which subjects the regression coefficients in the \eqn{p}th row of \eqn{ \bf \Gamma_{P \times Q}}, to the \eqn{l_2} norm. 
+#'It encourages selection of predictor variables with many edges to response variables, in other words, hub nodes. 
+#'@param sig Positive numeric vector (\eqn{p \times 1}) representing the estimate of \eqn{\sigma^{ii}}, the diagonal of 
+#'the inverse covariance matrix. It defaults to NULL and
+#'and will be estimated \code{iter} times during the model fitting with initial 
+#'values set to the ones vector.    
+#'@param weight Numeric value or vector (Q x 1) specifying the weights or the type of
 #' weights used for each regression in JSRM. The default value is NULL, 
 #' which means all regressions will be weighted equally in the joint model. 
 #' If \code{weight=1}, residue variances will be used for weights. 
 #' If \code{weight=2}, the estimated degree of each variable will be used for weights. 
 #' Otherwise, it should be a positive numeric vector, whose length is equal to 
 #' the number of columns of Y.m.
-#' @param remWeight optional weighting scheme on [fill in details].
-#' @param iter An integer specifying the iterations in JSRM for estimating 
-#' \eqn{\sigma^{ii}} and partial correlations. When \code{sig=NULL} and/or 
+#' @param remWeight Optional weighting scheme [fill in the details].
+#' @param iter Positive integer specifying the number of iterations for estimating 
+#' \eqn{\sigma^{ii}} and partial correlations. Defaults to 3. When \code{sig=NULL} and/or 
 #' (\code{weight=NULL} or \code{weight=2}), then \code{iter} \eqn{\ge 2}.
-#' 
-#' @return A list containing 
+#' @param tol Positive numeric value specifying the convergence tolerance of the coordinate descent algorithm; 
+#' in other words, it is criterion that stops parameter estimation when no parameter changes value exceeding \code{tol} 
+#' between iterations. \code{tol} defaults to 1e-6, but may be lowered (e.g. 1e-4) to speed up network learning. 
+#' @param cd_iter Positive integer specifiying the maximum number of parameter updates allowed before reporting the algorithm
+#' as having failed to converge. Default may need to be increased for inferring very large-scale networks (i.e. \eqn{p,q > 1000}).
+#' @param verbose Logical indicating to print out the current status of \code{iter}. Default is FALSE. 
+#' @param iscale Logical indicating to standardize the input data internally. Defaults to TRUE if just running \code{spacemap}. If running 
+#' \code{\link{crossValidation}} or \code{\link{bootEnsemble}}, user should set to FALSE.  
+#' @return list containing 
 #'\enumerate{
-#'   \item \code{ParCor} The estimated partial correlation matrix. 
-#'   \item \code{sig.fit} The estimated diagonal \eqn{\sigma^{ii}}.
-#'   \item \code{Gamma} The estimated coefficients of Y on X.
+#'   \item \code{ParCor} The estimated partial correlation matrix (\eqn{P \times P}), 
+#'   where off-diagonals  \eqn{ |\hat \rho^{p,q}_{yy}| > } \code{tol} encode the edges \eqn{\{ y_q - y_l : q \neq l \} }
+#'   and the diagonals are 1's. 
+#'   \item \code{sig.fit} The estimated diagonal \eqn{\hat \sigma^{ii}}.
+#'   \item \code{Gamma} The estimated regression coefficients matrix  (\eqn{P \times Q}), 
+#'   where elements \eqn{ |\hat \gamma_{pq}| > } \code{tol} encode the edges \eqn{\{ x_p - y_q \}}. 
 #'   \item \code{rss} The residual sums of squares from the model fit. 
-#'   \item \code{deltaMax} The maximum change in parameter values between the penultimate and ultimate iteration  
+#'   \item convergence logical: true for successful convergence, otherwise failed to converge. Failure can be 
+#'   mitigated by increasing \code{tol} and/or \code{cd_iter}. 
+#'   \item \code{deltaMax} The maximum change in parameter values between the penultimate and ultimate iteration. 
 #' }
-#' 
+#' @seealso  \code{\link{crossValidation}}, \code{\link{bootVote}}
 #' @examples
 #' data(sim1)
 #' net <- spacemap(Y.m = sim1$Y, X.m = sim1$X, slasso = 70, rlasso = 28.8, rgroup = 12.38)
+#' @export
 spacemap <-function(Y.m, X.m, slasso, sridge=0, rlasso, rgroup, sig=NULL, rho = NULL,
                     weight=NULL, remWeight = NULL, iter=3, tol = 1e-6, cd_iter = 1e7L, 
                     verbose = FALSE, iscale = TRUE) {

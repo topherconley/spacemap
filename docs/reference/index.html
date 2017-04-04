@@ -31,6 +31,8 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -48,11 +50,32 @@
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <li>
-  <a href="../articles/tune_sim1.html">Model Tuning</a>
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Vignettes
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/basics.html">Basics</a>
+    </li>
+    <li>
+      <a href="../articles/tune_sim1.html">Model Tuning</a>
+    </li>
+  </ul>
 </li>
 <li>
-  <a href="../reference/index.html">Reference</a>
+  <a href="https://topherconley.github.io/neta-bcpls/">Network Toolkit</a>
+</li>
+<li>
+  <a href="../reference/index.html">R Documentation</a>
+</li>
+<li>
+  <a href="https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta">Installation</a>
+</li>
+<li>
+  <a href="https://github.com/topherconley/spacemap/issues">Contact Us</a>
 </li>
       </ul>
       
@@ -75,51 +98,89 @@
   <div class="col-md-9">
     <div class="page-header">
       <h1>Function reference</h1>
-      <h4>version&nbsp;0.45.0</h4>
+      <h4>version&nbsp;0.45.2</h4>
     </div>
 
     <div class="contents">
-      <h2 id="section-package-overview" class="hasAnchor"><a href="#section-package-overview" class="anchor"></a>Package overview</h2>
-      <p class="section-desc"><p>Full reproducible documentation is in progress.</p></p>
+      <table class="ref-index">
 
-          <h2 id="section-fit-spacemap" class="hasAnchor"><a href="#section-fit-spacemap" class="anchor"></a>Fit spacemap</h2>
-      <p class="section-desc"><p>Details on how to fit spacemap and space with selected tuning parameters.</p></p>
+      <colgroup>
+        <col class="alias" />
+        <col class="title" />
+      </colgroup>
 
-      
-      <p><a href="spacemap.html">Fit spacemap model</a></p>
-      <ul>
-        <li><code><a href="spacemap.html">spacemap</a></code></li>
-      </ul>
-          <h2 id="section-model-selection" class="hasAnchor"><a href="#section-model-selection" class="anchor"></a>Model selection</h2>
-      <p class="section-desc"></p>
-
-      
-      <p><a href="crossValidation.html">Cross validation (CV.Vote) for spacemap and space models.</a></p>
-      <ul>
-        <li><code><a href="crossValidation.html">crossValidation</a></code></li>
-      </ul>
-      
-      <p><a href="reprodEdge.html">Robust networks through bootstrap</a></p>
-      <ul>
-        <li><code><a href="reprodEdge.html">reprodEdge</a></code></li><li><code><a href="reprodEdge.html">bootVote</a></code></li>
-      </ul>
-          <h2 id="section-network-analysis-toolkit" class="hasAnchor"><a href="#section-network-analysis-toolkit" class="anchor"></a>Network Analysis Toolkit</h2>
-      <p class="section-desc"></p>
-
-      
-      <p><a href="neta.html">Network analysis toolkit</a></p>
-      <ul>
-        <li><code><a href="neta.html">neta</a></code></li>
-      </ul>
-    
+      <tbody>
+        <tr>
+          <th colspan="2">
+            <h2 id="section-r-package-overview" class="hasAnchor"><a href="#section-r-package-overview" class="anchor"></a>R package overview</h2>
+            <p class="section-desc"><p>The functions of the spacemap R package are perhaps best conceptualized in three categories. The model fitting category concerns functions that learns a network from input data for a given set of parameters. The model selection category encompasses functions that select the optimal parameters of spacemap for a specific dataset. The last category is network analysis, which contains tools to annotate and interpret model output.</p></p>
+          </th>
+        </tr>
+        
+      </tbody><tbody>
+        <tr>
+          <th colspan="2">
+            <h2 id="section-model-fitting" class="hasAnchor"><a href="#section-model-fitting" class="anchor"></a>Model fitting</h2>
+            <p class="section-desc"><p>Details on how to fit spacemap and space with selected tuning parameters.</p></p>
+          </th>
+        </tr>
+        <tr>
+          <!--  -->
+          <td>
+            <p><code><a href="spacemap.html">spacemap</a></code> </p>
+          </td>
+          <td><p>Fit the spacemap model.</p></td>
+        </tr>
+      </tbody><tbody>
+        <tr>
+          <th colspan="2">
+            <h2 id="section-model-selection" class="hasAnchor"><a href="#section-model-selection" class="anchor"></a>Model selection</h2>
+            <p class="section-desc"></p>
+          </th>
+        </tr>
+        <tr>
+          <!--  -->
+          <td>
+            <p><code><a href="crossValidation.html">crossValidation</a></code> </p>
+          </td>
+          <td><p>Cross validation (CV.Vote) for spacemap and space models.</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="bootEnsemble.html">bootEnsemble</a></code> </p>
+          </td>
+          <td><p>Ensemble networks through boostrapping.</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="bootVote.html">bootVote</a></code> </p>
+          </td>
+          <td><p>Model aggregation through Boot.Vote</p></td>
+        </tr>
+      </tbody><tbody>
+        <tr>
+          <th colspan="2">
+            <h2 id="section-network-analysis-toolkit" class="hasAnchor"><a href="#section-network-analysis-toolkit" class="anchor"></a>Network Analysis Toolkit</h2>
+            <p class="section-desc"></p>
+          </th>
+        </tr>
+        <tr>
+          <!--  -->
+          <td>
+            <p><code><a href="neta.html">neta</a></code> </p>
+          </td>
+          <td><p>Network analysis toolkit</p></td>
+        </tr>
+      </tbody>
+      </table>
     </div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#section-package-overview">Package overview</a></li>
-      <li><a href="#section-fit-spacemap">Fit spacemap</a></li>
+      <li><a href="#section-r-package-overview">R package overview</a></li>
+      <li><a href="#section-model-fitting">Model fitting</a></li>
       <li><a href="#section-model-selection">Model selection</a></li>
       <li><a href="#section-network-analysis-toolkit">Network Analysis Toolkit</a></li>
     </ul>
@@ -128,7 +189,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Christopher Conley, Jie Peng, Pei Wang, UC Davis.</p>
+  <p>Developed by <a href='https://github.com/topherconley/'>Christopher Conley</a>, <a href='http://www.stat.ucdavis.edu/~jie/'>Jie Peng</a>, <a href='http://research.mssm.edu/wanglab/index.htm'>Pei Wang</a>, UC Davis.</p>
 </div>
 
 <div class="pkgdown">
