@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Mathew&#39;s Correlation Coefficient of Classifier — algoMCC â€¢ spacemap</title>
+<title>Mathew's Correlation Coefficient of Classifier — algoMCC â€¢ spacemap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -31,6 +31,8 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -48,11 +50,32 @@
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <li>
-  <a href="../articles/tune_sim1.html">Model Tuning</a>
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Vignettes
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/basics.html">Basics</a>
+    </li>
+    <li>
+      <a href="../articles/tune_sim1.html">Model Tuning</a>
+    </li>
+  </ul>
 </li>
 <li>
-  <a href="../reference/index.html">Reference</a>
+  <a href="https://topherconley.github.io/neta-bcpls/">Network Toolkit</a>
+</li>
+<li>
+  <a href="../reference/index.html">R Documentation</a>
+</li>
+<li>
+  <a href="https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta">Installation</a>
+</li>
+<li>
+  <a href="https://github.com/topherconley/spacemap/issues">Contact Us</a>
 </li>
       </ul>
       
@@ -74,7 +97,7 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Mathew&#39;s Correlation Coefficient of Classifier</h1>
+    <h1>Mathew's Correlation Coefficient of Classifier</h1>
     </div>
 
 
@@ -82,16 +105,25 @@
     <pre><span class='fu'>algoMCC</span>(<span class='no'>tp</span>, <span class='no'>fn</span>, <span class='no'>fp</span>, <span class='no'>tn</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <dl class="dl-horizontal">
-      <dt>tp</dt>
-      <dd>The number of true positive classifications.</dd>
-      <dt>fn</dt>
-      <dd>The number of false negative classifications.</dd>
-      <dt>fp</dt>
-      <dd>The number of false positive classifications.</dd>
-      <dt>tn</dt>
-      <dd>The number of true negative classifications.</dd>
-    </dl>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>tp</th>
+      <td><p>The number of true positive classifications.</p></td>
+    </tr>
+    <tr>
+      <th>fn</th>
+      <td><p>The number of false negative classifications.</p></td>
+    </tr>
+    <tr>
+      <th>fp</th>
+      <td><p>The number of false positive classifications.</p></td>
+    </tr>
+    <tr>
+      <th>tn</th>
+      <td><p>The number of true negative classifications.</p></td>
+    </tr>
+    </table>
     
 
   </div>
@@ -106,7 +138,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Christopher Conley, Jie Peng, Pei Wang, UC Davis.</p>
+  <p>Developed by <a href='https://github.com/topherconley/'>Christopher Conley</a>, <a href='http://www.stat.ucdavis.edu/~jie/'>Jie Peng</a>, <a href='http://research.mssm.edu/wanglab/index.htm'>Pei Wang</a>, UC Davis.</p>
 </div>
 
 <div class="pkgdown">

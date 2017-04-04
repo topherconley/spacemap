@@ -25,7 +25,7 @@ trainModel <- function(train, method, tuneGrid, refit = TRUE, fold_id, tune_id, 
                     slasso = tuneGrid$slasso, sridge = opt$sridge, 
                     rlasso = tuneGrid$rlasso, rgroup = tuneGrid$rgroup, 
                     sig=opt$sig, weight=opt$weight, remWeight = opt$remWeight, iter= opt$iter,
-                    tol = opt$tol, cd_iter = opt$cd_iter)
+                    tol = opt$tol, cd_iter = opt$cd_iter, iscale = opt$iscale)
     #zero out those below tolerance. 
     fit$ParCor[abs(fit$ParCor) <= opt$tol] <- 0.0
     fit$Gamma[abs(fit$Gamma) <= opt$tol] <- 0.0
@@ -46,16 +46,17 @@ trainModel <- function(train, method, tuneGrid, refit = TRUE, fold_id, tune_id, 
       saveRDS(out, file = outfile)
     }
   } else if (method == "space") {
-    fit <- spacemap::space.joint(Y.m = train$XY, lam1 = tuneGrid, lam2 = opt$sridge, iter = opt$iter, 
-                                 cd_iter = opt$cd_iter, tol = opt$tol)
+    fit <- space.joint(Y.m = train$XY, lam1 = tuneGrid, lam2 = opt$sridge, iter = opt$iter, 
+                       cd_iter = opt$cd_iter, tol = opt$tol, iscale = opt$iscale,
+                       sig = opt$sig.fit, rho = opt$ParCor)
     #zero out those below tolerance. 
     fit$ParCor[abs(fit$ParCor) <= opt$tol] <- 0.0
     if(!fit$convergence) return(list(fit = fit, sparseFit = FALSE))
     if(refit) {
-      sparseFit <- spacemap::olsRefitSpace(Y = train$XY,
-                                           ParCor = fit$ParCor, 
-                                           sigma = fit$sig.fit, RSS = fit$rss, tol = opt$tol,
-                                           ridge = opt$refitRidge)
+      sparseFit <- olsRefitSpace(Y = train$XY,
+                                 ParCor = fit$ParCor, 
+                                 sigma = fit$sig.fit, RSS = fit$rss, tol = opt$tol,
+                                 ridge = opt$refitRidge)
     }
     if (!is.null(opt$res_path)) { 
       out <- list(ThetaXY = Matrix(fit$ParCor[opt$Xindex,opt$Yindex]), 

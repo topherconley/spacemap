@@ -45,7 +45,7 @@ doSpace <- function(Ym, sigma_sr, lasso, ridge, tol, maxIter, beta_init, init) {
     .Call('spacemap_doSpace', PACKAGE = 'spacemap', Ym, sigma_sr, lasso, ridge, tol, maxIter, beta_init, init)
 }
 
-doSpaceMap <- function(Ym, Xm, Wm, sigma_sr, slasso, sridge, rlasso, rgroup, tol, maxIter) {
-    .Call('spacemap_doSpaceMap', PACKAGE = 'spacemap', Ym, Xm, Wm, sigma_sr, slasso, sridge, rlasso, rgroup, tol, maxIter)
+doSpaceMap <- function(Ym, Xm, Wm, sigma_sr, slasso, sridge, rlasso, rgroup, tol, maxIter, beta_init, init) {
+    .Call('spacemap_doSpaceMap', PACKAGE = 'spacemap', Ym, Xm, Wm, sigma_sr, slasso, sridge, rlasso, rgroup, tol, maxIter, beta_init, init)
 }
 

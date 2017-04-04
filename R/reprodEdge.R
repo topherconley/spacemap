@@ -1,19 +1,38 @@
-#' Robust networks through bootstrap
+#' Ensemble networks through boostrapping. 
 #' 
-#' The Boot.Vote procedure fits spacemap over B bootstrap replicates
-#'  for each tuning parameter set of (\code{slasso,rlasso,rgroup}).
+#' Fits spacemap model to B bootstrapped data replicates to create an ensemble network. 
 #' 
 #' @inheritParams spacemap
+#' @param tune Data.frame with three columns requiring names to be the tuning penalties
+#' \code{slasso, rlasso, rgroup} that are input to \code{spacemap}. Each row is a tuning penalty set 
+#' that indexes an ensemble network of \code{spacemap} fits to \code{B} boostrap replicates of \code{Y.m, X.m}. 
+#' @param boot Logical. Default is \code{boot=TRUE} and implies sampling with replacement (i.e. boostrap). 
+#' \code{boot=FALSE} will resample without replacement. 
+#' @param B Positive integer denoting the number of model fits making up the ensemble. Default is 1000, but can 
+#' be lowered to save time. 
+#' @param seed Positive integer allowing user to set the random seed for reproducing the network ensemble. 
+#' @param p0 Positive numeric not exceeding the default of 1, which represents the proportion of the original 
+#' samples that will be down-sampled for each model fitting iteration of the ensemble. 
+#' @param refitRidge Positive numeric value specifying a ridge penalty, which is applied when 
+#' refitting the model to the data after having selected the network with \code{spacemap}. Defaults to 0.1, 
+#' but can be set to zero for ordinary least squares refit. 
+#' @return a list of length B, where the bth element contains the refit of \code{spacemap} model. The model output is identical to 
+#' \code{\link{spacemap}}, but the partial correlations matrix \code{ParCor} and the regression coefficients matrix \code{Gamma}
+#' are stored in a sparse matrix format, (dgCMatrix format), from the \code{\link{Matrix}} package. If the bth model is not 
+#' sufficiently sparse, a character vector will be returned as "Not Sparse". If the bth model did not converge, a 
+#' character vector will be returned as "No Convergence". 
+#' 
 #' @examples 
-#' \dontrun{
-#'data(sim1)
-#'tune <- data.frame(slasso = 70, rlasso = 28.8, rgroup = 14)
-#'out <- reprodEdge(Y.m = dat$Y, X.m = dat$X, tune = tune, B = 50, iter = 3,
-#'                  cd_iter = 1e7, tol = 1e-6, refitRidge = 0)
-#'bv <- bootVote(fits = out[[1]], P = P, Q = Q)
-#' }
-reprodEdge <- function(Y.m, X.m, tune, boot = TRUE, B =  1000L, seed = 55139, p0 = 1.0, iter = 3, 
-                       tol = 1e-4, cd_iter = 100e7, refitRidge = 0.1) {
+#' #Load simulation
+#' data(sim1)
+#' #Boostrap Ensemble (B = 10) for illustration only
+#' tune <- data.frame(slasso = 70, rlasso = 28.8, rgroup = 14)
+#' out <- bootEnsemble(Y.m = sim1$Y, X.m = sim1$X, tune = tune, B = 10, iter = 3,
+#'                     cd_iter = 1e7, tol = 1e-6, refitRidge = 0)
+#' bv <- bootVote(fits = out[[1]], P = ncol(sim1$X), Q = ncol(sim1$Y))
+#' @export
+bootEnsemble <- function(Y.m, X.m, tune, boot = TRUE, B =  1000L, seed = 55139, p0 = 1.0, iter = 3, 
+                       tol = 1e-4, cd_iter = 100e7, refitRidge = 0.1, iscale = FALSE) {
   
   nt <- nrow(tune)
   library(doRNG)
@@ -31,7 +50,7 @@ reprodEdge <- function(Y.m, X.m, tune, boot = TRUE, B =  1000L, seed = 55139, p0
     nuniq <- length(unique(sort(sidx)))
     fit <- spacemap::spacemap(Y.m = Y.m[sidx,], X.m = X.m[sidx,], 
                               slasso = tune$slasso[i], rlasso = tune$rlasso[i], rgroup = tune$rgroup[i], iter = iter, 
-                              tol = tol, cd_iter = cd_iter)
+                              tol = tol, cd_iter = cd_iter, iscale = iscale)
     #zero out those below tolerance
     fit$ParCor[abs(fit$ParCor) <= tol] <- 0.0
     fit$Gamma[abs(fit$Gamma) <= tol] <- 0.0
@@ -167,15 +186,43 @@ bootDegree <- function(boots, P, Q, type = c("ParCor", "Gamma"), tol) {
 #' 
 #' Aggregate boostrap replicates of spacemap into a final Boot.Vote model. 
 #' 
-#' @rdname reprodEdge
-#' @param fits List of fitted spacemap models returned from \code{\link{reprodEdge}}.
-#' @param P the number of predictor variables
-#' @param Q the number of response variables
-#' @param vote_thresh  the threshold for the minimum proportion of bootstrap 
-#' replicate model fits with a particular edge such that the edge is included in the Boot.Vote model . 
-#' @param btol the threshold for the smallest possible parameter estimate in the model 
-#' to be counted as an edge in a model fit. Do not change from zero if used in tandem 
-#' with \code{\link{reprodEdge}}.
+#' @param fits List of fitted spacemap models returned from \code{\link{bootEnsemble}}.
+#' @param P Integer for the number of predictor variables
+#' @param Q Integer for the number of response variables
+#' @param vote_thresh  Positive numeric threshold for the minimum proportion of bootstrap 
+#' replicate model fits with a particular edge such that the edge is included in the Boot.Vote model. 
+#' @param btol The numeric lower bound that indicates parameter estimates equal to or less than \code{btol} ought 
+#' to not be considered as an edge in a model fit. Do not change from zero if used in tandem 
+#' with \code{\link{bootEnsemble}}.
+#' @return List containing two lists. 
+#' First list is \code{bv}, which encodes the edges in two logical adjacency matrices.
+#' 
+#' \enumerate{
+#'   \item \code{ParCor} Logical matrix where TRUE for the (q,l) off-diagonals element indicate an edge 
+#'   between the qth and lth response variables. 
+#'   \item \code{Gamma}  Logical matrix where TRUE for the (p,q) element indicate an edge 
+#'   between the pth predictor and qth response variable. 
+#' }
+#' 
+
+#'  Second list is \code{bc}, which stores several additional statistics on the ensemble network fits. 
+#' \enumerate{ 
+#'    \item \code{ParCor} Integer matrix containing the y--y edge selection frequency out of B replicates.
+#'    \item \code{Gamma}  Integer matrix containing the x--y edge selection frequency out of B replicates.
+#'    \item \code{dfParCor} Integer vector containing the total number of y--y edges for each fit.
+#'    \item \code{dfGamma} Integer vector containing the total number of x--y edges for each fit.
+#'    \item \code{nuniq} Logical vector where TRUE indicates the model fit converged and was sparse and FALSE otherwise. 
+#' }
+#' 
+#' @examples 
+#' #Load simulation
+#' data(sim1)
+#' #Boostrap Ensemble (B = 10) for illustration only
+#' tune <- data.frame(slasso = 70, rlasso = 28.8, rgroup = 14)
+#' out <- bootEnsemble(Y.m = sim1$Y, X.m = sim1$X, tune = tune, B = 10, iter = 3,
+#'                     cd_iter = 1e7, tol = 1e-6, refitRidge = 0)
+#' bv <- bootVote(fits = out[[1]], P = ncol(sim1$X), Q = ncol(sim1$Y))
+#' @export
 bootVote <- function(fits, P, Q, vote_thresh = 0.5, btol = 0.0) {
   
   library(spacemap)

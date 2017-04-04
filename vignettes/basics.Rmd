@@ -1,0 +1,140 @@
+---
+title: "spacemap basics"
+author: "Christopher Conley, Pei Wang, Jie Peng"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{spacemap basics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This vignette illustrates the basics of fitting spaceMap, a conditional graphical model suited for learning networks from high-dimensional data constrained by limited sample size. The spaceMap model was motivated by integrative genomics applications to learn how genomic copy number alterations (CNA) predict and regulate the protein covariation response. It takes as input two distinct data types--predictors (.e.g. CNA)  and responses (e.g. proteins). The model can generally be applied to diverse high dimensional data types where interactions between predictors and response variables and also among responses are of primary importance, while interactions  among predictors is not of primary importance. Together, these interactions form a network and it is the goal of spaceMap to learn the network from predictor and response data. This vignette will help users become familiar with the implementation of the model parameters and the output associated with the `spacemap::spacemap` function, which is the fundamental model fitting function of the R package. Familiarity with the mathematical expression of the spaceMap model will help the reader map the notation to R object variables (see the Methods section of the spacemap publication).  
+
+## Background 
+
+The objective of spaceMap is to learn the network topology from data. Load the data set labeled `sim1`, which was generated under a hub network topology with two data types: predictor variables $\bf X \in \mathbb{R}^P$ and response variables $\bf Y \in \mathbb{R}^Q$, where $P = 14$ and $Q = 171$. When we fit the spaceMap model, we seek to learn the network comprised of node set $\textbf{V}= (X,Y)$ and edge set $\textbf{E}= \{ x_p - y_q : p \in \{1, \dots, P\}, q \in \{1, \dots, Q\} \} \cup \{ y_q - y_l : q \neq l \in \{1, \dots, Q\} \}$ 
+
+```{r}
+suppressPackageStartupMessages(library(spacemap))
+data(sim1)
+```
+
+The `sim1` object contains the true network as well as data generated under the network topology. In the interactive graphic below it can be seen there are 4 $X$ hubs depicted as large dark blue circles and a handful of $X$ variables with no edges at all depicted as small dark blue circles. There are two large disconnected components each containing 2 $X$ hubs and at least one $Y$ hub depicted as a large light blue circle. Other $Y$ variables are depicted as small light blue circles. Further details of `sim1` can be found by entering `help(spacemap::sim1)` at the R console. 
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+library(networkD3)
+library(igraph)
+info <- data.frame(id = c(sim1$Xindex, sim1$Yindex), 
+                   type = c(rep(x = "x", times = length(sim1$Xindex)),
+                            rep(x = "y", times = length(sim1$Yindex))),
+                   hub = c(sim1$Xindex, sim1$Yindex) %in% sim1$XMasterIndex)
+library(knitr)
+info$id <- paste(toupper(info$type), info$id, sep = "-")
+#set the diagonal to zero to avoid self-loops
+tParCor <- sim1$trueParCor$yy
+tGamma <- sim1$trueParCor$xy
+diag(tParCor) <- 0
+#the default convergence tolerance
+tol <- 1e-6
+tig <- spacemap::adj2igraph(YY = abs(tParCor) > tol, XY = abs(tGamma) > tol, info = info, dropnull = F)
+#Convert the object suitable for `networkD3`
+tig_d3 <- igraph_to_networkD3(tig, group = info$type)
+#make the node size bigger according to degree
+tig_d3$nodes$degree <- igraph::degree(tig)^2
+forceNetwork(Links = tig_d3$links, Nodes = tig_d3$nodes, 
+             #height = 700, width = 700,
+             linkDistance = 5,
+             Source = 'source', Target = 'target',
+             fontSize = 12,
+             NodeID = 'name', Group = 'group', Nodesize = "degree", 
+             opacity = 0.90, 
+             bounded = T, 
+             charge = -15)
+```
+
+The spaceMap model learns the structure of the above network from data by estimating the edge set $\bf\hat E$. The following steps will discuss basic input parameters to learn the network. 
+
+
+## Fitting `spacemap::spacemap`
+
+### Tuning penalties
+
+Tuning penalties $\lambda_1, \lambda_2$ correspond to parameters `slasso` and `rlasso`, respectively, where each determines the degree of overall sparsity of the $y-y$ and $x-y$ edges in the network. Tuning penalty $\lambda_3$ corresponds to parameter `rgroup` and encourages selection of $x$ hubs--that is $x$'s that infuence many $y$'s. The selection of appropriate penalty parameters is of primary importance when evaluating `spacemap::spacemap` to learn a network. In this simplified scenario we set the tuning parameters based on previous cross-validation results. The task of selecting appropriate tuning parameters requires a robust model-selection routine and is discussed in more advanced vignettes. 
+
+```{r}
+slasso <- 69.67802 
+rlasso <- 28.84801 
+rgroup <- 12.38648
+```
+
+### Output
+
+Fit the spacemap model to the data matrices $\bf X$ and $\bf Y$ with the selected tuning penalties. All other input parameters are left as defaults, but can be further customized as needed (see `help(spacemap::spacemap)`).  
+
+```{r}
+net <- spacemap(Y.m = sim1$Y, X.m = sim1$X, slasso = slasso, rlasso = rlasso, rgroup = rgroup)
+```
+
+The output of spacemap is a list of estimated parameters and model diagnostics. The estimated parameters are combined to infer the network. The model diagnostics help the user to decide whether the stiamted parameters are valid. **Estimated parameters:** The estimated partial correlations $\bf \hat  \rho$ are reported as a symmetric matrix `ParCor` where the off-diagonal entries exceeding the convergence tolerance in absolute value encode $y-y$ edges. The estimated diagnoal of the inverse covariation matrix for the $y$ variables is denoted as $\bf \hat \theta$ and is reported as the numeric vector `sig.fit`. The estimated regression coefficients $\bf \hat \Gamma$ are reported in matrix form as `Gamma`, where  coefficients exceeding the convergence tolerance encode $x-y$ edges. **Model Diagnostics:** The residual sum of squares is reported as a numeric `rss`; the logical variable `convergence` indicates whether the model converged under the specified tolerance and number of maximum iterations; the numeric `deltaMax` reports the maximum $\Delta$ in parameter values in the last iteration. 
+
+```{r}
+str(net)
+```
+
+The `spacemap` output can easily be converted into `igraph` representation in the event its rich suite of features are needed in downstream  network analysis. To make this conversion, create a data.frame containing some basic information such as node ID, type of node (i.e. x or y) and whether the node is a hub. 
+
+```{r}
+suppressPackageStartupMessages(library(igraph))
+info <- data.frame(id = c(sim1$Xindex, sim1$Yindex), 
+                   type = c(rep(x = "x", times = length(sim1$Xindex)),
+                            rep(x = "y", times = length(sim1$Yindex))),
+                   hub = c(sim1$Xindex, sim1$Yindex) %in% sim1$XMasterIndex)
+library(knitr)
+info$id <- paste(toupper(info$type), info$id, sep = "-")
+kable(head(info))
+```
+
+## Quick Visualization
+
+ While there are many visualization options, we recommend using Cytoscape to visually inspect networks. However, Cytoscape may involve some manual curation and is a sophisticated tool with a learning curve. If you simply need a quick way to visualize the network output, the following section illusrates how. First, convert the spacemap output to an igraph object.
+
+```{r}
+#set the diagonal to zero to avoid self-loops
+diag(net$ParCor) <- 0
+#the default convergence tolerance
+tol <- 1e-6
+ig <- spacemap::adj2igraph(YY = abs(net$ParCor) > tol, XY = abs(net$Gamma) > tol, info = info, dropnull = F)
+```
+
+Identify modules of the inferred network with `igraph`'s edge-betweenness algorithm. Each module discovered will be colored differently. 
+
+```{r}
+ceb <- igraph::cluster_edge_betweenness(graph = ig)
+members <- igraph::membership(ceb)
+```
+
+For interactive visualization, we may make use of the `networkD3` package. The following snippet will visualize `spacemap`'s network where $X$ and $Y$ hub nodes are larger in size. Colors denote the 14 different modules of the network. Hover over a node with your mouse if you wish to see the node ID and its adjacent neighbors. 
+
+ 
+```{r}
+suppressPackageStartupMessages(library(networkD3))
+#Convert the object suitable for `networkD3`
+ig_d3 <- igraph_to_networkD3(ig, group = members)
+#make the node size bigger according to degree
+ig_d3$nodes$degree <- igraph::degree(ig)^2
+forceNetwork(Links = ig_d3$links, Nodes = ig_d3$nodes, 
+             linkDistance = 10,
+             Source = 'source', Target = 'target',
+             fontSize = 12,
+             NodeID = 'name', Group = 'group', Nodesize = "degree", 
+             opacity = 0.90, 
+             bounded = T, 
+             charge = -15)
+```
+
+
+## Further Reading
+
+With this basic understanding of the `spacemap` model fitting, we recommend looking at the next vignette which illustrates how to select tuning penalty parameters through an iterative grid-search with cross-validation criterion. 
+
