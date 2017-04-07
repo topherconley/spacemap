@@ -1,10 +1,10 @@
 Package: spacemap
 Title: Network inference for integrative genomics through conditional models
-Version: 0.45.2
+Version: 0.50.0
 Authors@R: c(person("Christopher Conley", role = c("aut", "cre"),
     email = "conley.christopher@gmail.com"),
-    person("Jie Peng", role = c("aut", "cre")),
-    person("Pei Wang", role = c("aut", "cre")),
+    person("Jie Peng", role = c("aut")),
+    person("Pei Wang", role = c("aut")),
     person("UC Davis", role = c("cph", "fnd"))
     )
 Author: Christopher J. Conley and Jie Peng and Pei Wang
@@ -12,8 +12,8 @@ Maintainer: Christopher J. Conley <conley.christopher@gmail.com>
 Description: A unified framework of space and remMap models for learning
     undirected graphical models with application to genetic regulatory networks.
 Imports:
-    Rcpp,
-    RcppArmadillo
+    Matrix,
+    igraph
 Depends:
     R (>= 3.0.2),
     Rcpp (>= 0.11.3),
