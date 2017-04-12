@@ -1,44 +1,47 @@
-
+#for devtools and pkdown functions
 setwd("~/repos/spacemap/")
-#install.packages(c("devtools", "ggplot2", "Rcpp", 
-#                  "RcppArmadillo", "foreach", "doRNG", 
-#                   "Matrix", "igraph", "crayon"))
+
+#############################
+#UPDATE R PACKAGE
+#############################
 library(devtools)
 load_all()
 document()
-install()
+install(quick = TRUE, dependencies = F)
 devtools::clean_dll()
+
+#############################
+#BUILD WEBSITE 
+#############################
 #install_github(repo = "hadley/pkgdown", force = T)
-#install.packages("rmarkdown")
 library(pkgdown)
 library(spacemap)
 build_site(preview = T)
-#build_home()
-#build_reference()
+build_home()
+build_reference()
+build_articles()
+build_news()
 
-
+#############################
+#BUILD PKG BINARY RELEASE
+#############################
 build(binary = T, vignettes = F)
-?build
 
-
+#dependencies of spacemap
 install.packages(c("Rcpp", "RcppArmadillo", 
                    "foreach", "doRNG", 
                    "Matrix", "igraph"))
 
-
 ### build on windows
+#build_win()
+
+#run this in command prompt
 "C:\Program Files\R\R-3.3.2\bin\R.exe CMD INSTALL --build compile-both spacemap/"
 remove.packages("spacemap")
 install.packages(pkgs = "C:/Users/topher/Shared/repos/spacemap_0.45.0.zip", 
                  repos = NULL)
 
-##build on linux
+##build on Linux an MAC OS
 setwd("~/repos/spacemap/")
 library(devtools)
 build(binary = T, vignettes = F)
-
-
-## build on mac
-
-library(spacemap)
-

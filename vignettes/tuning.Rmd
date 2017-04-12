@@ -1,9 +1,9 @@
 ---
-title: "Model Tuning"
+title: "Tuning spaceMap Model"
 author: "Christopher Conley, Pei Wang, Jie Peng"
 date: "`r Sys.Date()`"
 output: 
-  rmarkdown::html_vignette
+  rmarkdown::html_vignette:
     fig_caption: yes
 vignette: >
   %\VignetteIndexEntry{Model Tuning}
@@ -11,20 +11,24 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r, echo = FALSE}
+library(knitr)
+opts_chunk$set(message=F, warning=F)
+```
 
-## Tuning Strategy for Managing Computational Constraints
+## Tuning Strategy
 
-The three tuning parameters in Spacemap provides a rich framework for discovering conditional dependencies between variables in high dimensional biological assays; however, exploring a large tuning grid can be very computationally demanding. In this tutorial we provided a strategy for finding the neighborhood of good tuning parameters given computational limits. The strategy finds suitiable neighborhoods of each tuning parameter by:
+The three tuning parameters in Spacemap provides a rich framework for discovering conditional dependencies between variables in high dimensional biological assays; however, exploring a large tuning grid can be very computationally demanding. In this tutorial we illustrate a strategy for finding the neighborhood of good tuning parameters. The strategy finds suitiable neighborhoods of each tuning parameter by:
 
-1. Tuning `space.joint` on $Y$ input data to find a neighborhood for the first tuning parameter, denoted as `slasso`. 
-2. Tuning `spacemap` with the neigbhorhood of `slasso` from step 1, and exploring a broad range of values for `rlasso` and `rgroup`.  
-3. Repeat step 2 if further tuning refinement is needed. 
+1. Cross validation of SPACE model on $Y$ input data across a one-dimensional grid of tuning penalty $\lambda_1$, parameterized as `lam1`. Identify best performing neighborhood of $\lambda_1$. 
+2. Cross validation of `spacemap` with input $X$ and $Y$ across a three-dimensional grid of $\lambda_1, \lambda_2, \lambda_3$. The neighborhood of $\lambda_1$ is specified from step 1. Explore a broad range of values for $\lambda_1, \lambda_2$, which are parameterized as `lam2` and `lam3`.  
+3. Repeat step 2 if further refinement of the tuning penalties is needed. 
 
 We will illustrate the details of this strategy with an example from a simulation. The known truth of the simulation affords an evaluation addressing whether this strategy leads to reasonably tuned parameter selection. 
 
 ### Simulation Details
 
-Load network simulation 1 which has topology that mimics a genetic regulatory network. The simulation was generated under a multivariate normal assumption with 171 response variables with 14 predictor variables (i.e. $Y$ = response, $X$ = predictors). There are 10 predictors that have no `X->Y` edges, 2 predictors with  13 `X->Y` edges and 2 predictors with 14 `X->Y` edges. Among the response, there are 2 hub variables with degree 12 and 13, but the degree of the other response variables does not exceed 4. There are two disconnected components in the graph of size 94 and 81. The data has been standardized (mean-centered with unit variance) for all variables. 
+Load network simulation 1 which has topology that mimics a genetic regulatory network. The simulation was generated under a multivariate normal assumption with 171 response variables with 14 predictor variables (i.e. $Y$ = response, $X$ = predictors). There are 10 predictors that have no $x-y$ edges, 2 predictors with  13 $x-y$ edges and 2 predictors with 14 $x-y$` edges. Among the response edges $y-y$, there are 2 hub variables with degree 12 and 13, but the degree of the other response variables does not exceed 4. There are two disconnected components in the graph of size 94 and 81. The data has been standardized (mean-centered with unit variance) for all variables. 
 
 ```{r}
 library(spacemap)
@@ -40,7 +44,7 @@ P <- ncol(dat$X)
 Q <- ncol(dat$Y)
 ```
 
-Extract the true partial correlation values for `X->Y` and `Y--Y` edges. Each non-zero value corresponds to a true edge. 
+Extract the true partial correlation values, where non-zero partial correlations denote edges $x-y$ and $y-y$ edges.
 
 ```{r}
 trueParCor <- sim1$trueParCor
@@ -52,7 +56,7 @@ str(trueParCor)
 Tuning will be much faster if parallel computation is leveraged. Set up a parallel backend, in this case for a multicore machine. This code will use all available cores minus 1. 
 
 ```{r}
-dopar <- TRUE
+dopar <- FALSE
 if (dopar) { 
   suppressPackageStartupMessages(library(doParallel))
   suppressPackageStartupMessages(library(parallel))
@@ -62,9 +66,9 @@ if (dopar) {
 }
 ```
 
-## Find a neighborhood for `slasso`
+## Find a neighborhood for `lam1`
 
-Tune the `slasso` parameter by fitting the `space.joint` function from the SPACE model to $Y$ over a one-dimensional tuning grid. In the current implementation, the tuning parameter scales with the sample size. To find the right tuning scale, use a result from Meinshausen and Buhlmann (2006) which applies when when all `Y` have been standardized to have unit variance. The value of `alpha` is meant to control the false discovery rate; in our experience with this result, `alpha` should be set very conservatively to obtain an initial value closer to the CV-selected `slasso`. In our case, we set `alpha = 1e-5`. 
+Tune the `lam1` parameter by fitting the `space.joint` function from the SPACE model to $Y$ over a one-dimensional tuning grid. In the current implementation, the tuning parameter scales with the sample size. To find the right tuning scale, use a result from Meinshausen and Buhlmann (2006) which applies when when all $Y$ have been standardized to have unit variance. 
 
 ```{r}
 lam1start <- function(n, q, alpha) { 
@@ -74,7 +78,7 @@ lam0 <- lam1start(n = floor(N - N*.10), q = Q, alpha = 1e-5)
 lam0
 ```
 
-Take the initial grid search to range from  [80% of `lam0`, 120% of `lam0`]. 
+The value of $\alpha$ is meant to control the false discovery rate; in our experience with this result, $\alpha$ should be set very conservatively to obtain an initial value closer to the CV-selected `lam1`. In our case, we set `alpha = 1e-5`. Take the initial grid search to range from  [80% of `lam0`, 120% of `lam0`]. 
 
 ```{r}
 #neighborhood parameter about lam0. 
@@ -82,16 +86,15 @@ eps1 <- 0.8
 #initial grid size. 
 ngrid <- 4
 #grid
-tsp <- expand.grid(slasso = seq(lam0*eps1, lam0*(1 + (1 - eps1)), length = ngrid))
+tsp <- expand.grid(lam1 = seq(lam0*eps1, lam0*(1 + (1 - eps1)), length = ngrid))
 summary(tsp)
 ```
-
 
 In preparation of 10-K cross validation, we encourage the user to determine the split of the data since the data may have some special underlying population structure that needs to be balanced across the hold-out sets. 
 
 ```{r}
 #for generating cross-validation folds
-suppressPackageStartupMessages(library(caret))
+library(caret)
 #sample size
 N <- nrow(dat$X)
 #number of folds
@@ -100,87 +103,63 @@ set.seed(265616L)
 #no special population structure, but create randomized dummy structure of A and B
 testSets <- createFolds(y = sample(x = c("A", "B"), size = N, replace = TRUE), k = K)
 trainSets <- lapply(testSets, function(s) setdiff(seq_len(N), s))
+nsplits <- sapply(testSets, length)
 ```
 
-The convergence of the algorithm depends on several input parameters, these include the convergence tolerance, the maximum number of iterations, 
-the number of iterations 
-
-```{r}
-#convergence tolerance
-tol <- 1e-6
-#max. numbr of iterations for coordinate descent optimation
-cd_iter <- 1e7
-#number of iterations for estimating diagonal of concentration matrix.
-iter <- 3
-#ridge parameter for space (for elastic net if desired)
-sridge <- 0
-#ridge parameter for refit
-refitRidge = 0.0
-#do not standardize data internally since data has been standardized
-iscale = FALSE
-d01 <- tempdir()
-```
+Conduct the cross-validation of the SPACE model through the `cvVote` function. It takes as input the data $Y$, how $Y$ should be split for testing and training, an indication to to learn $y-y$ edges through the SPACE model, and finally a grid of tuning penalties. 
 
 ```{r}
-datyy <- dat
-datyy$XY <- dat$Y
-datyy$Yindex <- seq_len(Q)
-datyy$Xindex <- seq_len(Q)
-#undebug(crossValidation)
-library(Matrix)
-tictoc <- system.time({cvSpaceYY <- spacemap::crossValidation(Y.m = dat$Y, trainIds = trainSets, testIds = testSets, 
-                                                              method = "space", tuneGrid = tsp)}) 
-message("The 10-fold CV took ", round(tictoc[3]/60,2), " minutes")
+cvSpaceYY <- cvVote(Y = dat$Y, 
+                    trainIds = trainSets, testIds = testSets, 
+                    method = "space", tuneGrid = tsp) 
 ```
+
+
 
 We obtain a CV-error curve aross the tuning grid. 
 
 ```{r}
-cvVis <- spacemap::tuneVis(cvOut = cvSpaceYY, testSetLen = sapply(testSets, length), 
-                      tuneParam1 = tsp$slasso, tuneParam1Name = "slasso")
+cvVis <- tuneVis(cvOut = cvSpaceYY, 
+                 testSetLen = nsplits, 
+                 tuneParam1 = tsp$lam1,
+                 tuneParam1Name = "lam1")
 grid.arrange(cvVis[[1]], cvVis[[2]],cvVis[[3]],cvVis[[4]])
 ```
 
-## Find a neighborhood for `rlasso` and `rgroup`
-
+## Find a neighborhood for `lam2` and `lam3`
 
 ```{r}
-tmap <- expand.grid(slasso = seq(65, 75, length = 2), 
-                    rlasso = seq(24, 34, length = 2), 
-                    rgroup = seq(5, 30, length = 2))
-d02 <- tempdir()
+tmap <- expand.grid(lam1 = seq(65, 75, length = 2), 
+                    lam2 = seq(24, 34, length = 2), 
+                    lam3 = seq(5, 30, length = 2))
 ```
 
 
 ```{r}
-tictoc <- system.time({cvSpmap <- spacemap::crossValidation(Y.m = dat$Y, X.m = dat$X, trainIds = trainSets, testIds = testSets, 
-                                                              method = "spacemap", tuneGrid = tmap)}) 
-
-message("The 10-fold CV took ", round(tictoc[3]/60,2), " minutes")
+cvSpmap <- cvVote(Y = dat$Y, X = dat$X, 
+                  trainIds = trainSets, testIds = testSets, 
+                  method = "spacemap", tuneGrid = tmap)
 #cvSpmap$minTune
 ```
 
-
-Visualize the tuning parameters effect on the degrees of freedom and the loss function. 
-
 ```{r}
 cvVis1 <- spacemap::tuneVis(cvOut = cvSpmap, testSetLen = sapply(testSets, length), 
-                            tuneParam1 = tmap$slasso, tuneParam1Name = "slasso")
+                            tuneParam1 = tmap$lam1, tuneParam1Name = "lam1")
 cvVis2 <- spacemap::tuneVis(cvOut = cvSpmap, testSetLen = sapply(testSets, length), 
-                            tuneParam1 = tmap$rlasso, tuneParam1Name = "rlasso")
+                            tuneParam1 = tmap$lam2, tuneParam1Name = "lam2")
 cvVis3 <- spacemap::tuneVis(cvOut = cvSpmap, testSetLen = sapply(testSets, length), 
-                            tuneParam1 = tmap$rgroup, tuneParam1Name = "rgroup")
+                            tuneParam1 = tmap$lam3, tuneParam1Name = "lam3")
 library(gridExtra)
 grid.arrange(cvVis1[[1]], cvVis2[[1]],cvVis3[[1]],cvVis3[[4]])
 ```
 
 
 ```{r}
-Perf <- list()
+#Perf <- list()
 #undebug(cvPerf)
-Perf$spmap <- spacemap::cvPerf(cvOut = cvSpmap, trueParCor = sim1$trueParCor, method = "spacemap")[1:8]
-Perf$space <- spacemap::cvPerf(cvOut = cvSpaceYY, trueParCor = sim1$trueParCor, conditional = FALSE, method = "space")
-Perf$space
+#Perf$spmap <- spacemap::cvPerf(cvOut = cvSpmap, trueParCor = sim1$trueParCor, method = "spacemap")[1:8]
+#Perf$space <- spacemap::cvPerf(cvOut = cvSpaceYY, trueParCor = sim1$trueParCor, conditional = FALSE, method = "space")
+#Perf$space
 #votePerf(Perf[c("space", "spmap")])
 ```
 

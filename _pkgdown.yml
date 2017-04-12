@@ -20,7 +20,7 @@ reference:
     - matches("^spacemap$")
   - title: Model selection
     contents:
-    - crossValidation
+    - cvVote
     - bootEnsemble
     - bootVote
   - title: Network Analysis Toolkit

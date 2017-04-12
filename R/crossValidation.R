@@ -3,8 +3,7 @@ variTrainParam <- function(...) {
   opt <- list(...)
   if (is.null(opt$iter)) { opt$iter <- 3L } 
   if (is.null(opt$tol)) { opt$tol <- 1e-6 } 
-  if (is.null(opt$cd_iter)) { opt$cd_iter <- 1e7 } 
-  if (is.null(opt$iscale)) { opt$iscale <- FALSE }
+  if (is.null(opt$cdmax)) { opt$cdmax <- 1e7 } 
   if (is.null(opt$sridge)) { opt$sridge <- 0.0 }
   if (is.null(opt$weight)) { opt$weight <- NULL }
   if (is.null(opt$remWeight)) { opt$remWeight <- NULL }
@@ -26,11 +25,11 @@ trainModel <- function(train, method, tuneGrid, refit = TRUE, fold_id, tune_id, 
   sparseFit <- TRUE
   library(Matrix)
   if (method == "spacemap") {
-    fit <- spacemap(Y.m = train$Y, X.m = train$X, 
-                    slasso = tuneGrid$slasso, sridge = opt$sridge, 
-                    rlasso = tuneGrid$rlasso, rgroup = tuneGrid$rgroup, 
+    fit <- spacemap(Y = train$Y, X = train$X, 
+                    lam1 = tuneGrid$lam1, sridge = opt$sridge, 
+                    lam2 = tuneGrid$lam2, lam3 = tuneGrid$lam3, 
                     sig=opt$sig, weight=opt$weight, remWeight = opt$remWeight, iter= opt$iter,
-                    tol = opt$tol, cd_iter = opt$cd_iter, iscale = opt$iscale)
+                    tol = opt$tol, cdmax = opt$cdmax, iscale = FALSE)
     #zero out those below tolerance. 
     fit$ParCor[abs(fit$ParCor) <= opt$tol] <- 0.0
     fit$Gamma[abs(fit$Gamma) <= opt$tol] <- 0.0
@@ -54,7 +53,7 @@ trainModel <- function(train, method, tuneGrid, refit = TRUE, fold_id, tune_id, 
     
   } else if (method == "space") {
     fit <- space.joint(Y.m = train$XY, lam1 = tuneGrid, lam2 = opt$sridge, iter = opt$iter, 
-                       cd_iter = opt$cd_iter, tol = opt$tol, iscale = opt$iscale,
+                       cdmax = opt$cdmax, tol = opt$tol, iscale = FALSE,
                        sig = opt$sig, rho = opt$rho)
     #zero out those below tolerance. 
     fit$ParCor[abs(fit$ParCor) <= opt$tol] <- 0.0
@@ -218,20 +217,24 @@ minScoreIndex <- function(cvScoresAvg) {
 #' 
 #' @inheritParams spacemap
 #' @param trainIds List of integer vectors, where each integer vector contains 
-#' a split of training sample indices pertaining to \code{Y.m, X.m}. 
+#' a split of training sample indices pertaining to \code{Y, X}. 
 #' @param testIds List of integer vectors, where each integer vector contains 
-#' a split of  test sample indices pertaining to \code{Y.m, X.m}. Required to 
+#' a split of  test sample indices pertaining to \code{Y, X}. Required to 
 #' be of the same length as \code{trainIds}. 
 #' @param method Character vector indicates network inference with function 
 #' \code{\link{spacemap}} when \code{method = "spacemap"} or function 
-#' \code{\link{space.joint}} when \code{method = "space"}. 
-#' @param tuneGrid Data.frame named with columns \code{slasso, rlasso, rgroup} 
+#' \code{\link{space.joint}} when \code{method = "space"}. If \code{X} is 
+#' non-null and \code{method = "space"}, then \code{space.joint} will 
+#' infer (x--x, x--y, y--y) edges but only report (x--y, y--y) edges. 
+#' @param tuneGrid Named with columns \code{lam1, lam2, lam3} 
 #' when \code{method = "spacemap"}. Each row in the data.frame corresponds to a
 #'  tuning parameter set that is input into \code{\link{spacemap}}. 
 #' When \code{method = "space"}, supply a data.frame with only one column 
-#' being \code{slasso}.
+#' being \code{lam1}.
 #' @param resPath Character vector specifying the directory where each 
 #' model fit is written to file through serialization by \code{saveRDS}. 
+#' Defaults to temporary directory that will be deleted at end of the R session. 
+#' It is recommended to specify a directory where results can be stored permanently. 
 #' @param refit Logical indicates to refit the model after convergence to
 #' reduce bias induced by penalty terms. Default to TRUE. The refit step
 #' defaults to a  ridge regression with small penalty of 0.01 to 
@@ -241,8 +244,7 @@ minScoreIndex <- function(cvScoresAvg) {
 #' @param ... Additional arguments for \code{\link{spacemap}} or \code{\link{space.joint}}
 #' to change their default settings (e.g. setting \code{tol = 1e-4}). 
 #'
-#' @return List 
-#' \enumerate { 
+#' @return A list containing  \itemize {  
 #'  \item \code{cvVote} a list containing
 #'  \itemize{
 #'  \item \code{xy} Adjacency matrix where \eqn{xy(p,q)} element
@@ -250,15 +252,15 @@ minScoreIndex <- function(cvScoresAvg) {
 #'   \item \code{yy} Adjacency matrix where \eqn{yy(q,l)} element
 #'   is 1 for an edge between \eqn{y_q} and \eqn{y_l} and 0 otherwise. 
 #'  }
-#'  \item \code{minTune} Data.frame containing the optimal tuning penalty set. 
+#'  \item \code{minTune} List containing the optimal tuning penalty set. 
 #'  \item \code{minIndex} Integer specifying the index of \code{minTune} in \code{tuneGrid}. 
 #'  \item \code{metricScores} Data.frame for input to \code{\link{tuneVis}} for
 #'  inspecting the CV score curve and model size as a function of the tuning penalties.
 #' }
-cvVote <- function(Y.m, X.m = NULL, trainIds, testIds,
+cvVote <- function(Y, X = NULL, trainIds, testIds,
                             method = c("spacemap", "space"), tuneGrid,  
                             resPath = tempdir(), refit = TRUE, 
-                            thresh = 0.5,  ...) {
+                            thresh = 0.5,  iscale = TRUE, ...) {
   ################
   #check arguments
   ################
@@ -267,40 +269,50 @@ cvVote <- function(Y.m, X.m = NULL, trainIds, testIds,
   fold <- length(trainIds)
   method <- match.arg(method)
   
-  givenX <- !is.null(X.m) 
+  if(!is.matrix(Y)) stop("Y is not a matrix.")
+  givenX <- !is.null(X) 
   Xindex <- NULL 
   Yindex <- NULL
   if(method == "space" & givenX)  {
-    if(!is.matrix(X.m)) stop("X.m is not a matrix.")
-    data <- list(XY = cbind(X.m, Y.m), Y = Y.m, X = X.m)
-    Xindex <- seq_len(ncol(X.m))
-    Yindex <- (ncol(X.m) + 1):(ncol(X.m) + ncol(Y.m))
+    if(!is.matrix(X)) stop("X is not a matrix.")
+    if(iscale) { 
+      X <- scale(X)
+      Y <- scale(Y)
+    }
+    data <- list(XY = cbind(X, Y), Y = Y, X = X)
+    Xindex <- seq_len(ncol(X))
+    Yindex <- (ncol(X) + 1):(ncol(X) + ncol(Y))
   } else if(method == "space" & !givenX){ 
-    data <- list(XY = Y.m)
-  } else { 
-    if(!is.matrix(X.m)) stop("X.m is not a matrix.")
-    data <- list(Y = Y.m, X = X.m)
+    if(iscale) {
+      Y <- scale(Y)
+    }
+    data <- list(XY = Y)
+  } else if (method == "spacemap") { 
+    if(!is.matrix(X)) stop("X is not a matrix.")
+    if(iscale) { 
+      X <- scale(X)
+      Y <- scale(Y)
+    }
+    data <- list(Y = Y, X = X)
   }
   
   ## compute cross-validated metric scores for each fold and for each tune set
   library(foreach)
   message("Computing CV scores over the grid...")
   iscale <- FALSE
-  foldScores <- foreach(f = seq_len(fold)) %:% foreach(l = seq_len(nrow(tuneGrid)), .combine = 'rbind', .packages = "spacemap") %dopar% {
-    # for(f in seq_len(fold)) { 
-    #  for(l in seq_len(nrow(tuneGrid))) { 
-    #message(f,l)
-    parts <- dataPart(f = f, trainIds = trainIds, testIds = testIds, 
-                      data = data, method = method, givenX = givenX)
-    trained <- trainModel(train = parts$train, method = method, tuneGrid = tuneGrid[l,], refit = refit, 
-                          fold_id = f, tune_id = l, resPath = resPath,
-                          givenX = givenX, Xindex = Xindex, Yindex = Yindex, ...)
-    tmp <- testModel(test = parts$test, fit = trained$fit, sparseFit = trained$sparseFit, 
-                     method = method, refit = refit, 
-                     givenX = givenX, Xindex = Xindex, Yindex = Yindex) 
-    tmp
-  }
-  #}
+  foldScores <- foreach(f = seq_len(fold)) %:% 
+    foreach(l = seq_len(nrow(tuneGrid)), .combine = 'rbind', .packages = "spacemap") %dopar% {
+      parts <- dataPart(f = f, trainIds = trainIds, testIds = testIds, 
+                        data = data, method = method, givenX = givenX)
+      trained <- trainModel(train = parts$train, method = method, tuneGrid = tuneGrid[l,], refit = refit, 
+                            fold_id = f, tune_id = l, resPath = resPath,
+                            givenX = givenX, Xindex = Xindex, Yindex = Yindex, ...)
+      tmp <- testModel(test = parts$test, fit = trained$fit, sparseFit = trained$sparseFit, 
+                       method = method, refit = refit, 
+                       givenX = givenX, Xindex = Xindex, Yindex = Yindex) 
+      tmp
+    }
+  
   ##restructure list$fold[tune index, metric index ] to be list$metric$[tune index, fold index ] 
   metricScores <- structureScores(cvScores = foldScores, fold = fold, method = method)
   
@@ -320,7 +332,7 @@ cvVote <- function(Y.m, X.m = NULL, trainIds, testIds,
   voteFit <- cvVoteRDS(files = files, tol = 0.0, 
                        thresh = thresh, method = method,
                        givenX = givenX)
-  list(cvVote = voteFit, minTune = tuneGrid[minIndex,], minIndex = minIndex, 
+  list(cvVote = voteFit, minTune = as.list(tuneGrid[minIndex,]), minIndex = minIndex, 
        metricScores = metricScores, bestFoldFiles = files)
 }
 

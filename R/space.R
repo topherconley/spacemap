@@ -2,7 +2,7 @@
 ######11-30-07: R package "space"
 ######R functions for fitting JSRM and MB: 
 
-space.nested <- function(Y.m, seq_lam1, lam2=0, sig=NULL, weight=NULL,iter=2, tol = 1e-6, cd_iter = 1e7L,
+space.nested <- function(Y.m, seq_lam1, lam2=0, sig=NULL, weight=NULL,iter=2, tol = 1e-6, cdmax = 1e7L,
                            verbose = FALSE) { 
   #sequence of penalty parameters should be decreasing.
   vlam1 <- sort(seq_lam1, decreasing = TRUE)
@@ -10,12 +10,12 @@ space.nested <- function(Y.m, seq_lam1, lam2=0, sig=NULL, weight=NULL,iter=2, to
   
   res <- vector("list", length(vlam1))
   res[[1]] <- space.joint(Y.m = Y.m, lam1 = vlam1[1], lam2 = lam2, sig=sig, weight = weight,
-                          iter = iter, tol = tol, cd_iter = cd_iter,
+                          iter = iter, tol = tol, cdmax = cdmax,
                           verbose = verbose, rho  = NULL)
   
   for(i in 2:length(vlam1)) { 
     res[[i]] <- space.joint(Y.m = Y.m, lam1 = vlam1[i], lam2 = lam2, sig = res[[i-1]]$sig.fit, weight = weight,
-                            iter = iter, tol = tol, cd_iter = cd_iter,
+                            iter = iter, tol = tol, cdmax = cdmax,
                             verbose = verbose, rho = res[[i-1]]$ParCor)
   }
   res
@@ -26,7 +26,7 @@ space.nested <- function(Y.m, seq_lam1, lam2=0, sig=NULL, weight=NULL,iter=2, to
 #'Estimate partial correlations using the Joint Sparse Regression Model
 #'  
 #' @usage See space::space.joint
-space.joint <-function(Y.m, lam1, lam2=0, sig=NULL, weight=NULL,iter=2, tol = 1e-6, cd_iter = 1e7L,
+space.joint <-function(Y.m, lam1, lam2=0, sig=NULL, weight=NULL,iter=2, tol = 1e-6, cdmax = 1e7L,
                        verbose = FALSE, rho = NULL, iscale = TRUE)
 {
   ########################parameters: 
@@ -120,7 +120,7 @@ space.joint <-function(Y.m, lam1, lam2=0, sig=NULL, weight=NULL,iter=2, tol = 1e
     sig.u<-SIG/WEIGHT
     
     jsrm.fit <-jsrm(Y.u,sig.u,n,p,lam1,lam2, 
-                    n_iter = cd_iter, tol = tol, rho = rho)
+                    n_iter = cdmax, tol = tol, rho = rho)
     ParCor.fit <- jsrm.fit$ParCor.fit
     diag(ParCor.fit)<-1
     

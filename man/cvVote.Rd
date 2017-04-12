@@ -4,33 +4,38 @@
 \alias{cvVote}
 \title{Cross validation (CV.Vote) for spacemap and space models.}
 \usage{
-cvVote(Y.m, X.m = NULL, trainIds, testIds, method = c("spacemap", "space"),
-  tuneGrid, resPath = tempdir(), refit = TRUE, thresh = 0.5, ...)
+cvVote(Y, X = NULL, trainIds, testIds, method = c("spacemap", "space"),
+  tuneGrid, resPath = tempdir(), refit = TRUE, thresh = 0.5,
+  iscale = TRUE, ...)
 }
 \arguments{
-\item{Y.m}{Numeric matrix \eqn{(N \times Q)} containing N iid samples of the response vector \eqn{\textbf{y}}.}
+\item{Y}{Numeric matrix \eqn{(N \times Q)} containing N iid samples of the response vector \eqn{\textbf{y}}.}
 
-\item{X.m}{Numeric matrix \eqn{(N \times P)} containing N iid samples of the predictor vector \eqn{\textbf{x}}.}
+\item{X}{Numeric matrix \eqn{(N \times P)} containing N iid samples of the predictor vector \eqn{\textbf{x}}.}
 
 \item{trainIds}{List of integer vectors, where each integer vector contains 
-a split of training sample indices pertaining to \code{Y.m, X.m}.}
+a split of training sample indices pertaining to \code{Y, X}.}
 
 \item{testIds}{List of integer vectors, where each integer vector contains 
-a split of  test sample indices pertaining to \code{Y.m, X.m}. Required to 
+a split of  test sample indices pertaining to \code{Y, X}. Required to 
 be of the same length as \code{trainIds}.}
 
 \item{method}{Character vector indicates network inference with function 
 \code{\link{spacemap}} when \code{method = "spacemap"} or function 
-\code{\link{space.joint}} when \code{method = "space"}.}
+\code{\link{space.joint}} when \code{method = "space"}. If \code{X} is 
+non-null and \code{method = "space"}, then \code{space.joint} will 
+infer (x--x, x--y, y--y) edges but only report (x--y, y--y) edges.}
 
-\item{tuneGrid}{Data.frame named with columns \code{slasso, rlasso, rgroup} 
+\item{tuneGrid}{Named with columns \code{lam1, lam2, lam3} 
 when \code{method = "spacemap"}. Each row in the data.frame corresponds to a
  tuning parameter set that is input into \code{\link{spacemap}}. 
 When \code{method = "space"}, supply a data.frame with only one column 
-being \code{slasso}.}
+being \code{lam1}.}
 
 \item{resPath}{Character vector specifying the directory where each 
-model fit is written to file through serialization by \code{saveRDS}.}
+model fit is written to file through serialization by \code{saveRDS}. 
+Defaults to temporary directory that will be deleted at end of the R session. 
+It is recommended to specify a directory where results can be stored permanently.}
 
 \item{refit}{Logical indicates to refit the model after convergence to
 reduce bias induced by penalty terms. Default to TRUE. The refit step
@@ -40,12 +45,14 @@ penalty by adding an additional parameter \code{refitRidge}.}
 
 \item{thresh}{}
 
+\item{iscale}{Logical indicating to standardize the whole input data. Defaults to TRUE. 
+See \code{\link{base::scale(x, center = TRUE, scale = TRUE)}} for details of standardization.}
+
 \item{...}{Additional arguments for \code{\link{spacemap}} or \code{\link{space.joint}}
 to change their default settings (e.g. setting \code{tol = 1e-4}).}
 }
 \value{
-List 
-\enumerate { 
+A list containing  \itemize {  
  \item \code{cvVote} a list containing
  \itemize{
  \item \code{xy} Adjacency matrix where \eqn{xy(p,q)} element
@@ -53,7 +60,7 @@ List
   \item \code{yy} Adjacency matrix where \eqn{yy(q,l)} element
   is 1 for an edge between \eqn{y_q} and \eqn{y_l} and 0 otherwise. 
  }
- \item \code{minTune} Data.frame containing the optimal tuning penalty set. 
+ \item \code{minTune} List containing the optimal tuning penalty set. 
  \item \code{minIndex} Integer specifying the index of \code{minTune} in \code{tuneGrid}. 
  \item \code{metricScores} Data.frame for input to \code{\link{tuneVis}} for
  inspecting the CV score curve and model size as a function of the tuning penalties.

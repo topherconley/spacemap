@@ -4,40 +4,35 @@
 \alias{bootVote}
 \title{Model aggregation through Boot.Vote}
 \usage{
-bootVote(fits, P, Q, vote_thresh = 0.5, btol = 0)
+bootVote(bfits, givenX = FALSE, thresh = 0.5)
 }
 \arguments{
-\item{fits}{List of fitted spacemap models returned from \code{\link{bootEnsemble}}.}
+\item{bfits}{List of fitted spacemap models returned from \code{\link{bootEnsemble}}.}
 
-\item{P}{Integer for the number of predictor variables}
+\item{givenX}{Logical. Defaults to FALSE. Should be set to TRUE when 
+\code{attr(bfits, "method) == "space} and \code{space.joint} was used
+to infer (x--x, x--y, y--y) edges  but only reported (x--y, y--y) edges.}
 
-\item{Q}{Integer for the number of response variables}
-
-\item{vote_thresh}{Positive numeric threshold for the minimum proportion of bootstrap 
+\item{thresh}{Positive numeric threshold for the minimum proportion of bootstrap 
 replicate model fits with a particular edge such that the edge is included in the Boot.Vote model.}
-
-\item{btol}{The numeric lower bound that indicates parameter estimates equal to or less than \code{btol} ought 
-to not be considered as an edge in a model fit. Do not change from zero if used in tandem 
-with \code{\link{bootEnsemble}}.}
 }
 \value{
 List containing two lists. 
 First list is \code{bv}, which encodes the edges in two logical adjacency matrices.
 
 \enumerate{
-  \item \code{ParCor} Logical matrix where TRUE for the (q,l) off-diagonals element indicate an edge 
+  \item \code{yy} Logical matrix where TRUE for the (q,l) off-diagonals element indicate an edge 
   between the qth and lth response variables. 
-  \item \code{Gamma}  Logical matrix where TRUE for the (p,q) element indicate an edge 
+  \item \code{xy}  Logical matrix where TRUE for the (p,q) element indicate an edge 
   between the pth predictor and qth response variable. 
 }
 
  Second list is \code{bc}, which stores several additional statistics on the ensemble network fits. 
 \enumerate{ 
-   \item \code{ParCor} Integer matrix containing the y--y edge selection frequency out of B replicates.
-   \item \code{Gamma}  Integer matrix containing the x--y edge selection frequency out of B replicates.
-   \item \code{dfParCor} Integer vector containing the total number of y--y edges for each fit.
-   \item \code{dfGamma} Integer vector containing the total number of x--y edges for each fit.
-   \item \code{nuniq} Logical vector where TRUE indicates the model fit converged and was sparse and FALSE otherwise. 
+   \item \code{yy} Integer matrix containing the y--y edge selection frequency out of B replicates.
+   \item \code{xy}  Integer matrix containing the x--y edge selection frequency out of B replicates.
+   \item \code{dfyy} Integer vector containing the total number of y--y edges for each fit.
+   \item \code{dfxy} Integer vector containing the total number of x--y edges for each fit.
 }
 }
 \description{
@@ -47,8 +42,8 @@ Aggregate boostrap replicates of spacemap into a final Boot.Vote model.
 #Load simulation
 data(sim1)
 #Boostrap Ensemble (B = 10) for illustration only
-tune <- data.frame(slasso = 70, rlasso = 28.8, rgroup = 14)
-out <- bootEnsemble(Y.m = sim1$Y, X.m = sim1$X, tune = tune, B = 10, iter = 3,
-                    cd_iter = 1e7, tol = 1e-6, refitRidge = 0)
+tune <- data.frame(lam1 = 70, lam2 = 28.8, lam3 = 14)
+out <- bootEnsemble(Y = sim1$Y, X = sim1$X, tune = tune, B = 10, iter = 3,
+                    cdmax = 1e7, tol = 1e-6, refitRidge = 0)
 bv <- bootVote(fits = out[[1]], P = ncol(sim1$X), Q = ncol(sim1$Y))
 }
