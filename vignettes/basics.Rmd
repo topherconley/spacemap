@@ -75,9 +75,9 @@ The spaceMap model learns the structure of the above network from data by estima
 Tuning penalties $\lambda_1, \lambda_2$ correspond to parameters `lam1` and `lam2`, respectively, where each determines the degree of overall sparsity of the $y-y$ and $x-y$ edges in the network. Tuning penalty $\lambda_3$ corresponds to parameter `lam3` and encourages selection of $x$ hubs--that is $x$'s that infuence many $y$'s. The selection of appropriate penalty parameters is of primary importance when evaluating `spacemap::spacemap` to learn a network. In this simplified scenario we set the tuning parameters based on previous cross validation results. The task of selecting appropriate tuning parameters requires a robust model-selection routine and is discussed in more advanced vignettes. 
 
 ```{r}
-lam1 <- 69.67802 
-lam2 <- 28.84801 
-lam3 <- 12.38648
+lam1 <- 72
+lam2 <- 29 
+lam3 <- 18
 ```
 
 ### Output

@@ -10,6 +10,8 @@
 #' \code{boot=FALSE} will resample without replacement. 
 #' @param B Positive integer denoting the number of model fits making up the ensemble. Default is 1000, but can 
 #' be lowered to save time. 
+#' @param aszero Positive numeric value (defaults to 1e-6) indicating at what point to consider extremely 
+#' small parameter estimates of \eqn{\Gamma} and \eqn{\rho} as zero. 
 #' @param seed Positive integer allowing user to set the random seed for reproducing the network ensemble. 
 #' @param p0 Positive numeric not exceeding the default of 1, which represents the proportion of the original 
 #' samples that will be down-sampled for each model fitting iteration of the ensemble. 
@@ -19,19 +21,21 @@
 #' Model fits that are not convergent or produce networks that are not sparse are not reported. 
 #' 
 #' @examples 
+#' 
 #' #Load simulation
 #' data(sim1)
+#' 
 #' #Boostrap Ensemble (B = 10) for illustration only
-#' tune <- data.frame(lam1 = 70, lam2 = 28.8, lam3 = 14)
-#' out <- bootEnsemble(Y = sim1$Y, X = sim1$X, tune = tune, B = 10, iter = 3,
-#'                     cdmax = 1e7, tol = 1e-6)
+#' tune <- data.frame(lam1 = 70, lam2 = 28, lam3 = 17.5)
+#' ens <- bootEnsemble(Y = sim1$Y, X = sim1$X, tune = tune, 
+#'                     method = "spacemap", B = 10)
 #' @export
-#' @seealso bootVote
+#' @seealso \code{\link{bootVote}}, \code{\link{cvVote}}
 #' 
 #' 
 bootEnsemble <- function(Y, X = NULL, tune, method = c("spacemap", "space"), 
-                         boot = TRUE, B =  1000L, iscale = TRUE,  
-                         seed = sample.int(n = 1, size = 1e6), 
+                         boot = TRUE, B =  1000L, iscale = TRUE, aszero = 1e-6,  
+                         seed = sample.int(n = 1e6, size = 1), 
                          p0 = 1.0, ...) {
   
   method <- match.arg(method)
@@ -84,8 +88,8 @@ bootEnsemble <- function(Y, X = NULL, tune, method = c("spacemap", "space"),
                                 iter = opt$iter, tol = opt$tol, cdmax = opt$cdmax,
                                 iscale = FALSE)
       #zero out those below tolerance
-      fit$ParCor[abs(fit$ParCor) <= tol] <- 0.0
-      fit$Gamma[abs(fit$Gamma) <= tol] <- 0.0
+      fit$ParCor[abs(fit$ParCor) <= aszero] <- 0.0
+      fit$Gamma[abs(fit$Gamma) <= aszero] <- 0.0
       if (!fit$convergence) { 
         fit$sparse <- FALSE
         return(fit[c("convergence", "sparse")])
@@ -110,7 +114,7 @@ bootEnsemble <- function(Y, X = NULL, tune, method = c("spacemap", "space"),
                                    cdmax = opt$cdmax, tol = opt$tol, 
                                    iscale = FALSE)
       #zero out those below tolerance. 
-      fit$ParCor[abs(fit$ParCor) <= tol] <- 0.0
+      fit$ParCor[abs(fit$ParCor) <= aszero] <- 0.0
       if (!fit$convergence) { 
         fit$sparse <- FALSE
         return(fit[c("convergence", "sparse")])
@@ -154,11 +158,11 @@ sparseAdjMat <- function(x) {
 #' 
 #' Aggregate boostrap replicates of spacemap into a final Boot.Vote model. 
 #' @param bfits List of fitted spacemap models returned from \code{\link{bootEnsemble}}.
+#' @param thresh Positive numeric threshold for the minimum proportion of bootstrap 
+#' replicate model fits with a particular edge such that the edge is included in the Boot.Vote model. 
 #' @param givenX Logical. Defaults to FALSE. Should be set to TRUE when 
 #' \code{attr(bfits, "method) == "space} and \code{space.joint} was used
 #' to infer (x--x, x--y, y--y) edges  but only reported (x--y, y--y) edges. 
-#' @param thresh Positive numeric threshold for the minimum proportion of bootstrap 
-#' replicate model fits with a particular edge such that the edge is included in the Boot.Vote model. 
 #' @return List containing two lists. 
 #' First list is \code{bv}, which encodes the edges in two logical adjacency matrices.
 #' 
@@ -169,25 +173,43 @@ sparseAdjMat <- function(x) {
 #'   between the pth predictor and qth response variable. 
 #' }
 #' 
-
-#'  Second list is \code{bc}, which stores several additional statistics on the ensemble network fits. 
+#' Second list is \code{bdeg}, which contains the degree distribution for each bootstrap replicate fit. 
+#'
+#' \enumerate{
+#'   \item \code{yy} Integer matrix (\eqn{B \times Q} where the (q,b) off-diagonals element indicates
+#'    the out-degree of the qth response variable for the bth converged model based on the bth bootstrap replicate. 
+#'   \item \code{xy} Integer matrix (\eqn{B \times P} where the (p,b) element indicates
+#'    the out-degree of the pth predictor variable for the bth converged model based on the bth bootstrap replicate. 
+#' }
+#' 
+#' 
+#'  Third list is \code{bc}, which stores several additional statistics on the ensemble network fits. 
 #' \enumerate{ 
 #'    \item \code{yy} Integer matrix containing the y--y edge selection frequency out of B replicates.
 #'    \item \code{xy}  Integer matrix containing the x--y edge selection frequency out of B replicates.
 #'    \item \code{dfyy} Integer vector containing the total number of y--y edges for each fit.
 #'    \item \code{dfxy} Integer vector containing the total number of x--y edges for each fit.
 #' }
+#' @seealso  \code{\link{bootEnsemble}}
 #' 
 #' @examples 
+#' 
+#' 
 #' #Load simulation
 #' data(sim1)
+#' 
 #' #Boostrap Ensemble (B = 10) for illustration only
-#' tune <- data.frame(lam1 = 70, lam2 = 28.8, lam3 = 14)
-#' out <- bootEnsemble(Y = sim1$Y, X = sim1$X, tune = tune, B = 10, iter = 3,
-#'                     cdmax = 1e7, tol = 1e-6, refitRidge = 0)
-#' bv <- bootVote(fits = out[[1]], P = ncol(sim1$X), Q = ncol(sim1$Y))
+#' tune <- data.frame(lam1 = 70, lam2 = 28, lam3 = 17.5)
+#' 
+#' suppressPackageStartupMessages(library(foreach))
+#' suppressPackageStartupMessages(library(doRNG))
+#' #suppress warnings because parallel backend not set up. 
+#' ens <- suppressWarnings(bootEnsemble(Y = sim1$Y, X = sim1$X, tune = tune, 
+#'                     method = "spacemap", B = 10))
+#'                     
+#' bv <- suppressWarnings(bootVote(ens))                    
 #' @export
-bootVote <- function(bfits, givenX = FALSE, thresh = 0.5) {
+bootVote <- function(bfits, thresh = 0.5, givenX = FALSE) {
   
   if(!is.list(bfits)) { 
     stop("bfits is not a list")
@@ -200,7 +222,9 @@ bootVote <- function(bfits, givenX = FALSE, thresh = 0.5) {
   
   if (method == "spacemap" | (method == "space" & givenX)) { 
     bout <- foreach(bfit = bfits, .combine = spacemap::addmods) %dopar% { 
-      list(xy = as.matrix(bfit$xy), yy = as.matrix(bfit$yy), 
+      bxy <- as.matrix(bfit$xy)
+      byy <- as.matrix(bfit$yy)
+      list(xy = bxy, yy = byy, 
            dfxy = nonZeroWhole(bxy, 0), 
            dfyy = nonZeroUpper(byy, 0), ngood = bfit$convergence)
     }
@@ -218,13 +242,14 @@ bootVote <- function(bfits, givenX = FALSE, thresh = 0.5) {
     degyy <- foreach(bfit = bfits, .combine = 'rbind') %dopar% { 
       rowSums(as.matrix(bfit$yy))
     }
-    bdeg <- list(xy = degxy, yy = degyy)
+    bdeg <- list(yy = degyy, xy = degxy)
     return(list(bv = bv,
                 bdeg = bdeg,
                 bc = bout))
   } else if (method == "space" & !givenX) { 
     bout <- foreach(bfit = bfits, .combine = spacemap::addmodsyy) %dopar% { 
-      list(yy = as.matrix(bfit$yy), 
+      byy <- as.matrix(bfit$yy)
+      list(yy = byy, 
            dfyy = nonZeroUpper(byy, 0), ngood = bfit$convergence)
     }
     diag(bout$yy) <- 0

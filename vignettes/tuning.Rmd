@@ -14,6 +14,7 @@ vignette: >
 ```{r, echo = FALSE}
 library(knitr)
 opts_chunk$set(message=F, warning=F)
+ptm <- proc.time()
 ```
 
 ## Tuning Strategy
@@ -21,10 +22,12 @@ opts_chunk$set(message=F, warning=F)
 The three tuning parameters in Spacemap provides a rich framework for discovering conditional dependencies between variables in high dimensional biological assays; however, exploring a large tuning grid can be very computationally demanding. In this tutorial we illustrate a strategy for finding the neighborhood of good tuning parameters. The strategy finds suitiable neighborhoods of each tuning parameter by:
 
 1. Cross validation of SPACE model on $Y$ input data across a one-dimensional grid of tuning penalty $\lambda_1$, parameterized as `lam1`. Identify best performing neighborhood of $\lambda_1$. 
-2. Cross validation of `spacemap` with input $X$ and $Y$ across a three-dimensional grid of $\lambda_1, \lambda_2, \lambda_3$. The neighborhood of $\lambda_1$ is specified from step 1. Explore a broad range of values for $\lambda_1, \lambda_2$, which are parameterized as `lam2` and `lam3`.  
+2. Cross validation of `spacemap` with input $X$ and $Y$ across a three-dimensional grid of $\lambda_1, \lambda_2, \lambda_3$. The neighborhood of $\lambda_1$ is specified from step 1. Explore a broad range of values for $\lambda_2, \lambda_3$, which are parameterized as `lam2` and `lam3`.  
 3. Repeat step 2 if further refinement of the tuning penalties is needed. 
 
-We will illustrate the details of this strategy with an example from a simulation. The known truth of the simulation affords an evaluation addressing whether this strategy leads to reasonably tuned parameter selection. 
+## Tuning Example 
+
+We will illustrate the details of this strategy with an example from a simulation. The simulation has a known true network topolog, which affords an evaluation of whether this tuning strategy leads to reasonably tuned parameter selection. 
 
 ### Simulation Details
 
@@ -50,8 +53,6 @@ Extract the true partial correlation values, where non-zero partial correlations
 trueParCor <- sim1$trueParCor
 str(trueParCor)
 ```
-
-## Tuning Example 
 
 Tuning will be much faster if parallel computation is leveraged. Set up a parallel backend, in this case for a multicore machine. This code will use all available cores minus 1. 
 
@@ -84,7 +85,7 @@ The value of $\alpha$ is meant to control the false discovery rate; in our exper
 #neighborhood parameter about lam0. 
 eps1 <- 0.8
 #initial grid size. 
-ngrid <- 4
+ngrid <- 30
 #grid
 tsp <- expand.grid(lam1 = seq(lam0*eps1, lam0*(1 + (1 - eps1)), length = ngrid))
 summary(tsp)
@@ -109,57 +110,127 @@ nsplits <- sapply(testSets, length)
 Conduct the cross-validation of the SPACE model through the `cvVote` function. It takes as input the data $Y$, how $Y$ should be split for testing and training, an indication to to learn $y-y$ edges through the SPACE model, and finally a grid of tuning penalties. 
 
 ```{r}
-cvSpaceYY <- cvVote(Y = dat$Y, 
-                    trainIds = trainSets, testIds = testSets, 
-                    method = "space", tuneGrid = tsp) 
+cvspace <- cvVote(Y = dat$Y, 
+                  trainIds = trainSets, testIds = testSets, 
+                  method = "space", tuneGrid = tsp) 
 ```
 
-
-
-We obtain a CV-error curve aross the tuning grid. 
+The `tuneVis` function plots several diagonostic metrics for tuning the models. Below the plot on the left shows the log(CV score) curve aross `lam1`, where the vertical line denotes the minimizer. The CV score curve has an approximately convex shape with a little bit variability at the valley. To the right the average number of y--y edges across CV training splits is shown to decrease with increasing `lam1`. The intersecting lines indicate the optimal lambda produces a CV.vote SPACE model of `r nonZeroUpper(cvspace$cvVote$yy,0)` y--y edges, which is about 30 edges lower than the average no. of edges due to the model stabilizing influence of the CV.vote procedure. 
 
 ```{r}
-cvVis <- tuneVis(cvOut = cvSpaceYY, 
+cvVis <- tuneVis(cvOut = cvspace, 
                  testSetLen = nsplits, 
                  tuneParam1 = tsp$lam1,
                  tuneParam1Name = "lam1")
-grid.arrange(cvVis[[1]], cvVis[[2]],cvVis[[3]],cvVis[[4]])
+library(gridExtra)
+grid.arrange(cvVis[[1]] + 
+               geom_vline(xintercept = cvspace$minTune$lam1),
+             cvVis[[3]] + 
+               geom_hline(yintercept = nonZeroUpper(cvspace$cvVote$yy,0)) + 
+                 geom_vline(xintercept =  cvspace$minTune$lam1)
+             , ncol = 2)
 ```
+
+Since the true network is known, we can evaluate the learned SPACE network against the truth. 
+
+```{r}
+spacePerf <- cvPerf(cvOut = cvspace, trueParCor = sim1$trueParCor, method = "space")[1:3]
+spacePerf
+```
+The "mcc" refers to an average of the power and FDR. The power is reasonable, but the FDR is a little high. Let's see the effect of conditioning on $x$ variables through the spaceMap model. 
 
 ## Find a neighborhood for `lam2` and `lam3`
 
+Now shifting our attention to tuning all three tuning parameters, we can make use of the information from step 1 to reduce the grid search time. Input a neighborhood of $65 \leq \lambda_1 \leq 75$ into the 3-D grid search since we know that produces a reasonable output for the $y--y$ portion of the network. Choosing an initial neighborhood for $\lambda_2, \lambda_3$ is guided by practical considerations such as how many  $x-y$ edges one might expect to see at maximum. In our case, we know there are only 14 $x$ variables and so we do not expect there to be more than say, 200 $x-y$ edges, but no less than 50 $x-y$ edges in a sparse network.  Since we anticipate there existing a few hubs in the network,  fix $\lambda_3=15$. Now we can quickly obtain an approximate lower bound for $\lambda_2$ by applying the `initFit` function, which does not do any cross-validation, but simply fits `spacemap` across the defined tuning grid once. 
+
 ```{r}
-tmap <- expand.grid(lam1 = seq(65, 75, length = 2), 
-                    lam2 = seq(24, 34, length = 2), 
-                    lam3 = seq(5, 30, length = 2))
+tmap1 <- expand.grid(lam1 = cvspace$minTune[[1]], 
+                     lam2 = seq(15, 60, by = 5), 
+                     lam3 = 15)
+ntmap1 <- initFit(Y = sim1$Y, X = sim1$X, method = "spacemap", tuneGrid = tmap1)
+library(ggplot2)
+qplot(x = tmap1$lam2, y = ntmap1$nxy,
+      ylab = "No. of X->Y edges", xlab = "lam2") + 
+  theme_bw()
 ```
 
+It is evident that restricting our attention to `20< lam2< 35` is the best course of action to limit the number of $x-y$ edges to the range we are targeting. Now that we have reasonable ranges for `lam1,lam2`, we also need to define a range for `lam3`, which is helpful for encouraging $x$ hub selection. We could use the `initFit` function to guide this process, but we will rely on what we expect to see---hubs are likely to exist in the network---such that the lower bound for `lam3` should be sufficiently far from 0. Now define the 3-D tuning grid: 
 
 ```{r}
-cvSpmap <- cvVote(Y = dat$Y, X = dat$X, 
-                  trainIds = trainSets, testIds = testSets, 
-                  method = "spacemap", tuneGrid = tmap)
-#cvSpmap$minTune
+tmap2 <- expand.grid(lam1 = seq(65, 75, length = 5), 
+                    lam2 = seq(21, 35, length = 5), 
+                    lam3 = seq(10, 40, length = 5))
 ```
 
+Apply cross validation with `spacemap` to learn the best network in the tuning grid. This will take about 4 minutes on a single processor. 
+
 ```{r}
-cvVis1 <- spacemap::tuneVis(cvOut = cvSpmap, testSetLen = sapply(testSets, length), 
-                            tuneParam1 = tmap$lam1, tuneParam1Name = "lam1")
-cvVis2 <- spacemap::tuneVis(cvOut = cvSpmap, testSetLen = sapply(testSets, length), 
-                            tuneParam1 = tmap$lam2, tuneParam1Name = "lam2")
-cvVis3 <- spacemap::tuneVis(cvOut = cvSpmap, testSetLen = sapply(testSets, length), 
-                            tuneParam1 = tmap$lam3, tuneParam1Name = "lam3")
+cvsmap <- cvVote(Y = dat$Y, X = dat$X, 
+                 trainIds = trainSets, testIds = testSets, 
+                 method = "spacemap", tuneGrid = tmap2)
+```
+
+The CV.vote spaceMap network is encoded into adjacency matrices `cvsmap$cvVote[c("xy", "yy")]`. The best penalties from the tuning grid are: 
+
+```{r}
+cvsmap$minTune
+```
+
+Next we diagnose the suitability of the tuning grid based on the output through `tuneVis`.  
+
+```{r}
+cvVis1 <- spacemap::tuneVis(cvOut = cvsmap, testSetLen = nsplits, 
+                            tuneParam1 = tmap2$lam1, tuneParam1Name = "lam1")
+cvVis2 <- spacemap::tuneVis(cvOut = cvsmap, testSetLen = nsplits, 
+                            tuneParam1 = tmap2$lam2, tuneParam1Name = "lam2")
+cvVis3 <- spacemap::tuneVis(cvOut = cvsmap, testSetLen = nsplits, 
+                            tuneParam1 = tmap2$lam3, tuneParam1Name = "lam3")
+```
+
+Visualizing the CV scores across the 3-D grid shows the selected tuning penalties are away from their respective boundaries, which suggests the grid is suitable. If the selected penalty was on or near the boundary, it may suggest to increase (decrease) the upper (lower) bound of the penalty in the grid. 
+
+```{r}
 library(gridExtra)
-grid.arrange(cvVis1[[1]], cvVis2[[1]],cvVis3[[1]],cvVis3[[4]])
+grid.arrange(cvVis1[[1]], cvVis2[[1]],cvVis3[[1]], ncol = 2)
 ```
 
+This whole tuning process took `r round((proc.time() - ptm)[3]/60, 2)` minutes. The network learning performance of `spacemap` is listed below
 
 ```{r}
-#Perf <- list()
-#undebug(cvPerf)
-#Perf$spmap <- spacemap::cvPerf(cvOut = cvSpmap, trueParCor = sim1$trueParCor, method = "spacemap")[1:8]
-#Perf$space <- spacemap::cvPerf(cvOut = cvSpaceYY, trueParCor = sim1$trueParCor, conditional = FALSE, method = "space")
-#Perf$space
-#votePerf(Perf[c("space", "spmap")])
+smapPerf <- cvPerf(cvOut = cvsmap, trueParCor = sim1$trueParCor, method = "spacemap")[1:8]
+smapPerf
 ```
+
+The spaceMap model dramatically lowers the $y-y$ FDR when compared with SPACE in this example. The FDR is lowered from  over 25% to below 8%, while experiencing a small drop in $y-y$ power. This benefit is beleived to be because spaceMap learns the $x-y$ edges that encode predictor variable perturbations to the response varialbes. With a relatively high $x-y$ power and limted overall FDR, spaceMap shows its added-value. 
+
+### Refinement of Grid
+
+If time allows, further refinement of the tuning grid could be explored by narrowing the neighborhood about the previously optimal tuning set. However, note that refining the grid may lead to a better CV score, but worse performance due to over fitting. 
+
+
+```{r, echo  = FALSE, eval = FALSE}
+tmap3 <- expand.grid(lam1 = cvsmap$minTune$lam1, 
+                    lam2 = seq(cvsmap$minTune$lam2 - 3, 
+                               cvsmap$minTune$lam2 + 3, length = 5), 
+                    lam3 = seq(cvsmap$minTune$lam3 - 5, 
+                               cvsmap$minTune$lam3 + 5, length = 5))
+#Perform cross validation again with the refined grid. 
+
+cvsmap2 <- cvVote(Y = dat$Y, X = dat$X, 
+                  trainIds = trainSets, testIds = testSets, 
+                  method = "spacemap", tuneGrid = tmap3)
+#Compare which CV score is lower between the two cross validation runs. 
+
+cvsmap$logcvScore
+cvsmap2$logcvScore
+round((proc.time() - ptm)[3]/60, 2)
+
+spacemap::cvPerf(cvOut = cvsmap, trueParCor = sim1$trueParCor, method = "spacemap")[1:8]
+spacemap::cvPerf(cvOut = cvsmap2, trueParCor = sim1$trueParCor, method = "spacemap")[1:8]
+```
+
+
+## Further Reading 
+
+Completion of this vignette ought to have taught how to tune penalty parameters to near optimal settings for the `spacemap` model. We recommend looking at the [next vignette](https://topherconley.github.io/spacemap/articles/ensemble.html) which illustrates how to have more precise control of the FDR through an ensembled network. 
 

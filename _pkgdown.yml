@@ -17,10 +17,13 @@ reference:
   - title: Model fitting
     desc: Details on how to fit spacemap and space with selected tuning parameters. 
     contents:
-    - matches("^spacemap$")
+    - spacemap
+    - space.joint
   - title: Model selection
     contents:
     - cvVote
+    - tuneVis
+    - initFit
     - bootEnsemble
     - bootVote
   - title: Network Analysis Toolkit
@@ -34,12 +37,14 @@ navbar:
       - text: "Basics"
         href: articles/basics.html
       - text: "Model Tuning"
-        href: articles/tune_sim1.html
-  - text: Network Toolkit
-    href: https://topherconley.github.io/neta-bcpls/
+        href: articles/tuning.html
+      - text: "Ensemble Network"
+        href: articles/ensemble.html
   - text: R Documentation
     href: reference/index.html
   - text: Installation
     href: https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta
+  - text: Network Toolkit
+    href: https://topherconley.github.io/neta-bcpls/
   - text: Contact Us
     href: https://github.com/topherconley/spacemap/issues

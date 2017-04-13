@@ -16,7 +16,7 @@ variTrainParam <- function(...) {
 
 #######################
 trainModel <- function(train, method, tuneGrid, refit = TRUE, fold_id, tune_id, resPath, 
-                       givenX, Xindex, Yindex, ...) {
+                       givenX, Xindex, Yindex, aszero, ...) {
   
   
   opt <- variTrainParam(...)
@@ -31,8 +31,8 @@ trainModel <- function(train, method, tuneGrid, refit = TRUE, fold_id, tune_id, 
                     sig=opt$sig, weight=opt$weight, remWeight = opt$remWeight, iter= opt$iter,
                     tol = opt$tol, cdmax = opt$cdmax, iscale = FALSE)
     #zero out those below tolerance. 
-    fit$ParCor[abs(fit$ParCor) <= opt$tol] <- 0.0
-    fit$Gamma[abs(fit$Gamma) <= opt$tol] <- 0.0
+    fit$ParCor[abs(fit$ParCor) <= aszero ] <- 0.0
+    fit$Gamma[abs(fit$Gamma) <= aszero ] <- 0.0
     #reject models that did not converge
     if(!fit$convergence) return(list(fit = fit, sparseFit = FALSE))
     #recompute ols estimates based on training set: note change fit object by reference
@@ -56,7 +56,7 @@ trainModel <- function(train, method, tuneGrid, refit = TRUE, fold_id, tune_id, 
                        cdmax = opt$cdmax, tol = opt$tol, iscale = FALSE,
                        sig = opt$sig, rho = opt$rho)
     #zero out those below tolerance. 
-    fit$ParCor[abs(fit$ParCor) <= opt$tol] <- 0.0
+    fit$ParCor[abs(fit$ParCor) <= aszero] <- 0.0
     if(!fit$convergence) return(list(fit = fit, sparseFit = FALSE))
     if(refit) {
       sparseFit <- olsRefitSpace(Y = train$XY,
@@ -241,12 +241,15 @@ minScoreIndex <- function(cvScoresAvg) {
 #' encourage numerical stability. The user can change the ridge
 #' penalty by adding an additional parameter \code{refitRidge}. 
 #' @param thresh 
+#' @param aszero Positive numeric value (defaults to 1e-6) indicating at what point to consider extremely 
+#' small parameter estimates of \eqn{\Gamma} and \eqn{\rho} as zero. 
 #' @param ... Additional arguments for \code{\link{spacemap}} or \code{\link{space.joint}}
 #' to change their default settings (e.g. setting \code{tol = 1e-4}). 
 #'
-#' @return A list containing  \itemize {  
-#'  \item \code{cvVote} a list containing
-#'  \itemize{
+#' @return A list containing  
+#' \itemize {  
+#'  \item \code{cvVote} A list containing
+#'  \enumerate{
 #'  \item \code{xy} Adjacency matrix where \eqn{xy(p,q)} element
 #'   is 1 for an edge between \eqn{x_p} and \eqn{y_q} and 0 otherwise. 
 #'   \item \code{yy} Adjacency matrix where \eqn{yy(q,l)} element
@@ -257,10 +260,39 @@ minScoreIndex <- function(cvScoresAvg) {
 #'  \item \code{metricScores} Data.frame for input to \code{\link{tuneVis}} for
 #'  inspecting the CV score curve and model size as a function of the tuning penalties.
 #' }
+#' @examples 
+#'data(sim1)
+#'##########################
+#'#DEFINE TRAINING/TEST SETS
+#'library(caret)
+#'#sample size
+#'N <- nrow(sim1$X)
+#'#number of folds
+#'K <- 5L
+#'set.seed(265616L)
+#'#no special population structure, but create randomized dummy structure of A and B
+#'testSets <- createFolds(y = sample(x = c("A", "B"), size = N, replace = TRUE), k = K)
+#'trainSets <- lapply(testSets, function(s) setdiff(seq_len(N), s))
+#'nsplits <- sapply(testSets, length)
+#'##########################
+#'#SPACE (Y input)
+#'tsp <- expand.grid(lam1 = seq(65, 75, length = 3))
+#'cvspace <- cvVote(Y = sim1$Y, 
+#'                  trainIds = trainSets, testIds = testSets, 
+#'                  method = "space", tuneGrid = tsp) 
+#'##########################
+#'# SPACEMAP (Y and X input)
+#'tmap <- expand.grid(lam1 = seq(65, 75, length = 2), 
+#'                    lam2 = seq(21, 35, length = 2), 
+#'                    lam3 = seq(10, 40, length = 2))
+#'cvsmap <- cvVote(Y = sim1$Y, X = sim1$X, 
+#'                 trainIds = trainSets, testIds = testSets, 
+#'                 method = "spacemap", tuneGrid = tmap)
+#'                 
 cvVote <- function(Y, X = NULL, trainIds, testIds,
                             method = c("spacemap", "space"), tuneGrid,  
                             resPath = tempdir(), refit = TRUE, 
-                            thresh = 0.5,  iscale = TRUE, ...) {
+                            thresh = 0.5,  iscale = TRUE, aszero = 1e-6, ...) {
   ################
   #check arguments
   ################
@@ -306,7 +338,7 @@ cvVote <- function(Y, X = NULL, trainIds, testIds,
                         data = data, method = method, givenX = givenX)
       trained <- trainModel(train = parts$train, method = method, tuneGrid = tuneGrid[l,], refit = refit, 
                             fold_id = f, tune_id = l, resPath = resPath,
-                            givenX = givenX, Xindex = Xindex, Yindex = Yindex, ...)
+                            givenX = givenX, Xindex = Xindex, Yindex = Yindex, aszero = aszero, ...)
       tmp <- testModel(test = parts$test, fit = trained$fit, sparseFit = trained$sparseFit, 
                        method = method, refit = refit, 
                        givenX = givenX, Xindex = Xindex, Yindex = Yindex) 
@@ -332,28 +364,37 @@ cvVote <- function(Y, X = NULL, trainIds, testIds,
   voteFit <- cvVoteRDS(files = files, tol = 0.0, 
                        thresh = thresh, method = method,
                        givenX = givenX)
-  list(cvVote = voteFit, minTune = as.list(tuneGrid[minIndex,]), minIndex = minIndex, 
+  
+  if (method == "spacemap") { 
+    mtg <- tuneGrid[minIndex,]
+    minTune  <- list(lam1 = mtg$lam1, lam2 = mtg$lam2, lam3 = mtg$lam3)  
+  } else if (method == "space") { 
+    minTune  <- list(lam1 = tuneGrid[minIndex,])  
+  }
+  
+  list(cvVote = voteFit, minTune = minTune, minIndex = minIndex, 
+       logcvScore = log(metricScoresAvg[minIndex,"rss"]),
        metricScores = metricScores, bestFoldFiles = files)
 }
 
 ##################
 #PERFORMANCE
 ##################
-cvPerf <- function(cvOut, trueParCor, method, conditional = TRUE, tol = 1e-6, givenX = FALSE, Xindex=NULL, Yindex=NULL) {
+cvPerf <- function(cvOut, trueParCor, method, givenX = FALSE, Xindex=NULL, Yindex=NULL) {
   if (method == "spacemap") {
-    perf <- spacemap::reportJointPerf(fitParCor = list(xy = cvOut$cvVote$Gamma, 
-                                                       yy = cvOut$cvVote$ParCor),
-                                      trueParCor = trueParCor, tol = tol, 
+    perf <- spacemap::reportJointPerf(fitParCor = list(xy = cvOut$cvVote$xy, 
+                                                       yy = cvOut$cvVote$yy),
+                                      trueParCor = trueParCor, tol = 1e-6, 
                                       verbose = FALSE)  
   } else if (method == "space") {
-    if (conditional) { 
-      perf <- spacemap::reportJointPerf(fitParCor = list(xy = cvOut$cvVote$ParCor[Xindex,Yindex], 
-                                                         yy = cvOut$cvVote$ParCor[Yindex,Yindex]),
-                                        trueParCor = trueParCor, tol = tol, 
+    if (givenX) { 
+      perf <- spacemap::reportJointPerf(fitParCor = list(xy = cvOut$cvVote$yy[Xindex,Yindex], 
+                                                         yy = cvOut$cvVote$yy[Yindex,Yindex]),
+                                        trueParCor = trueParCor, tol = 1e-6, 
                                         verbose = FALSE)
     } else { 
-      perf <- spacemap::reportPerf(cvOut$cvVote$ParCor,
-                                   trueParCor$yy, YY = TRUE, tol = tol, 
+      perf <- spacemap::reportPerf(cvOut$cvVote$yy,
+                                   trueParCor$yy, YY = TRUE, tol = 1e-6, 
                                    verbose = FALSE)
     }
   }

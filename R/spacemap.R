@@ -65,7 +65,7 @@ varySpaceMapParam <- function(...) {
 #' @param rho Numeric matrix (\eqn{p \times p}) representing the estimate of \eqn{\hat\rho}, the partial correlation matrix. 
 #' It defaults to NULL and and will be estimated \code{iter} times during the model fitting. 
 #' @param iter Positive integer specifying the number of iterations for estimating 
-#' \eqn{\sigma^{ii}}. Defaults to 3. 
+#' \eqn{\sigma^{ii}} and \eqn{\rho}. Defaults to 3. 
 #' @param tol Positive numeric value specifying the convergence tolerance of the coordinate descent algorithm; 
 #' in other words, it is criterion that stops parameter estimation when no parameter changes value exceeding \code{tol} 
 #' between iterations. \code{tol} defaults to 1e-6, but may be lowered (e.g. 1e-4) to speed
@@ -74,7 +74,7 @@ varySpaceMapParam <- function(...) {
 #' See \code{\link{base::scale(x, center = TRUE, scale = TRUE)}} for details of standardization. 
 #' @param cdmax Positive integer specifiying the maximum number of parameter updates allowed before reporting the algorithm
 #' as having failed to converge. Default may need to be increased for inferring very large-scale networks (i.e. \eqn{p,q > 1000}).
-#' @return list containing 
+#' @return A list containing 
 #'\enumerate{
 #'   \item \code{ParCor} The estimated partial correlation matrix (\eqn{P \times P}), 
 #'   where off-diagonals  \eqn{ |\hat \rho^{p,q}_{yy}| > 1e-6}  encode the edges \eqn{\{ y_q - y_l : q \neq l \} }
@@ -89,10 +89,12 @@ varySpaceMapParam <- function(...) {
 #'   If \code{spacemap} does not converge, \code{deltaMax} provides some measure of how far away it was from converging
 #'   when compared to \code{tol}. 
 #' }
-#' @seealso  \code{\link{crossValidation}}, \code{\link{bootVote}}
+#' @seealso  \code{\link{cvVote}}, \code{\link{bootEnsemble}}, \code{\link{bootVote}}
 #' @examples
 #' data(sim1)
 #' net <- spacemap(Y = sim1$Y, X = sim1$X, lam1 = 70, lam2 = 28.8, lam3 = 12.38)
+#' #adjacency matrix of y-y and x-y edges. 
+#' adjnet <- adjacency(net)
 #' @export
 spacemap <- function(Y, X, lam1, lam2, lam3, sig=NULL, rho = NULL,
                      iter=3, tol = 1e-6, iscale = TRUE, cdmax = 1e7L, ...) {
@@ -230,14 +232,31 @@ spacemap <- function(Y, X, lam1, lam2, lam3, sig=NULL, rho = NULL,
   return(result)  
 }
 
-
-adjacency <- function(net, method = c("spacemap", "space"), tol  = 1e-6) { 
-  method <- match.arg(method)
+#' Adjacency matrix from spacemap and spacemap models
+#' 
+#' Output from \code{\link{spacemap}} and \code{\link{space.joint}} is 
+#' transformed into an adjacency matrix encoding a network.
+#' 
+#' @param net Object output from \code{\link{spacemap}} and \code{\link{space.joint}}
+#' @param aszero Positive numeric value (defaults to 1e-6) indicating at what point to consider extremely 
+#' small parameter estimates of \eqn{\Gamma} and \eqn{\rho} as zero. 
+#' @return A list containing 
+#' \itemize{ 
+#'  \item  \code{yy} A \eqn{p \times p} adjancency matrix 
+#'  indicates an edge\eqn{y_q - y_l} when \code{yy[q,l] == 1} and 0 otherwise. 
+#'  \item  \code{xy} A \eqn{p \times q} adjancency matrix 
+#'  indicates an edge\eqn{x_p - y_q} when \code{xy[p,q] == 1} and 0 otherwise. 
+#' }
+#' @export
+adjacency <- function(net,  aszero  = 1e-6) { 
+  
   #set the diagonal to zero to avoid self-loops
   diag(net$ParCor) <- 0
-  if (method == "spacemap") { 
-    out <- list(yy = (abs(net$ParCor) > tol) + 0L, 
-                xy = (abs(net$Gamma) > tol) + 0L)
+  if (!is.null(net$Gamma)) { 
+    out <- list(yy = (abs(net$ParCor) > aszero) + 0L, 
+                xy = (abs(net$Gamma) > aszero) + 0L)
+  } else  { 
+    out <- list(yy = (abs(net$ParCor) > aszero) + 0L)
   }
   out
 }

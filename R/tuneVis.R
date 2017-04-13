@@ -1,8 +1,37 @@
 
-
+#' Visualize cross validation metrics
+#' 
+#' Diagnose the quality of the tuning grid used in \code{\link{cvVote}}
+#' through plotting  CV scores and network size against the
+#' tuning penalties. 
+#' 
+#' @param cvOut Output from \code{\link{cvVote}}. 
+#' @param testSetLen Integer vector specifying length of each test set associated with 
+#' \code{cvOut}. 
+#' @param tuneParam1 Numeric vector specifying the tuning penalty placed on the 
+#' x-axis. 
+#' @param tuneParam2 Numeric vector specifying the tuning penalty placed on the 
+#' x-axis. Defaults to NULL. If non-null, the output is a heatmap where 
+#' CV scores are colored intensities on a 2-D grid of \code{tuneParam1,tuneParam2}. 
+#' @param tuneParam1Name Character vector labelling the X-axis with the specified tuning parameter. 
+#' @return If \code{tuneParam2 == NULL}
+#' Return a list of 4 \code{ggplot2} objects. 
+#' \enumerate{
+#' \item Scatter plot of log (CV score) vs. \code{tuneParam1}. 
+#' \item Scatter plot of "Avg. Total # of Edges" vs. \code{tuneParam1}. 
+#' \item Scatter plot of "Avg. # of Edges (Y -- Y)" vs. \code{tuneParam1}.
+#' \item Scatter plot of "Avg. # of Edges (x -> Y)" vs. \code{tuneParam1}.
+#' }
+#' 
+#' If \code{tuneParam2 != NULL}
+#' Returns a heatmap (see \code{ggplot2::geom_tile}) where 
+#' CV scores are colored intensities on a 2-D grid of \code{tuneParam1,tuneParam2}.
+#' @seealso \code{\link{cvVote}}
 tuneVis <- function(cvOut, testSetLen,
-                    tuneParam1, tuneParam2 = NULL, tuneParam1Name = "slasso") {
+                    tuneParam1, tuneParam1Name = c("lam1", "lam2", "lam3"),
+                    tuneParam2 = NULL) {
   
+  tuneParam1Name <- match.arg(tuneParam1Name)
   total <- sum(testSetLen)
   foldconvmat <- !is.na(cvOut$metricScores[["rss"]])
   nfoldconv <- rowSums(foldconvmat)
@@ -31,13 +60,13 @@ tuneVis <- function(cvOut, testSetLen,
     library(ggplot2)
     dat <- as.data.frame(avgScores)
     g1 <- qplot(data = dat, x = tuneParam1, y = log(rss), geom = "point") + 
-      ylab("log (RSS CV Score )") + xlab(tuneParam1Name) + theme_bw()
+      ylab("log (CV Score)") + xlab(tuneParam1Name) + theme_bw()
     g2 <- qplot(data = dat, x = tuneParam1, y = df, geom = "point") +
-      ylab("Total Deg. of Freedom") + xlab(tuneParam1Name) + theme_bw()
+      ylab("Avg. Total # of Edges") + xlab(tuneParam1Name) + theme_bw()
     g3 <- qplot(data = dat, x = tuneParam1, y = dfParCor, geom = "point") + 
-      ylab("Deg. of Freedom (Y -- Y)") + xlab(tuneParam1Name) + theme_bw()
+      ylab("Avg. # of Edges (Y -- Y)") + xlab(tuneParam1Name) + theme_bw()
     g4 <- qplot(data = dat, x = tuneParam1, y = dfGamma, geom = "point") + 
-      ylab("Deg. of Freedom (X -> Y)") + xlab(tuneParam1Name) + theme_bw()
+      ylab("Avg. # of Edges (X -> Y)") + xlab(tuneParam1Name) + theme_bw()
     library(gridExtra)
     #gg1 <- grid.arrange(g1,g2,g3,g4, ncol = 2)
     gg1 <- list(g1,g2,g3,g4)
