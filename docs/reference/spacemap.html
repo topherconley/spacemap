@@ -61,18 +61,21 @@
       <a href="../articles/basics.html">Basics</a>
     </li>
     <li>
-      <a href="../articles/tune_sim1.html">Model Tuning</a>
+      <a href="../articles/tuning.html">Model Tuning</a>
+    </li>
+    <li>
+      <a href="../articles/ensemble.html">Ensemble Network</a>
     </li>
   </ul>
-</li>
-<li>
-  <a href="https://topherconley.github.io/neta-bcpls/">Network Toolkit</a>
 </li>
 <li>
   <a href="../reference/index.html">R Documentation</a>
 </li>
 <li>
   <a href="https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta">Installation</a>
+</li>
+<li>
+  <a href="https://topherconley.github.io/neta-bcpls/">Network Toolkit</a>
 </li>
 <li>
   <a href="https://github.com/topherconley/spacemap/issues">Contact Us</a>
@@ -105,41 +108,34 @@
 sparse network encoding the interactions between two high dimensional data inputs denoted as response and predictor variables.</p>
     
 
-    <pre><span class='fu'>spacemap</span>(<span class='no'>Y.m</span>, <span class='no'>X.m</span>, <span class='no'>slasso</span>, <span class='kw'>sridge</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='no'>rlasso</span>, <span class='no'>rgroup</span>, <span class='kw'>sig</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>rho</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>weight</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>remWeight</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>3</span>, <span class='kw'>tol</span> <span class='kw'>=</span> <span class='fl'>1e-06</span>,
-  <span class='kw'>cd_iter</span> <span class='kw'>=</span> <span class='fl'>10000000L</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>iscale</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
+    <pre><span class='fu'>spacemap</span>(<span class='no'>Y</span>, <span class='no'>X</span>, <span class='no'>lam1</span>, <span class='no'>lam2</span>, <span class='no'>lam3</span>, <span class='kw'>sig</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>rho</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>3</span>,
+  <span class='kw'>tol</span> <span class='kw'>=</span> <span class='fl'>1e-06</span>, <span class='kw'>iscale</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>cdmax</span> <span class='kw'>=</span> <span class='fl'>10000000L</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>Y.m</th>
+      <th>Y</th>
       <td><p>Numeric matrix \((N \times Q)\) containing N iid samples of the response vector \(\textbf{y}\).</p></td>
     </tr>
     <tr>
-      <th>X.m</th>
+      <th>X</th>
       <td><p>Numeric matrix \((N \times P)\) containing N iid samples of the predictor vector \(\textbf{x}\).</p></td>
     </tr>
     <tr>
-      <th>slasso</th>
+      <th>lam1</th>
       <td><p>Non-negative numeric value, the space-lasso penalty corresponding to \(\lambda_1\), 
 which subjects the partial correlation vector, \(\bf \rho_{yy}\), to  the \(l_1\) norm. 
-It induces overall sparsity of \(\{ y_q - y_l : q \neq l \}\) edges.</p></td>
+It induces overall sparsity of \(\{ y_q - y_l : q \neq l \}\) edges. .</p></td>
     </tr>
     <tr>
-      <th>sridge</th>
-      <td><p>Non-negative numeric value defaults to 0, which is the recommended value. Otherwise, 
-a positive value applies an elastic net penalty to \(\bf \rho_{yy}\), 
-where <code>sridge</code> serves as the squared \(l_2\) norm penalty parameter.</p></td>
-    </tr>
-    <tr>
-      <th>rlasso</th>
+      <th>lam2</th>
       <td><p>Non-negative numeric value, the MAP-lasso penalty corresponding to \(\lambda_2\), 
 which subjects the regression coefficients in \( \bf \Gamma\), to the  \(l_1\) norm.  
 It induces overall sparsity of \(\{ x_p - y_q \}\) edges.</p></td>
     </tr>
     <tr>
-      <th>rgroup</th>
+      <th>lam3</th>
       <td><p>Non-negative numeric value, the MAP-group penalty corresponding to \(\lambda_3\),
 which subjects the regression coefficients in the \(p\)th row of \( \bf \Gamma_{P \times Q}\), to the \(l_2\) norm. 
 It encourages selection of predictor variables with many edges to response variables, in other words, hub nodes.</p></td>
@@ -152,60 +148,49 @@ and will be estimated <code>iter</code> times during the model fitting with init
 values set to the ones vector.</p></td>
     </tr>
     <tr>
-      <th>weight</th>
-      <td><p>Numeric value or vector (Q x 1) specifying the weights or the type of
-weights used for each regression in JSRM. The default value is NULL, 
-which means all regressions will be weighted equally in the joint model. 
-If <code>weight=1</code>, residue variances will be used for weights. 
-If <code>weight=2</code>, the estimated degree of each variable will be used for weights. 
-Otherwise, it should be a positive numeric vector, whose length is equal to 
-the number of columns of Y.m.</p></td>
-    </tr>
-    <tr>
-      <th>remWeight</th>
-      <td><p>Optional weighting scheme [fill in the details].</p></td>
+      <th>rho</th>
+      <td><p>Numeric matrix (\(p \times p\)) representing the estimate of \(\hat\rho\), the partial correlation matrix. 
+It defaults to NULL and and will be estimated <code>iter</code> times during the model fitting.</p></td>
     </tr>
     <tr>
       <th>iter</th>
       <td><p>Positive integer specifying the number of iterations for estimating 
-\(\sigma^{ii}\) and partial correlations. Defaults to 3. When <code>sig=NULL</code> and/or 
-(<code>weight=NULL</code> or <code>weight=2</code>), then <code>iter</code> \(\ge 2\).</p></td>
+\(\sigma^{ii}\) and \(\rho\). Defaults to 3.</p></td>
     </tr>
     <tr>
       <th>tol</th>
       <td><p>Positive numeric value specifying the convergence tolerance of the coordinate descent algorithm; 
 in other words, it is criterion that stops parameter estimation when no parameter changes value exceeding <code>tol</code> 
-between iterations. <code>tol</code> defaults to 1e-6, but may be lowered (e.g. 1e-4) to speed up network learning.</p></td>
-    </tr>
-    <tr>
-      <th>cd_iter</th>
-      <td><p>Positive integer specifiying the maximum number of parameter updates allowed before reporting the algorithm
-as having failed to converge. Default may need to be increased for inferring very large-scale networks (i.e. \(p,q &gt; 1000\)).</p></td>
-    </tr>
-    <tr>
-      <th>verbose</th>
-      <td><p>Logical indicating to print out the current status of <code>iter</code>. Default is FALSE.</p></td>
+between iterations. <code>tol</code> defaults to 1e-6, but may be lowered (e.g. 1e-4) to speed
+up network learning.</p></td>
     </tr>
     <tr>
       <th>iscale</th>
-      <td><p>Logical indicating to standardize the input data internally. Defaults to TRUE if just running <code>spacemap</code>. If running 
-<code><a href='crossValidation.html'>crossValidation</a></code> or <code><a href='bootEnsemble.html'>bootEnsemble</a></code>, user should set to FALSE.</p></td>
+      <td><p>Logical indicating to standardize the whole input data. Defaults to TRUE. 
+See <code>base::scale(x, center = TRUE, scale = TRUE)</code> for details of standardization.</p></td>
+    </tr>
+    <tr>
+      <th>cdmax</th>
+      <td><p>Positive integer specifiying the maximum number of parameter updates allowed before reporting the algorithm
+as having failed to converge. Default may need to be increased for inferring very large-scale networks (i.e. \(p,q &gt; 1000\)).</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>list containing</p><ol>
+    <p>A list containing</p><ol>
 <li><p><code>ParCor</code> The estimated partial correlation matrix (\(P \times P\)), 
-  where off-diagonals  \( |\hat \rho^{p,q}_{yy}| &gt; \) <code>tol</code> encode the edges \(\{ y_q - y_l : q \neq l \} \)
+  where off-diagonals  \( |\hat \rho^{p,q}_{yy}| &gt; 1e-6\)  encode the edges \(\{ y_q - y_l : q \neq l \} \)
   and the diagonals are 1's.</p></li>
 <li><p><code>sig.fit</code> The estimated diagonal \(\hat \sigma^{ii}\).</p></li>
 <li><p><code>Gamma</code> The estimated regression coefficients matrix  (\(P \times Q\)), 
-  where elements \( |\hat \gamma_{pq}| &gt; \) <code>tol</code> encode the edges \(\{ x_p - y_q \}\).</p></li>
+  where elements \( |\hat \gamma_{pq}| &gt; 1e-6\) encode the edges \(\{ x_p - y_q \}\).</p></li>
 <li><p><code>rss</code> The residual sums of squares from the model fit.</p></li>
 <li><p>convergence logical: true for successful convergence, otherwise failed to converge. Failure can be 
-  mitigated by increasing <code>tol</code> and/or <code>cd_iter</code>.</p></li>
-<li><p><code>deltaMax</code> The maximum change in parameter values between the penultimate and ultimate iteration.</p></li>
+  mitigated by increasing <code>tol</code> and/or <code>cdmax</code>.</p></li>
+<li><p><code>deltaMax</code> The maximum change in parameter values between the penultimate and ultimate iteration. 
+  If <code>spacemap</code> does not converge, <code>deltaMax</code> provides some measure of how far away it was from converging
+  when compared to <code>tol</code>.</p></li>
 </ol>
 
     
@@ -220,12 +205,14 @@ and edge set \(\textbf{E}= \{ x_p - y_q \} \cup \{ y_q - y_l : q \neq l \}\).</p
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <p><code><a href='crossValidation.html'>crossValidation</a></code>, <code><a href='bootVote.html'>bootVote</a></code></p>
+    <p><code><a href='cvVote.html'>cvVote</a></code>, <code><a href='bootEnsemble.html'>bootEnsemble</a></code>, <code><a href='bootVote.html'>bootVote</a></code></p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='fu'>data</span>(<span class='no'>sim1</span>)
-<span class='no'>net</span> <span class='kw'>&lt;-</span> <span class='fu'>spacemap</span>(<span class='kw'>Y.m</span> <span class='kw'>=</span> <span class='no'>sim1</span>$<span class='no'>Y</span>, <span class='kw'>X.m</span> <span class='kw'>=</span> <span class='no'>sim1</span>$<span class='no'>X</span>, <span class='kw'>slasso</span> <span class='kw'>=</span> <span class='fl'>70</span>, <span class='kw'>rlasso</span> <span class='kw'>=</span> <span class='fl'>28.8</span>, <span class='kw'>rgroup</span> <span class='kw'>=</span> <span class='fl'>12.38</span>)</div></pre>
+<span class='no'>net</span> <span class='kw'>&lt;-</span> <span class='fu'>spacemap</span>(<span class='kw'>Y</span> <span class='kw'>=</span> <span class='no'>sim1</span>$<span class='no'>Y</span>, <span class='kw'>X</span> <span class='kw'>=</span> <span class='no'>sim1</span>$<span class='no'>X</span>, <span class='kw'>lam1</span> <span class='kw'>=</span> <span class='fl'>70</span>, <span class='kw'>lam2</span> <span class='kw'>=</span> <span class='fl'>28.8</span>, <span class='kw'>lam3</span> <span class='kw'>=</span> <span class='fl'>12.38</span>)
+<span class='co'>#adjacency matrix of y-y and x-y edges. </span>
+<span class='no'>adjnet</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='adjacency.html'>adjacency</a></span>(<span class='no'>net</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

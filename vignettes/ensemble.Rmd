@@ -1,0 +1,93 @@
+---
+title: "Boostrap Ensemble Network"
+author: ""
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Boostrap Ensemble Network}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r, echo = FALSE}
+library(knitr)
+opts_chunk$set(message=F, warning=F)
+ptm <- proc.time()
+```
+
+Bootstrap aggregation, or bagging, is known to be a powerful tool for stabilizing machine learning models (i.e. reducing the model variability) without incurring additional bias. Learning networks from data is related to classification, where ensemble methods like bagging were first employed^[Breiman, Leo (1996). "Bagging predictors". Machine Learning. 24 (2): 123–140. doi:10.1007/BF00058655.]. In this case, each potential edge must effectively be classified as no edge or edge. Bootstrap aggregation ought to increase the accuracy of the network structure when the model output varies dramatically after being subject to small perturbations to the data input. 
+
+
+## Purpose and Scope
+
+Motivated by the advantages of bagging, we implemented the "Boot.Vote" procedure as an additional option to CV.Vote. The Boot.Vote procedure fits the model on $B$ bootstrapped resamples. If the majority of the bootstrapped model fits report the same edge, then that edge is considered sufficiently reliable to include in the Boot.Vote network output. While the voting component is similar to CV.Vote, Boot.Vote differs in the data sampling. In boostrap resampling, the model is fit to $N$ samples drawn with replacement (i.e., any sample can be drawn more than once in a bootstrapped resample), while CV.Vote sub-samples without replacement depending on the number of hold out sets. In simulations and in an application to breast cancer, we have seen Boot.Vote lower the FDR on average at limited cost to the power compared to the CV.vote procedure. However, Boot.Vote may not always be preferable to CV.Vote. The scope of this article is to demonstrate the application of Boot.Vote and leave it to the user to decide if Boot.Vote enhances the CV.Vote selected model depending on the nature of the application. 
+
+## Example 
+
+Tuning will be much faster if parallel computation is leveraged. Set up a parallel backend, in this case for a multicore machine. This code will use all available cores minus 1. 
+
+```{r}
+dopar <- FALSE
+if (dopar) { 
+  suppressPackageStartupMessages(library(doParallel))
+  suppressPackageStartupMessages(library(parallel))
+  ncores <- detectCores()  - 1
+  cl <- makeCluster(ncores)
+  registerDoParallel(cl)
+}
+```
+
+Load the `sim1` example. 
+
+```{r}
+library(spacemap)
+data(sim1)
+```
+
+### SPACE 
+
+Fit an ensemble network for the SPACE model with 300 bootstrap replicates as follows: 
+
+```{r}
+sens <- bootEnsemble(Y = sim1$Y, tune = list(lam1 = 70), 
+                    method = "space", B = 100)
+spacebv <- bootVote(sens)
+```
+
+
+Below the ensemble network is stored as an adjacency matrix . 
+
+```{r}
+str(spacebv$bv$yy)
+```
+
+
+```{r, eval = FALSE, echo=FALSE}
+bvOut <- list(cvVote = list(yy = spacebv$bv$yy))
+kable(t(as.matrix(cvPerf(cvOut = bvOut, trueParCor = sim1$trueParCor, method = "space")[1:3])))
+```
+
+### spaceMap 
+
+Fit an ensemble network for the spaceMap model with 300 bootstrap replicates as follows. 
+
+```{r}
+tune <- data.frame(lam1 = 73, lam2 = 31, lam3 = 20.5)
+#suppress warnings because parallel backend not set up.
+smapens <- bootEnsemble(Y = sim1$Y, X = sim1$X, tune = tune,
+                    method = "spacemap", B = 100)
+smapbv <- bootVote(smapens)
+```
+
+Below the ensemble network is stored as a list of adjacency matrices.
+
+```{r}
+str(smapbv$bv)
+```
+
+```{r, eval = FALSE, echo=FALSE}
+bvOut <- list(cvVote = list(xy = bv$bv$xy, yy = bv$bv$yy))
+spacemap::cvPerf(cvOut = bvOut, trueParCor = sim1$trueParCor, method = "spacemap")[1:8]
+```
+

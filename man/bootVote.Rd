@@ -4,20 +4,20 @@
 \alias{bootVote}
 \title{Model aggregation through Boot.Vote}
 \usage{
-bootVote(bfits, givenX = FALSE, thresh = 0.5)
+bootVote(bfits, thresh = 0.5, givenX = FALSE)
 }
 \arguments{
 \item{bfits}{List of fitted spacemap models returned from \code{\link{bootEnsemble}}.}
 
+\item{thresh}{Positive numeric threshold for the minimum proportion of bootstrap 
+replicate model fits with a particular edge such that the edge is included in the Boot.Vote model.}
+
 \item{givenX}{Logical. Defaults to FALSE. Should be set to TRUE when 
 \code{attr(bfits, "method) == "space} and \code{space.joint} was used
 to infer (x--x, x--y, y--y) edges  but only reported (x--y, y--y) edges.}
-
-\item{thresh}{Positive numeric threshold for the minimum proportion of bootstrap 
-replicate model fits with a particular edge such that the edge is included in the Boot.Vote model.}
 }
 \value{
-List containing two lists. 
+Returns a list of lists. 
 First list is \code{bv}, which encodes the edges in two logical adjacency matrices.
 
 \enumerate{
@@ -27,23 +27,47 @@ First list is \code{bv}, which encodes the edges in two logical adjacency matric
   between the pth predictor and qth response variable. 
 }
 
- Second list is \code{bc}, which stores several additional statistics on the ensemble network fits. 
+Second list is \code{bdeg}, which contains the degree distribution for each bootstrap replicate fit. 
+
+\enumerate{
+  \item \code{yy} Integer matrix (\eqn{B \times Q} where the (q,b) off-diagonals element indicates
+   the out-degree of the qth response variable for the bth converged model based on the bth bootstrap replicate. 
+  \item \code{xy} Integer matrix (\eqn{B \times P} where the (p,b) element indicates
+   the out-degree of the pth predictor variable for the bth converged model based on the bth bootstrap replicate. 
+}
+
+
+ Third list is \code{bc}, which stores several additional statistics on the ensemble network fits. 
 \enumerate{ 
    \item \code{yy} Integer matrix containing the y--y edge selection frequency out of B replicates.
    \item \code{xy}  Integer matrix containing the x--y edge selection frequency out of B replicates.
    \item \code{dfyy} Integer vector containing the total number of y--y edges for each fit.
    \item \code{dfxy} Integer vector containing the total number of x--y edges for each fit.
 }
+
+Note: If \code{method == "space" & givenX == FALSE}, 
+then no \code{xy, dfxy} elements will be reported in the above lists.
 }
 \description{
 Aggregate boostrap replicates of spacemap into a final Boot.Vote model.
 }
 \examples{
+
+
 #Load simulation
 data(sim1)
+
 #Boostrap Ensemble (B = 10) for illustration only
-tune <- data.frame(lam1 = 70, lam2 = 28.8, lam3 = 14)
-out <- bootEnsemble(Y = sim1$Y, X = sim1$X, tune = tune, B = 10, iter = 3,
-                    cdmax = 1e7, tol = 1e-6, refitRidge = 0)
-bv <- bootVote(fits = out[[1]], P = ncol(sim1$X), Q = ncol(sim1$Y))
+tune <- data.frame(lam1 = 70, lam2 = 28, lam3 = 17.5)
+
+suppressPackageStartupMessages(library(foreach))
+suppressPackageStartupMessages(library(doRNG))
+#suppress warnings because parallel backend not set up. 
+ens <- suppressWarnings(bootEnsemble(Y = sim1$Y, X = sim1$X, tune = tune, 
+                    method = "spacemap", B = 10))
+                    
+bv <- suppressWarnings(bootVote(ens))                    
+}
+\seealso{
+\code{\link{bootEnsemble}}
 }

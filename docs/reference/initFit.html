@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>False Discovery Rate of an Algorithm — algoFDR â€¢ spacemap</title>
+<title>Identify scale of tuning penalties — initFit â€¢ spacemap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -100,25 +100,81 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>False Discovery Rate of an Algorithm</h1>
+    <h1>Identify scale of tuning penalties</h1>
     </div>
 
+    
+    <p>When initially choosing tuning penalties, it can be 
+challenging to find the appropriate scale. This function fits either 
+<code><a href='spacemap.html'>spacemap</a></code> or <code><a href='space.joint.html'>space.joint</a></code> once for a specified 
+tuning grid on the whole data. It reports the corresponding number of
+\(y-y\) edges and \(x-y\) edges for each tuning penalty set. 
+Having a prior understanding of how sparse the network ought to 
+be can help narrow the scale of the tuning grid 
+based on the output of this function.</p>
+    
 
-
-    <pre><span class='fu'>algoFDR</span>(<span class='no'>tp</span>, <span class='no'>fp</span>)</pre>
+    <pre><span class='fu'>initFit</span>(<span class='no'>Y</span>, <span class='kw'>X</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>tuneGrid</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"spacemap"</span>, <span class='st'>"space"</span>),
+  <span class='kw'>iscale</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>aszero</span> <span class='kw'>=</span> <span class='fl'>1e-06</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>tp</th>
-      <td><p>The number of true positive classifications.</p></td>
+      <th>Y</th>
+      <td><p>Numeric matrix \((N \times Q)\) containing N iid samples of the response vector \(\textbf{y}\).</p></td>
     </tr>
     <tr>
-      <th>fp</th>
-      <td><p>The number of false positive classificationsm.</p></td>
+      <th>X</th>
+      <td><p>Numeric matrix \((N \times P)\) containing N iid samples of the predictor vector \(\textbf{x}\).</p></td>
+    </tr>
+    <tr>
+      <th>tuneGrid</th>
+      <td><p>Named with columns <code>lam1, lam2, lam3</code> 
+when <code>method = "spacemap"</code>. Each row in the data.frame corresponds to a
+ tuning parameter set that is input into <code><a href='spacemap.html'>spacemap</a></code>. 
+When <code>method = "space"</code>, supply a data.frame with only one column 
+being <code>lam1</code>.</p></td>
+    </tr>
+    <tr>
+      <th>method</th>
+      <td><p>Character vector indicates network inference with function 
+<code><a href='spacemap.html'>spacemap</a></code> when <code>method = "spacemap"</code> or function 
+<code><a href='space.joint.html'>space.joint</a></code> when <code>method = "space"</code>. If <code>X</code> is 
+non-null and <code>method = "space"</code>, then <code>space.joint</code> will 
+infer (x--x, x--y, y--y) edges but only report (x--y, y--y) edges.</p></td>
+    </tr>
+    <tr>
+      <th>iscale</th>
+      <td><p>Logical indicating to standardize the whole input data. Defaults to TRUE. 
+See <code>base::scale(x, center = TRUE, scale = TRUE)</code> for details of standardization.</p></td>
+    </tr>
+    <tr>
+      <th>aszero</th>
+      <td><p>Positive numeric value (defaults to 1e-6) indicating at what point to consider extremely 
+small parameter estimates of \(\Gamma\) and \(\rho\) as zero.</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>Additional arguments for <code><a href='spacemap.html'>spacemap</a></code> or <code><a href='space.joint.html'>space.joint</a></code>
+to change their default settings (e.g. setting <code>tol = 1e-4</code>).</p></td>
     </tr>
     </table>
+    
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>If <code>method=="spacemap"</code> or (<code>method=="space"</code> and <code>X!=NULL</code>),
+ return a  data.frame where the first column <code>nyy</code> reports the 
+ number of \(y-y\) edges  and the second column <code>nxy</code> reports 
+ the number of \(x-y\) edges. Rows of the data.frame correspond to 
+ the input parameter <code>tuneGrid</code>. 
+ 
+ If <code>method=="space"</code> and <code>X==NULL</code>, return a vector 
+ of the number of \(y-y\) edges.</p>
+    
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <p><code><a href='cvVote.html'>cvVote</a></code></p>
     
 
   </div>
@@ -126,7 +182,11 @@
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
-                </ul>
+      
+      <li><a href="#value">Value</a></li>
+
+      <li><a href="#see-also">See also</a></li>
+          </ul>
 
   </div>
 </div>

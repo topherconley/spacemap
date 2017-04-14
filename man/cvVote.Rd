@@ -6,7 +6,7 @@
 \usage{
 cvVote(Y, X = NULL, trainIds, testIds, method = c("spacemap", "space"),
   tuneGrid, resPath = tempdir(), refit = TRUE, thresh = 0.5,
-  iscale = TRUE, ...)
+  iscale = TRUE, aszero = 1e-06, ...)
 }
 \arguments{
 \item{Y}{Numeric matrix \eqn{(N \times Q)} containing N iid samples of the response vector \eqn{\textbf{y}}.}
@@ -48,13 +48,17 @@ penalty by adding an additional parameter \code{refitRidge}.}
 \item{iscale}{Logical indicating to standardize the whole input data. Defaults to TRUE. 
 See \code{\link{base::scale(x, center = TRUE, scale = TRUE)}} for details of standardization.}
 
+\item{aszero}{Positive numeric value (defaults to 1e-6) indicating at what point to consider extremely 
+small parameter estimates of \eqn{\Gamma} and \eqn{\rho} as zero.}
+
 \item{...}{Additional arguments for \code{\link{spacemap}} or \code{\link{space.joint}}
 to change their default settings (e.g. setting \code{tol = 1e-4}).}
 }
 \value{
-A list containing  \itemize {  
- \item \code{cvVote} a list containing
- \itemize{
+A list containing  
+\itemize {  
+ \item \code{cvVote} A list containing
+ \enumerate{
  \item \code{xy} Adjacency matrix where \eqn{xy(p,q)} element
   is 1 for an edge between \eqn{x_p} and \eqn{y_q} and 0 otherwise. 
   \item \code{yy} Adjacency matrix where \eqn{yy(q,l)} element
@@ -68,4 +72,34 @@ A list containing  \itemize {
 }
 \description{
 Selects and returns best-tuned model under CV.Vote.
+}
+\examples{
+data(sim1)
+##########################
+#DEFINE TRAINING/TEST SETS
+library(caret)
+#sample size
+N <- nrow(sim1$X)
+#number of folds
+K <- 5L
+set.seed(265616L)
+#no special population structure, but create randomized dummy structure of A and B
+testSets <- createFolds(y = sample(x = c("A", "B"), size = N, replace = TRUE), k = K)
+trainSets <- lapply(testSets, function(s) setdiff(seq_len(N), s))
+nsplits <- sapply(testSets, length)
+##########################
+#SPACE (Y input)
+tsp <- expand.grid(lam1 = seq(65, 75, length = 3))
+cvspace <- cvVote(Y = sim1$Y, 
+                 trainIds = trainSets, testIds = testSets, 
+                 method = "space", tuneGrid = tsp) 
+##########################
+# SPACEMAP (Y and X input)
+tmap <- expand.grid(lam1 = seq(65, 75, length = 2), 
+                   lam2 = seq(21, 35, length = 2), 
+                   lam3 = seq(10, 40, length = 2))
+cvsmap <- cvVote(Y = sim1$Y, X = sim1$X, 
+                trainIds = trainSets, testIds = testSets, 
+                method = "spacemap", tuneGrid = tmap)
+                
 }

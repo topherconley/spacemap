@@ -52,7 +52,7 @@ trainModel <- function(train, method, tuneGrid, refit = TRUE, fold_id, tune_id, 
     saveRDS(out, file = outfile)
     
   } else if (method == "space") {
-    fit <- space.joint(Y.m = train$XY, lam1 = tuneGrid, lam2 = opt$sridge, iter = opt$iter, 
+    fit <- space.joint(Y = train$XY, lam1 = tuneGrid, sridge = opt$sridge, iter = opt$iter, 
                        cdmax = opt$cdmax, tol = opt$tol, iscale = FALSE,
                        sig = opt$sig, rho = opt$rho)
     #zero out those below tolerance. 

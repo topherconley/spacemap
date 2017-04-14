@@ -2,19 +2,19 @@
 ######11-30-07: R package "space"
 ######R functions for fitting JSRM and MB: 
 
-space.nested <- function(Y, seq_lam1, lam2=0, sig=NULL, weight=NULL,iter=2, tol = 1e-6, cdmax = 1e7L,
+space.nested <- function(Y, seq_lam1, sridge=0, sig=NULL, weight=NULL,iter=2, tol = 1e-6, cdmax = 1e7L,
                            verbose = FALSE) { 
   #sequence of penalty parameters should be decreasing.
   vlam1 <- sort(seq_lam1, decreasing = TRUE)
   library(foreach)
   
   res <- vector("list", length(vlam1))
-  res[[1]] <- space.joint(Y = Y, lam1 = vlam1[1], lam2 = lam2, sig=sig, weight = weight,
+  res[[1]] <- space.joint(Y = Y, lam1 = vlam1[1], sridge = sridge, sig=sig, weight = weight,
                           iter = iter, tol = tol, cdmax = cdmax,
                           verbose = verbose, rho  = NULL)
   
   for(i in 2:length(vlam1)) { 
-    res[[i]] <- space.joint(Y = Y, lam1 = vlam1[i], lam2 = lam2, sig = res[[i-1]]$sig.fit, weight = weight,
+    res[[i]] <- space.joint(Y = Y, lam1 = vlam1[i], sridge = sridge, sig = res[[i-1]]$sig.fit, weight = weight,
                             iter = iter, tol = tol, cdmax = cdmax,
                             verbose = verbose, rho = res[[i-1]]$ParCor)
   }
@@ -107,8 +107,8 @@ space.joint <-function(Y, lam1, sridge=0, sig=NULL, weight=NULL,iter=3, tol = 1e
   
   ################### preparation
   if(!is.null(sig))
-  { #### if the user specify "sig", do not need to update sig.
-    SIG.update=F
+  { #### if the user specify "sig", still update sig
+    SIG.update=T
     SIG=sig
   } else { #### otherwise, need to update sig in each iteration
     SIG.update=T
@@ -237,13 +237,13 @@ Hub.net<-function(p,hub.no=3,hub.size=16,umin=0.5,umax=1)
 #######JSRM
 ###### call C function directly in R
 
-jsrm<-function(Y,sig.use,n,p,lam1,lam2, n_iter, tol, rho = NULL) {
+jsrm<-function(Y,sig.use,n,p,lam1,sridge, n_iter, tol, rho = NULL) {
   
   #cat("Y is:", class(Y)); flush.console();
   stopifnot(is.matrix(Y), is.numeric(sig.use), 
             length(sig.use) == ncol(Y))
   lambda1=lam1
-  lambda2=lam2
+  lambda2=sridge
   sigma_sr=sig.use^0.5
   
   if (!is.null(rho) & is.matrix(rho)) {

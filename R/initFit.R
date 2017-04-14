@@ -81,7 +81,7 @@ initFit <- function(Y, X = NULL, tuneGrid, method = c("spacemap", "space"), isca
     combf <- ifelse(givenX, 'rbind', 'c')
     nedges <- foreach(l = seq_len(nrow(tuneGrid)), .combine = combf) %dopar% {
       
-      fit <- spacemap::space.joint(Y.m = XY, lam1 = tuneGrid$lam1[l], lam2 = opt$sridge, 
+      fit <- spacemap::space.joint(Y = XY, lam1 = tuneGrid$lam1[l], sridge = opt$sridge, 
                                    sig = opt$sig, rho = opt$rho, iter = opt$iter, 
                                    tol = opt$tol, cd_iter = opt$cd_iter, iscale = FALSE)
       if (fit$convergence) {

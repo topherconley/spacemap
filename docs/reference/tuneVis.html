@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Simulate remMap scenario. — simRemMap â€¢ spacemap</title>
+<title>Visualize cross validation metrics — tuneVis â€¢ spacemap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -100,26 +100,75 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Simulate remMap scenario.</h1>
+    <h1>Visualize cross validation metrics</h1>
     </div>
 
     
-    <p>Generate data suitable for remMap.</p>
+    <p>Diagnose the quality of the tuning grid used in <code><a href='cvVote.html'>cvVote</a></code>
+through plotting  CV scores and network size against the
+tuning penalties.</p>
     
 
-    <pre><span class='fu'>simRemMap</span>(<span class='kw'>n</span> <span class='kw'>=</span> <span class='fl'>100</span>, <span class='kw'>p</span> <span class='kw'>=</span> <span class='fl'>300</span>, <span class='kw'>q</span> <span class='kw'>=</span> <span class='fl'>300</span>, <span class='kw'>seed</span> <span class='kw'>=</span> <span class='fl'>1</span>)</pre>
-        
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+    <pre><span class='fu'>tuneVis</span>(<span class='no'>cvOut</span>, <span class='no'>testSetLen</span>, <span class='no'>tuneParam1</span>, <span class='kw'>tuneParam1Name</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"lam1"</span>, <span class='st'>"lam2"</span>,
+  <span class='st'>"lam3"</span>), <span class='kw'>tuneParam2</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+    
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>cvOut</th>
+      <td><p>Output from <code><a href='cvVote.html'>cvVote</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>testSetLen</th>
+      <td><p>Integer vector specifying length of each test set associated with 
+<code>cvOut</code>.</p></td>
+    </tr>
+    <tr>
+      <th>tuneParam1</th>
+      <td><p>Numeric vector specifying the tuning penalty placed on the 
+x-axis.</p></td>
+    </tr>
+    <tr>
+      <th>tuneParam1Name</th>
+      <td><p>Character vector labelling the X-axis with the specified tuning parameter.</p></td>
+    </tr>
+    <tr>
+      <th>tuneParam2</th>
+      <td><p>Numeric vector specifying the tuning penalty placed on the 
+x-axis. Defaults to NULL. If non-null, the output is a heatmap where 
+CV scores are colored intensities on a 2-D grid of <code>tuneParam1,tuneParam2</code>.</p></td>
+    </tr>
+    </table>
+    
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Wrapper around example from remMap documentation.</p>
+    <p>If <code>tuneParam2 == NULL</code>
+Return a list of 4 <code>ggplot2</code> objects.</p><ol>
+<li><p>Scatter plot of log (CV score) vs. <code>tuneParam1</code>.</p></li>
+<li><p>Scatter plot of "Avg. Total # of Edges" vs. <code>tuneParam1</code>.</p></li>
+<li><p>Scatter plot of "Avg. # of Edges (Y -- Y)" vs. <code>tuneParam1</code>.</p></li>
+<li><p>Scatter plot of "Avg. # of Edges (x -&gt; Y)" vs. <code>tuneParam1</code>.</p></li>
+</ol>
+
+<p>If <code>tuneParam2 != NULL</code>
+Returns a heatmap (see <code>ggplot2::geom_tile</code>) where 
+CV scores are colored intensities on a 2-D grid of <code>tuneParam1,tuneParam2</code>.</p>
+    
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <p><code><a href='cvVote.html'>cvVote</a></code></p>
     
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
+      <li><a href="#arguments">Arguments</a></li>
       
-      <li><a href="#details">Details</a></li>
+      <li><a href="#value">Value</a></li>
+
+      <li><a href="#see-also">See also</a></li>
           </ul>
 
   </div>

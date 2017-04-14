@@ -155,6 +155,8 @@ neta <- function(net, bdeg, info, go2eg, cis_window = 2e6, lmods = NULL,
 
 #' Initialize network's vertex attributes
 #' 
+#' 
+#' 
 #' @description Label vertex attributes of a  conditional graphical model's
 #'  output. 
 #' @param YY adjacency matrix encoding y--y edges of conditional graphical model. If a 

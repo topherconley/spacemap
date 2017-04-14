@@ -61,18 +61,21 @@
       <a href="../articles/basics.html">Basics</a>
     </li>
     <li>
-      <a href="../articles/tune_sim1.html">Model Tuning</a>
+      <a href="../articles/tuning.html">Model Tuning</a>
+    </li>
+    <li>
+      <a href="../articles/ensemble.html">Ensemble Network</a>
     </li>
   </ul>
-</li>
-<li>
-  <a href="https://topherconley.github.io/neta-bcpls/">Network Toolkit</a>
 </li>
 <li>
   <a href="../reference/index.html">R Documentation</a>
 </li>
 <li>
   <a href="https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta">Installation</a>
+</li>
+<li>
+  <a href="https://topherconley.github.io/neta-bcpls/">Network Toolkit</a>
 </li>
 <li>
   <a href="https://github.com/topherconley/spacemap/issues">Contact Us</a>
@@ -104,26 +107,26 @@
     <p>Fits spacemap model to B bootstrapped data replicates to create an ensemble network.</p>
     
 
-    <pre><span class='fu'>bootEnsemble</span>(<span class='no'>Y.m</span>, <span class='no'>X.m</span>, <span class='no'>tune</span>, <span class='kw'>boot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>B</span> <span class='kw'>=</span> <span class='fl'>1000L</span>, <span class='kw'>seed</span> <span class='kw'>=</span> <span class='fl'>55139</span>,
-  <span class='kw'>p0</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>3</span>, <span class='kw'>tol</span> <span class='kw'>=</span> <span class='fl'>1e-04</span>, <span class='kw'>cd_iter</span> <span class='kw'>=</span> <span class='fl'>1e+09</span>, <span class='kw'>refitRidge</span> <span class='kw'>=</span> <span class='fl'>0.1</span>,
-  <span class='kw'>iscale</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
+    <pre><span class='fu'>bootEnsemble</span>(<span class='no'>Y</span>, <span class='kw'>X</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>tune</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"spacemap"</span>, <span class='st'>"space"</span>),
+  <span class='kw'>boot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>B</span> <span class='kw'>=</span> <span class='fl'>1000L</span>, <span class='kw'>iscale</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>aszero</span> <span class='kw'>=</span> <span class='fl'>1e-06</span>,
+  <span class='kw'>seed</span> <span class='kw'>=</span> <span class='fu'>sample.int</span>(<span class='kw'>n</span> <span class='kw'>=</span> <span class='fl'>1e+06</span>, <span class='kw'>size</span> <span class='kw'>=</span> <span class='fl'>1</span>), <span class='kw'>p0</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>Y.m</th>
+      <th>Y</th>
       <td><p>Numeric matrix \((N \times Q)\) containing N iid samples of the response vector \(\textbf{y}\).</p></td>
     </tr>
     <tr>
-      <th>X.m</th>
+      <th>X</th>
       <td><p>Numeric matrix \((N \times P)\) containing N iid samples of the predictor vector \(\textbf{x}\).</p></td>
     </tr>
     <tr>
       <th>tune</th>
-      <td><p>Data.frame with three columns requiring names to be the tuning penalties
-<code>slasso, rlasso, rgroup</code> that are input to <code>spacemap</code>. Each row is a tuning penalty set 
-that indexes an ensemble network of <code>spacemap</code> fits to <code>B</code> boostrap replicates of <code>Y.m, X.m</code>.</p></td>
+      <td><p>List with names being the tuning penalties
+<code>lam1, lam2, lam3</code> and each element being a single numeric value that is input to <code>spacemap</code>. One might  
+consider the output from <code><a href='cvVote.html'>cvVote</a></code> (i.e. list <code>minTune</code>) as input for this parameter.</p></td>
     </tr>
     <tr>
       <th>boot</th>
@@ -136,6 +139,16 @@ that indexes an ensemble network of <code>spacemap</code> fits to <code>B</code>
 be lowered to save time.</p></td>
     </tr>
     <tr>
+      <th>iscale</th>
+      <td><p>Logical indicating to standardize the whole input data. Defaults to TRUE. 
+See <code>base::scale(x, center = TRUE, scale = TRUE)</code> for details of standardization.</p></td>
+    </tr>
+    <tr>
+      <th>aszero</th>
+      <td><p>Positive numeric value (defaults to 1e-6) indicating at what point to consider extremely 
+small parameter estimates of \(\Gamma\) and \(\rho\) as zero.</p></td>
+    </tr>
+    <tr>
       <th>seed</th>
       <td><p>Positive integer allowing user to set the random seed for reproducing the network ensemble.</p></td>
     </tr>
@@ -144,53 +157,34 @@ be lowered to save time.</p></td>
       <td><p>Positive numeric not exceeding the default of 1, which represents the proportion of the original 
 samples that will be down-sampled for each model fitting iteration of the ensemble.</p></td>
     </tr>
-    <tr>
-      <th>iter</th>
-      <td><p>Positive integer specifying the number of iterations for estimating 
-\(\sigma^{ii}\) and partial correlations. Defaults to 3. When <code>sig=NULL</code> and/or 
-(<code>weight=NULL</code> or <code>weight=2</code>), then <code>iter</code> \(\ge 2\).</p></td>
-    </tr>
-    <tr>
-      <th>tol</th>
-      <td><p>Positive numeric value specifying the convergence tolerance of the coordinate descent algorithm; 
-in other words, it is criterion that stops parameter estimation when no parameter changes value exceeding <code>tol</code> 
-between iterations. <code>tol</code> defaults to 1e-6, but may be lowered (e.g. 1e-4) to speed up network learning.</p></td>
-    </tr>
-    <tr>
-      <th>cd_iter</th>
-      <td><p>Positive integer specifiying the maximum number of parameter updates allowed before reporting the algorithm
-as having failed to converge. Default may need to be increased for inferring very large-scale networks (i.e. \(p,q &gt; 1000\)).</p></td>
-    </tr>
-    <tr>
-      <th>refitRidge</th>
-      <td><p>Positive numeric value specifying a ridge penalty, which is applied when 
-refitting the model to the data after having selected the network with <code>spacemap</code>. Defaults to 0.1, 
-but can be set to zero for ordinary least squares refit.</p></td>
-    </tr>
-    <tr>
-      <th>iscale</th>
-      <td><p>Logical indicating to standardize the input data internally. Defaults to TRUE if just running <code>spacemap</code>. If running 
-<code><a href='crossValidation.html'>crossValidation</a></code> or <code>bootEnsemble</code>, user should set to FALSE.</p></td>
-    </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>a list of length B, where the bth element contains the refit of <code>spacemap</code> model. The model output is identical to 
-<code><a href='spacemap.html'>spacemap</a></code>, but the partial correlations matrix <code>ParCor</code> and the regression coefficients matrix <code>Gamma</code>
-are stored in a sparse matrix format, (dgCMatrix format), from the <code>Matrix</code> package. If the bth model is not 
-sufficiently sparse, a character vector will be returned as "Not Sparse". If the bth model did not converge, a 
-character vector will be returned as "No Convergence".</p>
+    <p>A list up to length <code>B</code> of convergent and sparse model fits from 
+either <code><a href='spacemap.html'>spacemap</a></code> or <code><a href='space.joint.html'>space.joint</a></code>. The list object should typically
+not be modified by the user, but passed on to the  <code><a href='bootVote.html'>bootVote</a></code> function.
+Model fits that are not convergent or produce networks that are not sparse are not reported.</p>
+    
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <p><code><a href='bootVote.html'>bootVote</a></code>, <code><a href='cvVote.html'>cvVote</a></code></p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'>#Load simulation</span>
+    <pre class="examples"><div class='input'>
+<span class='co'>#Load simulation</span>
 <span class='fu'>data</span>(<span class='no'>sim1</span>)
+
 <span class='co'>#Boostrap Ensemble (B = 10) for illustration only</span>
-<span class='no'>tune</span> <span class='kw'>&lt;-</span> <span class='fu'>data.frame</span>(<span class='kw'>slasso</span> <span class='kw'>=</span> <span class='fl'>70</span>, <span class='kw'>rlasso</span> <span class='kw'>=</span> <span class='fl'>28.8</span>, <span class='kw'>rgroup</span> <span class='kw'>=</span> <span class='fl'>14</span>)
-<span class='no'>out</span> <span class='kw'>&lt;-</span> <span class='fu'>bootEnsemble</span>(<span class='kw'>Y.m</span> <span class='kw'>=</span> <span class='no'>sim1</span>$<span class='no'>Y</span>, <span class='kw'>X.m</span> <span class='kw'>=</span> <span class='no'>sim1</span>$<span class='no'>X</span>, <span class='kw'>tune</span> <span class='kw'>=</span> <span class='no'>tune</span>, <span class='kw'>B</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>3</span>,
-                    <span class='kw'>cd_iter</span> <span class='kw'>=</span> <span class='fl'>1e7</span>, <span class='kw'>tol</span> <span class='kw'>=</span> <span class='fl'>1e-6</span>, <span class='kw'>refitRidge</span> <span class='kw'>=</span> <span class='fl'>0</span>)
-<span class='no'>bv</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='bootVote.html'>bootVote</a></span>(<span class='kw'>fits</span> <span class='kw'>=</span> <span class='no'>out</span><span class='kw'>[[</span><span class='fl'>1</span>]], <span class='kw'>P</span> <span class='kw'>=</span> <span class='fu'>ncol</span>(<span class='no'>sim1</span>$<span class='no'>X</span>), <span class='kw'>Q</span> <span class='kw'>=</span> <span class='fu'>ncol</span>(<span class='no'>sim1</span>$<span class='no'>Y</span>))</div></pre>
+<span class='no'>tune</span> <span class='kw'>&lt;-</span> <span class='fu'>data.frame</span>(<span class='kw'>lam1</span> <span class='kw'>=</span> <span class='fl'>70</span>, <span class='kw'>lam2</span> <span class='kw'>=</span> <span class='fl'>28</span>, <span class='kw'>lam3</span> <span class='kw'>=</span> <span class='fl'>17.5</span>)
+<span class='no'>ens</span> <span class='kw'>&lt;-</span> <span class='fu'>bootEnsemble</span>(<span class='kw'>Y</span> <span class='kw'>=</span> <span class='no'>sim1</span>$<span class='no'>Y</span>, <span class='kw'>X</span> <span class='kw'>=</span> <span class='no'>sim1</span>$<span class='no'>X</span>, <span class='kw'>tune</span> <span class='kw'>=</span> <span class='no'>tune</span>,
+                    <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"spacemap"</span>, <span class='kw'>B</span> <span class='kw'>=</span> <span class='fl'>10</span>)</div><div class='output co'>#&gt; <span class='message'>Loading required package: foreach</span></div><div class='output co'>#&gt; <span class='message'>foreach: simple, scalable parallel programming from Revolution Analytics</span>
+#&gt; <span class='message'>Use Revolution R for scalability, fault tolerance and more.</span>
+#&gt; <span class='message'>http://www.revolutionanalytics.com</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: rngtools</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: pkgmaker</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: registry</span></div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>Attaching package: ‘pkgmaker’</span></div><div class='output co'>#&gt; <span class='message'>The following object is masked from ‘package:base’:</span>
+#&gt; <span class='message'></span>
+#&gt; <span class='message'>    isNamespaceLoaded</span></div><div class='output co'>#&gt; <span class='warning'>Warning: executing %dopar% sequentially: no parallel backend registered</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -198,6 +192,8 @@ character vector will be returned as "No Convergence".</p>
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
+
+      <li><a href="#see-also">See also</a></li>
       
       <li><a href="#examples">Examples</a></li>
     </ul>

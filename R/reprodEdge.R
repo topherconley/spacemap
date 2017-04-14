@@ -40,6 +40,8 @@ bootEnsemble <- function(Y, X = NULL, tune, method = c("spacemap", "space"),
   
   method <- match.arg(method)
   library(doRNG)
+  library(spacemap)
+  library(foreach)
   library(Matrix)
   rng <- RNGseq(B, seed)
   N <- nrow(Y)
@@ -77,7 +79,7 @@ bootEnsemble <- function(Y, X = NULL, tune, method = c("spacemap", "space"),
   }
   
   if (method == "spacemap") { 
-    ens <- foreach(j = seq_len(B),  r = rng[seq_len(B)]) %dopar% {
+    ens <- foreach(j = seq_len(B),  r = rng[seq_len(B)], .packages = c("Matrix")) %dopar% {
       rngtools::setRNG(r)
       sidx <- sample.int(n = N, size = rN, replace = boot)
       fit <- spacemap::spacemap(Y = Y[sidx,], X = X[sidx,], 
@@ -106,11 +108,11 @@ bootEnsemble <- function(Y, X = NULL, tune, method = c("spacemap", "space"),
       fit[c("xy", "yy", "convergence", "sparse")]
     }
   } else if (method == "space") { 
-    ens <- foreach(j = seq_len(B),  r = rng[seq_len(B)]) %dopar% {
+    ens <- foreach(j = seq_len(B),  r = rng[seq_len(B)], .packages = c("Matrix")) %dopar% {
       rngtools::setRNG(r)
       sidx <- sample.int(n = N, size = rN, replace = boot)
-      fit <- spacemap::space.joint(Y.m = XY[sidx,], lam1 = tune$lam1[1], 
-                                   lam2 = opt$sridge, iter = opt$iter, 
+      fit <- spacemap::space.joint(Y = XY[sidx,], lam1 = tune$lam1[1], 
+                                   sridge = opt$sridge, iter = opt$iter, 
                                    cdmax = opt$cdmax, tol = opt$tol, 
                                    iscale = FALSE)
       #zero out those below tolerance. 
@@ -163,7 +165,7 @@ sparseAdjMat <- function(x) {
 #' @param givenX Logical. Defaults to FALSE. Should be set to TRUE when 
 #' \code{attr(bfits, "method) == "space} and \code{space.joint} was used
 #' to infer (x--x, x--y, y--y) edges  but only reported (x--y, y--y) edges. 
-#' @return List containing two lists. 
+#' @return Returns a list of lists. 
 #' First list is \code{bv}, which encodes the edges in two logical adjacency matrices.
 #' 
 #' \enumerate{
@@ -190,6 +192,10 @@ sparseAdjMat <- function(x) {
 #'    \item \code{dfyy} Integer vector containing the total number of y--y edges for each fit.
 #'    \item \code{dfxy} Integer vector containing the total number of x--y edges for each fit.
 #' }
+#' 
+#' Note: If \code{method == "space" & givenX == FALSE}, 
+#' then no \code{xy, dfxy} elements will be reported in the above lists. 
+#' 
 #' @seealso  \code{\link{bootEnsemble}}
 #' 
 #' @examples 
@@ -245,7 +251,7 @@ bootVote <- function(bfits, thresh = 0.5, givenX = FALSE) {
     bdeg <- list(yy = degyy, xy = degxy)
     return(list(bv = bv,
                 bdeg = bdeg,
-                bc = bout))
+                bc = bout[!(names(bout) %in% "ngood")]))
   } else if (method == "space" & !givenX) { 
     bout <- foreach(bfit = bfits, .combine = spacemap::addmodsyy) %dopar% { 
       byy <- as.matrix(bfit$yy)
@@ -255,8 +261,6 @@ bootVote <- function(bfits, thresh = 0.5, givenX = FALSE) {
     diag(bout$yy) <- 0
     #adjust for the number that actually converged
     effB <- sum(bout$ngood)
-    #should be equal
-    stopifnot(effB == length(bout))
     
     #vote based on effective bootstraps replicates. 
     bv <- (bout$yy > thresh*effB) + 0
@@ -266,9 +270,9 @@ bootVote <- function(bfits, thresh = 0.5, givenX = FALSE) {
       rowSums(as.matrix(bfit$yy))
     }
     
-    return(list(bv = bv,
+    return(list(bv = list(yy = bv),
                 bdeg = bdeg,
-                bc = bout))
+                bc = bout[!(names(bout) %in% "ngood")]))
   } else { 
     stop("Wrong method specified.")
   }

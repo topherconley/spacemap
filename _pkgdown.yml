@@ -46,5 +46,7 @@ navbar:
     href: https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta
   - text: Network Toolkit
     href: https://topherconley.github.io/neta-bcpls/
+  - text: News
+    href: news/index.html
   - text: Contact Us
     href: https://github.com/topherconley/spacemap/issues

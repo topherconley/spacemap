@@ -39,18 +39,24 @@
       <a href="articles/basics.html">Basics</a>
     </li>
     <li>
-      <a href="articles/tune_sim1.html">Model Tuning</a>
+      <a href="articles/tuning.html">Model Tuning</a>
+    </li>
+    <li>
+      <a href="articles/ensemble.html">Ensemble Network</a>
     </li>
   </ul>
-</li>
-<li>
-  <a href="https://topherconley.github.io/neta-bcpls/">Network Toolkit</a>
 </li>
 <li>
   <a href="reference/index.html">R Documentation</a>
 </li>
 <li>
   <a href="https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta">Installation</a>
+</li>
+<li>
+  <a href="https://topherconley.github.io/neta-bcpls/">Network Toolkit</a>
+</li>
+<li>
+  <a href="news/index.html">News</a>
 </li>
 <li>
   <a href="https://github.com/topherconley/spacemap/issues">Contact Us</a>
@@ -95,7 +101,7 @@
 <div id="learning-robust-networks" class="section level3">
 <h3 class="hasAnchor">
 <a href="#learning-robust-networks" class="anchor"></a>Learning robust networks</h3>
-<p>We built model selection and model aggregation tools into spaceMap for learning networks robust to the challenges of integrative genomics data. High dimensional omic profiles often have limitations in sample size and the signal-to-noise can be low. Models applied to data in this context can be prone to overfitting and high variability. By virtue of a K-fold cross validation (CV) procedure called <em>CV.Vote</em>, one can learn model tuning parameters that will help balance the tradeoff of power and FDR. <em>CV.Vote</em> reports a network where edges must be present in a majority of networks fit under the training sets. Please see <a href="https://topherconley.github.io/spacemap/articles/tune_sim1.html">Model Tuning</a> in the Vignettes tab for an example of how to sequentially tune networks with cross validation. Specific usage details of <em>CV.Vote</em> are documented in the function <a href="https://topherconley.github.io/spacemap/reference/crossValidation.html">crossValidation</a>.</p>
+<p>We built model selection and model aggregation tools into spaceMap for learning networks robust to the challenges of integrative genomics data. High dimensional omic profiles often have limitations in sample size and the signal-to-noise can be low. Models applied to data in this context can be prone to overfitting and high variability. By virtue of a K-fold cross validation (CV) procedure called <em>CV.Vote</em>, one can learn model tuning parameters that will help balance the tradeoff of power and FDR. <em>CV.Vote</em> reports a network where edges must be present in a majority of networks fit under the training sets. Please see <a href="https://topherconley.github.io/spacemap/articles/tune_sim1.html">Model Tuning</a> in the Vignettes tab for an example of how to sequentially tune networks with cross validation. Specific usage details of <em>CV.Vote</em> are documented in the function <a href="https://topherconley.github.io/spacemap/reference/cvVote.html">cvVote</a>.</p>
 <p>Making your network robust to overfitting can be further enhanced through bootstrap aggregation—called <em>Boot.Vote</em>—especially when sample size relative to dimension is a real concern. This procedure learns networks on <span class="math inline">\(B\)</span> bootstrap replications of data under CV-selected tuning parameters. The bootstrap replicate networks are aggregated such that only those edges with majority representation among the replicates are reported in the final network. Specific usage details and an example of <em>Boot.Vote</em> are documented in the functions <a href="https://topherconley.github.io/spacemap/reference/bootEnsemble.html">bootEnsemble</a> and <a href="https://topherconley.github.io/spacemap/reference/bootVote.html">bootVote</a>.</p>
 <div id="simulations" class="section level4">
 <h4 class="hasAnchor">
@@ -143,9 +149,9 @@
 <li>
 <a href="https://github.com/topherconley/">Christopher Conley</a> <br><small class="roles"> Author, maintainer </small> </li>
 <li>
-<a href="http://www.stat.ucdavis.edu/~jie/">Jie Peng</a> <br><small class="roles"> Author, maintainer </small> </li>
+<a href="http://www.stat.ucdavis.edu/~jie/">Jie Peng</a> <br><small class="roles"> Author </small> </li>
 <li>
-<a href="http://research.mssm.edu/wanglab/index.htm">Pei Wang</a> <br><small class="roles"> Author, maintainer </small> </li>
+<a href="http://research.mssm.edu/wanglab/index.htm">Pei Wang</a> <br><small class="roles"> Author </small> </li>
 <li>UC Davis <br><small class="roles"> Copyright holder, funder </small> </li>
 </ul>
 </div>

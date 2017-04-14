@@ -139,8 +139,8 @@ spacemap <- function(Y, X, lam1, lam2, lam3, sig=NULL, rho = NULL,
   
   ################### preparation
   if(!is.null(sig))
-  { #### if the user specify "sig", do not need to update sig.
-    SIG.update=F
+  { #### if the user specify "sig", still need to update sig.
+    SIG.update=T
     SIG=sig
   } else { #### otherwise, need to update sig in each iteration
     SIG.update=T

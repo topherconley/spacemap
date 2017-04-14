@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Estimate partial correlations using the Joint Sparse Regression Model — space.joint â€¢ spacemap</title>
+<title>Fit the SPACE model. — space.joint â€¢ spacemap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -61,18 +61,21 @@
       <a href="../articles/basics.html">Basics</a>
     </li>
     <li>
-      <a href="../articles/tune_sim1.html">Model Tuning</a>
+      <a href="../articles/tuning.html">Model Tuning</a>
+    </li>
+    <li>
+      <a href="../articles/ensemble.html">Ensemble Network</a>
     </li>
   </ul>
-</li>
-<li>
-  <a href="https://topherconley.github.io/neta-bcpls/">Network Toolkit</a>
 </li>
 <li>
   <a href="../reference/index.html">R Documentation</a>
 </li>
 <li>
   <a href="https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta">Installation</a>
+</li>
+<li>
+  <a href="https://topherconley.github.io/neta-bcpls/">Network Toolkit</a>
 </li>
 <li>
   <a href="https://github.com/topherconley/spacemap/issues">Contact Us</a>
@@ -97,21 +100,122 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Estimate partial correlations using the Joint Sparse Regression Model</h1>
+    <h1>Fit the SPACE model.</h1>
     </div>
 
     
-    <p>Estimate partial correlations using the Joint Sparse Regression Model</p>
+    <p>Estimate partial correlations according to SPACE model.</p>
     
 
-    <pre>See space::space.joint</pre>
-        
+    <pre><span class='fu'>space.joint</span>(<span class='no'>Y</span>, <span class='no'>lam1</span>, <span class='kw'>sridge</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>sig</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>weight</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>3</span>,
+  <span class='kw'>tol</span> <span class='kw'>=</span> <span class='fl'>1e-06</span>, <span class='kw'>cdmax</span> <span class='kw'>=</span> <span class='fl'>10000000L</span>, <span class='kw'>rho</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>iscale</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
+    
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>Y</th>
+      <td><p>Numeric matrix \((N \times Q)\) containing N iid samples of the response vector \(\textbf{y}\).</p></td>
+    </tr>
+    <tr>
+      <th>lam1</th>
+      <td><p>Non-negative numeric value, the space-lasso penalty corresponding to \(\lambda_1\), 
+which subjects the partial correlation vector, \(\bf \rho_{yy}\), to  the \(l_1\) norm. 
+It induces overall sparsity of \(\{ y_q - y_l : q \neq l \}\) edges. .</p></td>
+    </tr>
+    <tr>
+      <th>sridge</th>
+      <td><p>The \(l_2\) penalty parameter defaults to 0. When it is positive, 
+it imposes an elastic net  penalty in tandem with <code>lam1</code> on \(\rho\).</p></td>
+    </tr>
+    <tr>
+      <th>sig</th>
+      <td><p>Positive numeric vector (\(p \times 1\)) representing the estimate of \(\sigma^{ii}\), the diagonal of 
+the inverse covariance matrix. It defaults to NULL and
+and will be estimated <code>iter</code> times during the model fitting with initial 
+values set to the ones vector.</p></td>
+    </tr>
+    <tr>
+      <th>weight</th>
+      <td><p>The weights applied to the Q regressions in the SPACE model.</p>
+<p>If <code>weight==NULL</code>, each regression has equal weight.
+ 
+ If <code>weight==1</code>, each regression is weighted according to 
+ \(\sigma^{ii}\) and enforces <code>iter&gt;=2</code>.
+ 
+ If <code>weight==2</code> each regression is weighted according to
+  the out-degree of \(q\)th response variable and enforces <code>iter&gt;=2</code>.
+ 
+ Otherwise, <code>weight=</code>user-specified vector of length p.</p>
+<p>The scale of weight does not matter. In this function, weight will be rescaled to have mean=1</p></td>
+    </tr>
+    <tr>
+      <th>iter</th>
+      <td><p>Positive integer specifying the number of iterations for estimating 
+\(\sigma^{ii}\) and \(\rho\). Defaults to 3.</p></td>
+    </tr>
+    <tr>
+      <th>tol</th>
+      <td><p>Positive numeric value specifying the convergence tolerance of the coordinate descent algorithm; 
+in other words, it is criterion that stops parameter estimation when no parameter changes value exceeding <code>tol</code> 
+between iterations. <code>tol</code> defaults to 1e-6, but may be lowered (e.g. 1e-4) to speed
+up network learning.</p></td>
+    </tr>
+    <tr>
+      <th>cdmax</th>
+      <td><p>Positive integer specifiying the maximum number of parameter updates allowed before reporting the algorithm
+as having failed to converge. Default may need to be increased for inferring very large-scale networks (i.e. \(p,q &gt; 1000\)).</p></td>
+    </tr>
+    <tr>
+      <th>rho</th>
+      <td><p>Numeric matrix (\(p \times p\)) representing the estimate of \(\hat\rho\), the partial correlation matrix. 
+It defaults to NULL and and will be estimated <code>iter</code> times during the model fitting.</p></td>
+    </tr>
+    <tr>
+      <th>iscale</th>
+      <td><p>Logical indicating to standardize the whole input data. Defaults to TRUE. 
+See <code>base::scale(x, center = TRUE, scale = TRUE)</code> for details of standardization.</p></td>
+    </tr>
+    </table>
+    
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
+    <p>A list containing</p><ol>
+<li><p><code>ParCor</code> The estimated partial correlation matrix (\(P \times P\)), 
+  where off-diagonals  \( |\hat \rho^{p,q}_{yy}| &gt; 1e-6\)  encode the edges \(\{ y_q - y_l : q \neq l \} \)
+  and the diagonals are 1's.</p></li>
+<li><p><code>sig.fit</code> The estimated diagonal \(\hat \sigma^{ii}\).</p></li>
+<li><p><code>rss</code> The residual sums of squares from the model fit.</p></li>
+<li><p>convergence logical: true for successful convergence, otherwise failed to converge. Failure can be 
+  mitigated by increasing <code>tol</code> and/or <code>cdmax</code>.</p></li>
+<li><p><code>deltaMax</code> The maximum change in parameter values between the penultimate and ultimate iteration. 
+  If <code>spacemap</code> does not converge, <code>deltaMax</code> provides some measure of how far away it was from converging
+  when compared to <code>tol</code>.</p></li>
+</ol>
+
+    
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <p><code><a href='spacemap.html'>spacemap</a></code>, <code><a href='cvVote.html'>cvVote</a></code>, <code><a href='bootEnsemble.html'>bootEnsemble</a></code>, <code><a href='bootVote.html'>bootVote</a></code></p>
+    
+
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='fu'>data</span>(<span class='no'>sim1</span>)
+<span class='no'>net</span> <span class='kw'>&lt;-</span> <span class='fu'>space.joint</span>(<span class='kw'>Y</span> <span class='kw'>=</span> <span class='no'>sim1</span>$<span class='no'>Y</span>, <span class='kw'>lam1</span> <span class='kw'>=</span> <span class='fl'>70</span>)
+<span class='co'>#adjacency matrix of y-y edges. </span>
+<span class='no'>adjnet</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='adjacency.html'>adjacency</a></span>(<span class='no'>net</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-                </ul>
+      <li><a href="#arguments">Arguments</a></li>
+      
+      <li><a href="#value">Value</a></li>
+
+      <li><a href="#see-also">See also</a></li>
+      
+      <li><a href="#examples">Examples</a></li>
+    </ul>
 
   </div>
 </div>

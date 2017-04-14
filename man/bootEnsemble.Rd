@@ -5,8 +5,8 @@
 \title{Ensemble networks through boostrapping.}
 \usage{
 bootEnsemble(Y, X = NULL, tune, method = c("spacemap", "space"),
-  boot = TRUE, B = 1000L, iscale = TRUE, seed = sample.int(n = 1, size =
-  1e+06), p0 = 1, ...)
+  boot = TRUE, B = 1000L, iscale = TRUE, aszero = 1e-06,
+  seed = sample.int(n = 1e+06, size = 1), p0 = 1, ...)
 }
 \arguments{
 \item{Y}{Numeric matrix \eqn{(N \times Q)} containing N iid samples of the response vector \eqn{\textbf{y}}.}
@@ -26,6 +26,9 @@ be lowered to save time.}
 \item{iscale}{Logical indicating to standardize the whole input data. Defaults to TRUE. 
 See \code{\link{base::scale(x, center = TRUE, scale = TRUE)}} for details of standardization.}
 
+\item{aszero}{Positive numeric value (defaults to 1e-6) indicating at what point to consider extremely 
+small parameter estimates of \eqn{\Gamma} and \eqn{\rho} as zero.}
+
 \item{seed}{Positive integer allowing user to set the random seed for reproducing the network ensemble.}
 
 \item{p0}{Positive numeric not exceeding the default of 1, which represents the proportion of the original 
@@ -41,13 +44,15 @@ Model fits that are not convergent or produce networks that are not sparse are n
 Fits spacemap model to B bootstrapped data replicates to create an ensemble network.
 }
 \examples{
+
 #Load simulation
 data(sim1)
+
 #Boostrap Ensemble (B = 10) for illustration only
-tune <- data.frame(lam1 = 70, lam2 = 28.8, lam3 = 14)
-out <- bootEnsemble(Y = sim1$Y, X = sim1$X, tune = tune, B = 10, iter = 3,
-                    cdmax = 1e7, tol = 1e-6)
+tune <- data.frame(lam1 = 70, lam2 = 28, lam3 = 17.5)
+ens <- bootEnsemble(Y = sim1$Y, X = sim1$X, tune = tune, 
+                    method = "spacemap", B = 10)
 }
 \seealso{
-bootVote
+\code{\link{bootVote}}, \code{\link{cvVote}}
 }

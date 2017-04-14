@@ -33,7 +33,7 @@ values set to the ones vector.}
 It defaults to NULL and and will be estimated \code{iter} times during the model fitting.}
 
 \item{iter}{Positive integer specifying the number of iterations for estimating 
-\eqn{\sigma^{ii}}. Defaults to 3.}
+\eqn{\sigma^{ii}} and \eqn{\rho}. Defaults to 3.}
 
 \item{tol}{Positive numeric value specifying the convergence tolerance of the coordinate descent algorithm; 
 in other words, it is criterion that stops parameter estimation when no parameter changes value exceeding \code{tol} 
@@ -47,7 +47,7 @@ See \code{\link{base::scale(x, center = TRUE, scale = TRUE)}} for details of sta
 as having failed to converge. Default may need to be increased for inferring very large-scale networks (i.e. \eqn{p,q > 1000}).}
 }
 \value{
-list containing 
+A list containing 
 \enumerate{
   \item \code{ParCor} The estimated partial correlation matrix (\eqn{P \times P}), 
   where off-diagonals  \eqn{ |\hat \rho^{p,q}_{yy}| > 1e-6}  encode the edges \eqn{\{ y_q - y_l : q \neq l \} }
@@ -78,7 +78,9 @@ and edge set \eqn{\textbf{E}= \{ x_p - y_q \} \cup \{ y_q - y_l : q \neq l \}}.
 \examples{
 data(sim1)
 net <- spacemap(Y = sim1$Y, X = sim1$X, lam1 = 70, lam2 = 28.8, lam3 = 12.38)
+#adjacency matrix of y-y and x-y edges. 
+adjnet <- adjacency(net)
 }
 \seealso{
-\code{\link{crossValidation}}, \code{\link{bootVote}}
+\code{\link{cvVote}}, \code{\link{bootEnsemble}}, \code{\link{bootVote}}
 }

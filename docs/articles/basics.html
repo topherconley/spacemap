@@ -39,18 +39,21 @@
       <a href="../articles/basics.html">Basics</a>
     </li>
     <li>
-      <a href="../articles/tune_sim1.html">Model Tuning</a>
+      <a href="../articles/tuning.html">Model Tuning</a>
+    </li>
+    <li>
+      <a href="../articles/ensemble.html">Ensemble Network</a>
     </li>
   </ul>
-</li>
-<li>
-  <a href="https://topherconley.github.io/neta-bcpls/">Network Toolkit</a>
 </li>
 <li>
   <a href="../reference/index.html">R Documentation</a>
 </li>
 <li>
   <a href="https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta">Installation</a>
+</li>
+<li>
+  <a href="https://topherconley.github.io/neta-bcpls/">Network Toolkit</a>
 </li>
 <li>
   <a href="https://github.com/topherconley/spacemap/issues">Contact Us</a>
@@ -78,117 +81,234 @@
       <h1>spacemap basics</h1>
                         <h4 class="author">Christopher Conley, Pei Wang, Jie Peng</h4>
             
-            <h4 class="date">2017-04-04</h4>
+            <h4 class="date">2017-04-13</h4>
           </div>
 
     
     
 <div class="contents">
-<p>This vignette illustrates the basics of fitting spaceMap, a conditional graphical model suited for learning networks from high-dimensional data constrained by limited sample size. The spaceMap model was motivated by integrative genomics applications to learn how genomic copy number alterations (CNA) predict and regulate the protein covariation response. It takes as input two distinct data types–predictors (.e.g. CNA) and responses (e.g. proteins). The model can generally be applied to diverse high dimensional data types where interactions between predictors and response variables and also among responses are of primary importance, while interactions among predictors is not of primary importance. Together, these interactions form a network and it is the goal of spaceMap to learn the network from predictor and response data. This vignette will help users become familiar with the implementation of the model parameters and the output associated with the <code>spacemap::spacemap</code> function, which is the fundamental model fitting function of the R package. Familiarity with the mathematical expression of the spaceMap model will help the reader map the notation to R object variables (see the Methods section of the spacemap publication).</p>
+<div id="purpose" class="section level2">
+<h2 class="hasAnchor">
+<a href="#purpose" class="anchor"></a>Purpose</h2>
+<p>This vignette will help users become familiar with the implementation of the model parameters and the output associated with the <code>spacemap</code> function, which is the fundamental model fitting function of the R package. Familiarity with the mathematical expression of the spaceMap model will help the reader map the notation to R object variables (see the Methods section of the spacemap publication).</p>
+</div>
 <div id="background" class="section level2">
 <h2 class="hasAnchor">
 <a href="#background" class="anchor"></a>Background</h2>
-<p>The objective of spaceMap is to learn the network topology from data. Load the data set labeled <code>sim1</code>, which was generated under a hub network topology with two data types: predictor variables <span class="math inline">\(\bf X \in \mathbb{R}^P\)</span> and response variables <span class="math inline">\(\bf Y \in \mathbb{R}^Q\)</span>, where <span class="math inline">\(P = 14\)</span> and <span class="math inline">\(Q = 171\)</span>. When we fit the spaceMap model, we seek to learn the network comprised of node set <span class="math inline">\(\textbf{V}= (X,Y)\)</span> and edge set <span class="math inline">\(\textbf{E}= \{ x_p - y_q : p \in \{1, \dots, P\}, q \in \{1, \dots, Q\} \} \cup \{ y_q - y_l : q \neq l \in \{1, \dots, Q\} \}\)</span></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">suppressPackageStartupMessages</span>(<span class="kw">library</span>(spacemap))</code></pre></div>
-<pre><code>## Warning: package 'Rcpp' was built under R version 3.3.3</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(sim1)</code></pre></div>
-<p>The <code>sim1</code> object contains the true network as well as data generated under the network topology. In the interactive graphic below it can be seen there are 4 <span class="math inline">\(X\)</span> hubs depicted as large dark blue circles and a handful of <span class="math inline">\(X\)</span> variables with no edges at all depicted as small dark blue circles. There are two large disconnected components each containing 2 <span class="math inline">\(X\)</span> hubs and at least one <span class="math inline">\(Y\)</span> hub depicted as a large light blue circle. Other <span class="math inline">\(Y\)</span> variables are depicted as small light blue circles. Further details of <code>sim1</code> can be found by entering <code>help(spacemap::sim1)</code> at the R console.</p>
-<div id="htmlwidget-cdfbc22410e9098fcbf4" style="width:672px;height:480px;" class="forceNetwork html-widget"></div>
-<script type="application/json" data-for="htmlwidget-cdfbc22410e9098fcbf4">{"x":{"links":{"source":[2,3,3,106,3,3,118,109,106,107,117,116,2,3,120,114,108,110,3,124,3,106,18,1,123,124,2,122,135,2,106,131,106,116,112,123,144,115,142,107,106,132,2,134,3,112,130,121,143,110,143,17,3,106,158,107,156,2,3,113,2,115,158,146,133,112,165,106,2,162,169,133,106,2,106,119,150,3,165,2,106,2,117,126,155,2,148,154,15,147,2,165,116,171,109,179,129,141,137,3,27,23,14,0,27,14,0,14,1,34,27,0,25,1,15,14,29,14,25,14,43,21,0,1,1,1,17,0,52,0,53,1,45,56,30,0,16,22,21,0,19,23,37,48,28,65,57,19,14,1,45,61,72,69,67,56,26,1,0,64,0,73,14,14,1,20,25,36,19,46,48,79,26,76,34,14,35,1,55,42,72,78,14,65,93,70,29,20,16,87,89,62,17,1,51,48,83,1,33,0,0,49,59,0,14,1,56,80,2,3],"target":[111,114,115,118,120,122,125,125,125,126,126,127,127,128,129,130,132,132,135,136,137,138,24,24,139,139,139,140,141,142,142,143,144,144,145,145,146,147,147,148,148,149,149,151,151,152,153,153,154,157,158,26,159,160,161,161,161,163,163,164,164,164,166,166,166,167,168,169,169,170,170,170,171,171,172,172,172,173,174,175,175,176,176,177,177,178,178,178,28,179,179,180,180,180,181,182,183,184,184,184,29,30,30,14,31,32,33,34,37,38,38,39,40,40,40,41,42,43,43,44,45,46,47,47,50,15,52,53,53,54,55,55,58,60,60,61,62,63,63,64,65,66,67,67,68,68,70,71,71,73,74,74,75,75,75,76,76,77,78,78,81,81,81,82,83,84,84,84,85,86,86,86,87,88,88,89,90,90,90,91,92,93,93,94,94,94,95,96,96,97,98,98,98,99,99,100,101,101,102,102,103,103,103,104,104,105,105,105,106,106],"colour":["#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666"]},"nodes":{"name":["X-1","X-3","X-95","X-97","X-176","X-177","X-178","X-179","X-180","X-181","X-182","X-183","X-184","X-185","Y-2","Y-4","Y-5","Y-6","Y-7","Y-8","Y-9","Y-10","Y-11","Y-12","Y-13","Y-14","Y-15","Y-16","Y-17","Y-18","Y-19","Y-20","Y-21","Y-22","Y-23","Y-24","Y-25","Y-26","Y-27","Y-28","Y-29","Y-30","Y-31","Y-32","Y-33","Y-34","Y-35","Y-36","Y-37","Y-38","Y-39","Y-40","Y-41","Y-42","Y-43","Y-44","Y-45","Y-46","Y-47","Y-48","Y-49","Y-50","Y-51","Y-52","Y-53","Y-54","Y-55","Y-56","Y-57","Y-58","Y-59","Y-60","Y-61","Y-62","Y-63","Y-64","Y-65","Y-66","Y-67","Y-68","Y-69","Y-70","Y-71","Y-72","Y-73","Y-74","Y-75","Y-76","Y-77","Y-78","Y-79","Y-80","Y-81","Y-82","Y-83","Y-84","Y-85","Y-86","Y-87","Y-88","Y-89","Y-90","Y-91","Y-92","Y-93","Y-94","Y-96","Y-98","Y-99","Y-100","Y-101","Y-102","Y-103","Y-104","Y-105","Y-106","Y-107","Y-108","Y-109","Y-110","Y-111","Y-112","Y-113","Y-114","Y-115","Y-116","Y-117","Y-118","Y-119","Y-120","Y-121","Y-122","Y-123","Y-124","Y-125","Y-126","Y-127","Y-128","Y-129","Y-130","Y-131","Y-132","Y-133","Y-134","Y-135","Y-136","Y-137","Y-138","Y-139","Y-140","Y-141","Y-142","Y-143","Y-144","Y-145","Y-146","Y-147","Y-148","Y-149","Y-150","Y-151","Y-152","Y-153","Y-154","Y-155","Y-156","Y-157","Y-158","Y-159","Y-160","Y-161","Y-162","Y-163","Y-164","Y-165","Y-166","Y-167","Y-168","Y-169","Y-170","Y-171","Y-172","Y-173","Y-174","Y-175"],"group":["x","x","x","x","x","x","x","x","x","x","x","x","x","x","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y","y"],"nodesize":[169,196,196,169,0,0,0,0,0,0,0,0,0,0,169,9,4,9,1,9,4,4,1,4,4,9,9,9,4,9,9,1,1,4,9,1,1,4,4,1,9,1,4,9,1,9,4,4,9,1,1,1,4,9,1,9,9,1,1,1,4,4,4,4,4,9,1,9,4,1,4,4,4,4,4,9,9,1,9,1,1,9,1,4,9,1,9,4,4,4,9,1,1,9,9,1,4,1,9,4,1,4,4,9,4,9,169,9,1,4,4,1,9,1,4,9,9,4,4,1,4,1,4,4,4,9,9,4,1,4,4,1,9,4,1,4,1,4,1,9,1,4,9,9,9,4,4,9,9,4,1,4,1,4,4,1,1,1,9,1,1,9,1,4,9,9,9,1,1,9,9,9,9,1,1,4,4,4,9,9,9,1,1,1,9]},"options":{"NodeID":"name","Group":"group","colourScale":"d3.scaleOrdinal(d3.schemeCategory20);","fontSize":12,"fontFamily":"serif","clickTextSize":30,"linkDistance":5,"linkWidth":"function(d) { return Math.sqrt(d.value); }","charge":-15,"opacity":0.9,"zoom":false,"legend":false,"arrows":false,"nodesize":true,"radiusCalculation":" Math.sqrt(d.nodesize)+6","bounded":true,"opacityNoHover":0,"clickAction":null}},"evals":[],"jsHooks":[]}</script><p>The spaceMap model learns the structure of the above network from data by estimating the edge set <span class="math inline">\(\bf\hat E\)</span>. The following steps will discuss basic input parameters to learn the network.</p>
+<p>spaceMap is a conditional graphical model suited for learning networks from high-dimensional data constrained by limited sample size. The spaceMap model was motivated by integrative genomics applications to learn how genomic copy number alterations (CNA) predict and regulate the protein covariation response. It takes as input two distinct data types–predictors (.e.g. CNA) and responses (e.g. proteins). The model can generally be applied to diverse high dimensional data types where interactions between predictors and response variables and also among responses are of primary importance, while interactions among predictors is not of primary importance. Together, these interactions form a network and it is the goal of spaceMap to learn the network from predictor and response data.</p>
 </div>
-<div id="fitting-spacemapspacemap" class="section level2">
+<div id="example" class="section level2">
 <h2 class="hasAnchor">
-<a href="#fitting-spacemapspacemap" class="anchor"></a>Fitting <code>spacemap::spacemap</code>
+<a href="#example" class="anchor"></a>Example</h2>
+<p>Load the data set labeled <code>sim1</code>, which was generated under a hub network topology with two data types: predictor variables <span class="math inline">\(\bf X \in \mathbb{R}^P\)</span> and response variables <span class="math inline">\(\bf Y \in \mathbb{R}^Q\)</span>, where <span class="math inline">\(P = 14\)</span> and <span class="math inline">\(Q = 171\)</span>. When we fit the spaceMap model, we seek to learn the network comprised of node set <span class="math inline">\(\textbf{V}= (X,Y)\)</span> and edge set <span class="math inline">\(\textbf{E}= \{ x_p - y_q : p \in \{1, \dots, P\}, q \in \{1, \dots, Q\} \} \cup \{ y_q - y_l : q \neq l \in \{1, \dots, Q\} \}\)</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">suppressPackageStartupMessages</span>(<span class="kw">library</span>(spacemap))
+<span class="kw">data</span>(sim1)</code></pre></div>
+<p>The <code>sim1</code> object contains the true network as well as data generated under the network topology. Further details of <code>sim1</code> can be found by entering <code>help(spacemap::sim1)</code> at the R console.</p>
+<p>The spaceMap model learns the structure of the above network from data by estimating the edge set <span class="math inline">\(\bf\hat E\)</span>. The following steps will discuss basic input parameters to learn the network.</p>
+</div>
+<div id="fitting-spacemap" class="section level2">
+<h2 class="hasAnchor">
+<a href="#fitting-spacemap" class="anchor"></a>Fitting <code>spacemap</code>
 </h2>
 <div id="tuning-penalties" class="section level3">
 <h3 class="hasAnchor">
 <a href="#tuning-penalties" class="anchor"></a>Tuning penalties</h3>
-<p>Tuning penalties <span class="math inline">\(\lambda_1, \lambda_2\)</span> correspond to parameters <code>slasso</code> and <code>rlasso</code>, respectively, where each determines the degree of overall sparsity of the <span class="math inline">\(y-y\)</span> and <span class="math inline">\(x-y\)</span> edges in the network. Tuning penalty <span class="math inline">\(\lambda_3\)</span> corresponds to parameter <code>rgroup</code> and encourages selection of <span class="math inline">\(x\)</span> hubs–that is <span class="math inline">\(x\)</span>’s that infuence many <span class="math inline">\(y\)</span>’s. The selection of appropriate penalty parameters is of primary importance when evaluating <code>spacemap::spacemap</code> to learn a network. In this simplified scenario we set the tuning parameters based on previous cross-validation results. The task of selecting appropriate tuning parameters requires a robust model-selection routine and is discussed in more advanced vignettes.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">slasso &lt;-<span class="st"> </span><span class="fl">69.67802</span> 
-rlasso &lt;-<span class="st"> </span><span class="fl">28.84801</span> 
-rgroup &lt;-<span class="st"> </span><span class="fl">12.38648</span></code></pre></div>
+<p>Tuning penalties <span class="math inline">\(\lambda_1, \lambda_2\)</span> correspond to parameters <code>lam1</code> and <code>lam2</code>, respectively, where each determines the degree of overall sparsity of the <span class="math inline">\(y-y\)</span> and <span class="math inline">\(x-y\)</span> edges in the network. Tuning penalty <span class="math inline">\(\lambda_3\)</span> corresponds to parameter <code>lam3</code> and encourages selection of <span class="math inline">\(x\)</span> hubs–that is <span class="math inline">\(x\)</span>’s that infuence many <span class="math inline">\(y\)</span>’s. The selection of appropriate penalty parameters is of primary importance when evaluating <code>spacemap::spacemap</code> to learn a network. In this simplified scenario we set the tuning parameters based on previous cross validation results. The task of selecting appropriate tuning parameters requires a robust model-selection routine and is discussed in more advanced vignettes.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lam1 &lt;-<span class="st"> </span><span class="dv">72</span>
+lam2 &lt;-<span class="st"> </span><span class="dv">29</span> 
+lam3 &lt;-<span class="st"> </span><span class="dv">18</span></code></pre></div>
 </div>
 <div id="output" class="section level3">
 <h3 class="hasAnchor">
 <a href="#output" class="anchor"></a>Output</h3>
 <p>Fit the spacemap model to the data matrices <span class="math inline">\(\bf X\)</span> and <span class="math inline">\(\bf Y\)</span> with the selected tuning penalties. All other input parameters are left as defaults, but can be further customized as needed (see <code>help(spacemap::spacemap)</code>).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">net &lt;-<span class="st"> </span><span class="kw"><a href="../reference/spacemap.html">spacemap</a></span>(<span class="dt">Y.m =</span> sim1$Y, <span class="dt">X.m =</span> sim1$X, <span class="dt">slasso =</span> slasso, <span class="dt">rlasso =</span> rlasso, <span class="dt">rgroup =</span> rgroup)</code></pre></div>
-<pre><code>## Warning in doSpaceMap(Y.u, X.u, remWeight, sig.u^0.5, slasso, sridge,
-## rlasso, : '.Random.seed' is not an integer vector but of type 'NULL', so
-## ignored</code></pre>
-<p>The output of spacemap is a list of estimated parameters and model diagnostics. The estimated parameters are combined to infer the network. The model diagnostics help the user to decide whether the stiamted parameters are valid. <strong>Estimated parameters:</strong> The estimated partial correlations <span class="math inline">\(\bf \hat \rho\)</span> are reported as a symmetric matrix <code>ParCor</code> where the off-diagonal entries exceeding the convergence tolerance in absolute value encode <span class="math inline">\(y-y\)</span> edges. The estimated diagnoal of the inverse covariation matrix for the <span class="math inline">\(y\)</span> variables is denoted as <span class="math inline">\(\bf \hat \theta\)</span> and is reported as the numeric vector <code>sig.fit</code>. The estimated regression coefficients <span class="math inline">\(\bf \hat \Gamma\)</span> are reported in matrix form as <code>Gamma</code>, where coefficients exceeding the convergence tolerance encode <span class="math inline">\(x-y\)</span> edges. <strong>Model Diagnostics:</strong> The residual sum of squares is reported as a numeric <code>rss</code>; the logical variable <code>convergence</code> indicates whether the model converged under the specified tolerance and number of maximum iterations; the numeric <code>deltaMax</code> reports the maximum <span class="math inline">\(\Delta\)</span> in parameter values in the last iteration.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">net &lt;-<span class="st"> </span><span class="kw"><a href="../reference/spacemap.html">spacemap</a></span>(<span class="dt">Y =</span> sim1$Y, <span class="dt">X =</span> sim1$X, <span class="dt">lam1 =</span> lam1, <span class="dt">lam2 =</span> lam2, <span class="dt">lam3 =</span> lam3)</code></pre></div>
+<p>Most users wiil be interested in the network topology, which is encoded in the adjacency matrices <code>yy</code> and <code>xy</code> output from the <code>adjacency</code> auxillary function.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">adjnet &lt;-<span class="st"> </span><span class="kw"><a href="../reference/adjacency.html">adjacency</a></span>(<span class="dt">net =</span> net)
+<span class="kw">str</span>(adjnet)</code></pre></div>
+<pre><code>## List of 2
+##  $ yy: int [1:171, 1:171] 0 0 0 0 0 0 0 0 0 0 ...
+##  $ xy: int [1:14, 1:171] 1 0 0 0 0 0 0 0 0 0 ...</code></pre>
+<p>where</p>
+<ul>
+<li>
+<code>adjnet$yy[q,l]</code> indicates an edge <span class="math inline">\(y_q - y_l\)</span> when equal to 1 and 0 otherwise.</li>
+<li>
+<code>adjnet$xy[p,q]</code> indicates an edge <span class="math inline">\(x_p - y_q\)</span> when equal to 1 and 0 otherwise.</li>
+</ul>
+<p>The intermediate output of <code>spacemap</code> is a list of estimated parameters and model diagnostics. The estimated parameters are combined to infer the network. The model diagnostics help the user to decide whether the estimated parameters are valid.</p>
+<div id="estimated-parameters" class="section level4">
+<h4 class="hasAnchor">
+<a href="#estimated-parameters" class="anchor"></a>Estimated parameters:</h4>
+<ul>
+<li>The estimated partial correlations <span class="math inline">\(\bf \hat \rho\)</span> are reported as a symmetric matrix <code>ParCor</code> where the off-diagonal entries exceeding the convergence tolerance in absolute value encode <span class="math inline">\(y-y\)</span> edges.</li>
+<li>The estimated diagnoal of the inverse covariation matrix for the <span class="math inline">\(y\)</span> variables is denoted as <span class="math inline">\(\bf \hat \theta\)</span> and is reported as the numeric vector <code>sig.fit</code>.</li>
+<li>The estimated regression coefficients <span class="math inline">\(\bf \hat \Gamma\)</span> are reported in matrix form as <code>Gamma</code>, where coefficients exceeding the convergence tolerance encode <span class="math inline">\(x-y\)</span> edges.</li>
+</ul>
+</div>
+<div id="model-diagnostics" class="section level4">
+<h4 class="hasAnchor">
+<a href="#model-diagnostics" class="anchor"></a>Model Diagnostics:</h4>
+<ul>
+<li>The residual sum of squares is reported as a numeric <code>rss</code>.</li>
+<li>The logical variable <code>convergence</code> indicates whether the model converged subject to the specified tolerance and number of maximum iterations;</li>
+<li>The numeric <code>deltaMax</code> reports the maximum <span class="math inline">\(\Delta\)</span> in parameter values in the last iteration. This helps diagnose how close the algorithm is to converging if it does not coverge.</li>
+</ul>
+<p>The structure of the intermediate output is shown below.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">str</span>(net)</code></pre></div>
 <pre><code>## List of 6
 ##  $ ParCor     : num [1:171, 1:171] 1 0 0 0 0 0 0 0 0 0 ...
-##  $ sig.fit    : num [1:171] 3.22 1.12 1.35 1.07 1.28 ...
-##  $ Gamma      : num [1:14, 1:171] -0.0129 0 0 0 0 ...
-##  $ rss        : num 20645
+##  $ sig.fit    : num [1:171] 3.17 1.11 1.34 1.06 1.27 ...
+##  $ Gamma      : num [1:14, 1:171] -0.0145 0 0 0 0 ...
+##  $ rss        : num 20815
 ##  $ convergence: logi TRUE
-##  $ deltaMax   : num 7.46e-09</code></pre>
-<p>The <code>spacemap</code> output can easily be converted into <code>igraph</code> representation in the event its rich suite of features are needed in downstream network analysis. To make this conversion, create a data.frame containing some basic information such as node ID, type of node (i.e. x or y) and whether the node is a hub.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">suppressPackageStartupMessages</span>(<span class="kw">library</span>(igraph))
-info &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">id =</span> <span class="kw">c</span>(sim1$Xindex, sim1$Yindex), 
-                   <span class="dt">type =</span> <span class="kw">c</span>(<span class="kw">rep</span>(<span class="dt">x =</span> <span class="st">"x"</span>, <span class="dt">times =</span> <span class="kw">length</span>(sim1$Xindex)),
-                            <span class="kw">rep</span>(<span class="dt">x =</span> <span class="st">"y"</span>, <span class="dt">times =</span> <span class="kw">length</span>(sim1$Yindex))),
-                   <span class="dt">hub =</span> <span class="kw">c</span>(sim1$Xindex, sim1$Yindex) %in%<span class="st"> </span>sim1$XMasterIndex)
-<span class="kw">library</span>(knitr)
-info$id &lt;-<span class="st"> </span><span class="kw">paste</span>(<span class="kw">toupper</span>(info$type), info$id, <span class="dt">sep =</span> <span class="st">"-"</span>)
-<span class="kw">kable</span>(<span class="kw">head</span>(info))</code></pre></div>
-<table class="table">
-<thead><tr class="header">
-<th align="left">id</th>
-<th align="left">type</th>
-<th align="left">hub</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">X-1</td>
-<td align="left">x</td>
-<td align="left">TRUE</td>
-</tr>
-<tr class="even">
-<td align="left">X-3</td>
-<td align="left">x</td>
-<td align="left">TRUE</td>
-</tr>
-<tr class="odd">
-<td align="left">X-95</td>
-<td align="left">x</td>
-<td align="left">TRUE</td>
-</tr>
-<tr class="even">
-<td align="left">X-97</td>
-<td align="left">x</td>
-<td align="left">TRUE</td>
-</tr>
-<tr class="odd">
-<td align="left">X-176</td>
-<td align="left">x</td>
-<td align="left">FALSE</td>
-</tr>
-<tr class="even">
-<td align="left">X-177</td>
-<td align="left">x</td>
-<td align="left">FALSE</td>
-</tr>
-</tbody>
-</table>
+##  $ deltaMax   : num 8.77e-08</code></pre>
+</div>
 </div>
 </div>
 <div id="quick-visualization" class="section level2">
 <h2 class="hasAnchor">
 <a href="#quick-visualization" class="anchor"></a>Quick Visualization</h2>
-<p>While there are many visualization options, we recommend using Cytoscape to visually inspect networks. However, Cytoscape may involve some manual curation and is a sophisticated tool with a learning curve. If you simply need a quick way to visualize the network output, the following section illusrates how. First, convert the spacemap output to an igraph object.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#set the diagonal to zero to avoid self-loops</span>
-<span class="kw">diag</span>(net$ParCor) &lt;-<span class="st"> </span><span class="dv">0</span>
-<span class="co">#the default convergence tolerance</span>
-tol &lt;-<span class="st"> </span><span class="fl">1e-6</span>
-ig &lt;-<span class="st"> </span>spacemap::<span class="kw"><a href="../reference/adj2igraph.html">adj2igraph</a></span>(<span class="dt">YY =</span> <span class="kw">abs</span>(net$ParCor) &gt;<span class="st"> </span>tol, <span class="dt">XY =</span> <span class="kw">abs</span>(net$Gamma) &gt;<span class="st"> </span>tol, <span class="dt">info =</span> info, <span class="dt">dropnull =</span> F)</code></pre></div>
-<p>Identify modules of the inferred network with <code>igraph</code>’s edge-betweenness algorithm. Each module discovered will be colored differently.</p>
+<p>Often network analysis is enhanced by compelling visualizations that have nodes annotated with specific attributes like genomic ID, genomic coordinates, and any pathways associated with the node. Annotating and visualizing network output from <code>spacemap</code> output is aided by several external and independent software libraries. The spacemap R package has auxillary functions to interact with the igraph R package, which contains a rich suite of network analysis tools. Below we illustrate how to quickly integrate annotation information into the network.</p>
+<p>Suppose you have nodes annotated in a data.frame where the rows are sorted to correspond to <span class="math inline">\((X_1, \dots, X_P, Y_1, \dots, Y_Q\)</span>). Suppose that predictor variables <span class="math inline">\(X\)</span> are genomic copy number aberations and response variables <span class="math inline">\(Y\)</span> are gene expression. Suppose that it has the following structure where</p>
+<table class="table">
+<thead><tr class="header">
+<th align="left">id</th>
+<th align="left">node_level</th>
+<th align="right">chr</th>
+<th align="right">begin</th>
+<th align="right">end</th>
+<th align="left">strand</th>
+<th align="left">pathways</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">chr19q30</td>
+<td align="left">x</td>
+<td align="right">19</td>
+<td align="right">7335466</td>
+<td align="right">10559234</td>
+<td align="left">+</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">chr3p19</td>
+<td align="left">x</td>
+<td align="right">3</td>
+<td align="right">5019608</td>
+<td align="right">11807229</td>
+<td align="left">+</td>
+<td align="left">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">chr15p13</td>
+<td align="left">x</td>
+<td align="right">15</td>
+<td align="right">5552083</td>
+<td align="right">8107943</td>
+<td align="left">+</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">chr12q16</td>
+<td align="left">x</td>
+<td align="right">12</td>
+<td align="right">9806081</td>
+<td align="right">2688336</td>
+<td align="left">-</td>
+<td align="left">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">chr16p20</td>
+<td align="left">x</td>
+<td align="right">16</td>
+<td align="right">6576515</td>
+<td align="right">10829417</td>
+<td align="left">+</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">gene1</td>
+<td align="left">y</td>
+<td align="right">19</td>
+<td align="right">5377124</td>
+<td align="right">701807</td>
+<td align="left">-</td>
+<td align="left"><a href="GO:0008236" class="uri">GO:0008236</a></td>
+</tr>
+<tr class="odd">
+<td align="left">gene2</td>
+<td align="left">y</td>
+<td align="right">19</td>
+<td align="right">6307062</td>
+<td align="right">19326643</td>
+<td align="left">+</td>
+<td align="left"><a href="GO:0070260;GO:0012770" class="uri">GO:0070260;GO:0012770</a></td>
+</tr>
+<tr class="even">
+<td align="left">gene3</td>
+<td align="left">y</td>
+<td align="right">10</td>
+<td align="right">3783566</td>
+<td align="right">5350735</td>
+<td align="left">+</td>
+<td align="left"><a href="GO:0045977;GO:0068553" class="uri">GO:0045977;GO:0068553</a></td>
+</tr>
+<tr class="odd">
+<td align="left">gene4</td>
+<td align="left">y</td>
+<td align="right">22</td>
+<td align="right">7296727</td>
+<td align="right">12407083</td>
+<td align="left">+</td>
+<td align="left"><a href="GO:0090862" class="uri">GO:0090862</a></td>
+</tr>
+<tr class="even">
+<td align="left">gene5</td>
+<td align="left">y</td>
+<td align="right">4</td>
+<td align="right">7137499</td>
+<td align="right">12197640</td>
+<td align="left">+</td>
+<td align="left"><a href="GO:0031451" class="uri">GO:0031451</a></td>
+</tr>
+<tr class="odd">
+<td align="left">gene6</td>
+<td align="left">y</td>
+<td align="right">18</td>
+<td align="right">657320</td>
+<td align="right">567732</td>
+<td align="left">-</td>
+<td align="left"><a href="GO:0066836;GO:0092735" class="uri">GO:0066836;GO:0092735</a></td>
+</tr>
+</tbody>
+</table>
+<p>Load the node annotation data.frame.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">if(<span class="dv">0</span>) { 
+  info &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="dt">file =</span> <span class="st">"/path/to/my/annotation/file.rds"</span>)
+}</code></pre></div>
+<p>Convert the spacemap output to igraph format together with the annotation information.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(igraph)
+ig &lt;-<span class="st"> </span>spacemap::<span class="kw"><a href="../reference/adj2igraph.html">adj2igraph</a></span>(<span class="dt">YY =</span> adjnet$yy, <span class="dt">XY =</span> adjnet$xy, <span class="dt">info =</span> info, <span class="dt">dropnull =</span> F)</code></pre></div>
+<p>The <code>igraph</code> object has a very convenient sparse representation as shown below.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ig</code></pre></div>
+<pre><code>## IGRAPH UN-- 185 201 -- 
+## + attr: name (v/c), node_level (v/c), chr (v/n), begin (v/n), end
+## | (v/n), strand (v/c), pathways (v/c)
+## + edges (vertex names):
+##  [1] chr14p17--gene1  chr14p17--gene20 chr14p17--gene21 chr14p17--gene23
+##  [5] chr14p17--gene26 chr14p17--gene34 chr14p17--gene40 chr14p17--gene41
+##  [9] chr14p17--gene48 chr14p17--gene51 chr14p17--gene65 chr14p17--gene68
+## [13] chr14p17--gene89 chr14p17--gene91 chr5q17 --gene2  chr5q17 --gene5 
+## [17] chr5q17 --gene11 chr5q17 --gene24 chr5q17 --gene27 chr5q17 --gene34
+## [21] chr5q17 --gene37 chr5q17 --gene42 chr5q17 --gene64 chr5q17 --gene70
+## [25] chr5q17 --gene77 chr5q17 --gene86 chr5q17 --gene88 chr5q17 --gene92
+## + ... omitted several edges</code></pre>
+<p>Identify modules of the inferred network with <code>igraph</code>’s edge-betweenness algorithm. Each module discovered will be colored differently when we visualize the network.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ceb &lt;-<span class="st"> </span>igraph::<span class="kw">cluster_edge_betweenness</span>(<span class="dt">graph =</span> ig)
 members &lt;-<span class="st"> </span>igraph::<span class="kw">membership</span>(ceb)</code></pre></div>
-<p>For interactive visualization, we may make use of the <code>networkD3</code> package. The following snippet will visualize <code>spacemap</code>’s network where <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> hub nodes are larger in size. Colors denote the 14 different modules of the network. Hover over a node with your mouse if you wish to see the node ID and its adjacent neighbors.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">suppressPackageStartupMessages</span>(<span class="kw">library</span>(networkD3))
+<p>While there are many visualization options, we recommend using Cytoscape (not part of R) to visually inspect networks. However, Cytoscape may involve some manual curation and is a sophisticated tool with a learning curve. If you simply need a quick way to visualize the network output, the following section illusrates how to do so within R. For interactive visualization, we may make use of the <code>networkD3</code> package. The following snippet will visualize <code>spacemap</code>’s network where <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> hub nodes are larger in size. Colors denote the 14 different modules of the network. Hover over a node with your mouse if you wish to see the node ID and its adjacent neighbors.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(networkD3)
 <span class="co">#Convert the object suitable for `networkD3`</span>
 ig_d3 &lt;-<span class="st"> </span><span class="kw">igraph_to_networkD3</span>(ig, <span class="dt">group =</span> members)
 <span class="co">#make the node size bigger according to degree</span>
@@ -201,13 +321,13 @@ ig_d3$nodes$degree &lt;-<span class="st"> </span>igraph::<span class="kw">degree
              <span class="dt">opacity =</span> <span class="fl">0.90</span>, 
              <span class="dt">bounded =</span> T, 
              <span class="dt">charge =</span> -<span class="dv">15</span>)</code></pre></div>
-<div id="htmlwidget-18af7d4d244fe2a32138" style="width:672px;height:480px;" class="forceNetwork html-widget"></div>
-<script type="application/json" data-for="htmlwidget-18af7d4d244fe2a32138">{"x":{"links":{"source":[28,59,2,30,78,3,3,7,40,106,7,3,3,118,109,107,117,116,2,3,120,114,114,110,108,32,14,3,3,124,3,106,1,18,2,124,122,55,135,131,7,3,116,102,123,144,142,115,93,130,107,132,2,134,3,112,130,121,143,7,2,110,17,3,106,158,156,107,2,3,113,2,115,144,133,22,146,112,165,106,162,133,169,109,2,3,150,119,3,165,2,2,117,155,126,154,2,34,15,171,165,116,17,109,179,129,3,27,14,23,0,27,14,0,0,0,1,14,0,15,25,1,14,29,25,14,43,21,0,1,43,1,1,17,52,0,33,0,1,45,18,56,0,16,21,22,21,0,19,23,28,46,57,19,14,48,3,61,45,2,72,67,69,56,1,0,64,15,1,0,73,14,31,14,1,20,36,19,79,46,26,76,34,14,82,71,35,55,1,72,2,42,72,14,78,70,31,29,16,20,87,62,17,89,51,1,48,83,1,33,0,49,59,47,0,14,80,1,35],"target":[109,111,111,113,114,114,115,115,116,118,22,120,122,125,125,126,126,127,127,128,129,130,131,132,132,133,133,134,135,136,137,138,24,24,139,139,140,140,141,143,143,144,144,145,145,146,147,147,148,148,148,149,149,151,151,152,153,153,154,154,156,157,26,159,160,161,161,161,163,163,164,164,164,165,166,166,166,167,168,169,170,170,170,171,171,171,172,172,173,174,175,176,176,177,177,178,178,178,28,180,180,180,181,181,182,183,184,29,30,30,14,31,32,33,34,36,37,38,39,40,40,40,41,42,43,44,45,46,47,47,49,50,15,52,53,53,53,54,55,58,60,60,61,62,62,63,63,64,65,66,68,68,70,71,71,73,73,74,74,74,75,75,75,76,77,78,78,80,18,81,81,81,81,82,83,84,84,85,86,86,87,88,88,89,89,89,90,90,90,90,91,91,92,93,93,94,95,95,96,96,97,98,98,98,99,99,100,101,101,102,102,103,103,103,104,104,105,105,108],"colour":["#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666"]},"nodes":{"name":["X-1","X-3","X-95","X-97","X-176","X-177","X-178","X-179","X-180","X-181","X-182","X-183","X-184","X-185","Y-2","Y-4","Y-5","Y-6","Y-7","Y-8","Y-9","Y-10","Y-11","Y-12","Y-13","Y-14","Y-15","Y-16","Y-17","Y-18","Y-19","Y-20","Y-21","Y-22","Y-23","Y-24","Y-25","Y-26","Y-27","Y-28","Y-29","Y-30","Y-31","Y-32","Y-33","Y-34","Y-35","Y-36","Y-37","Y-38","Y-39","Y-40","Y-41","Y-42","Y-43","Y-44","Y-45","Y-46","Y-47","Y-48","Y-49","Y-50","Y-51","Y-52","Y-53","Y-54","Y-55","Y-56","Y-57","Y-58","Y-59","Y-60","Y-61","Y-62","Y-63","Y-64","Y-65","Y-66","Y-67","Y-68","Y-69","Y-70","Y-71","Y-72","Y-73","Y-74","Y-75","Y-76","Y-77","Y-78","Y-79","Y-80","Y-81","Y-82","Y-83","Y-84","Y-85","Y-86","Y-87","Y-88","Y-89","Y-90","Y-91","Y-92","Y-93","Y-94","Y-96","Y-98","Y-99","Y-100","Y-101","Y-102","Y-103","Y-104","Y-105","Y-106","Y-107","Y-108","Y-109","Y-110","Y-111","Y-112","Y-113","Y-114","Y-115","Y-116","Y-117","Y-118","Y-119","Y-120","Y-121","Y-122","Y-123","Y-124","Y-125","Y-126","Y-127","Y-128","Y-129","Y-130","Y-131","Y-132","Y-133","Y-134","Y-135","Y-136","Y-137","Y-138","Y-139","Y-140","Y-141","Y-142","Y-143","Y-144","Y-145","Y-146","Y-147","Y-148","Y-149","Y-150","Y-151","Y-152","Y-153","Y-154","Y-155","Y-156","Y-157","Y-158","Y-159","Y-160","Y-161","Y-162","Y-163","Y-164","Y-165","Y-166","Y-167","Y-168","Y-169","Y-170","Y-171","Y-172","Y-173","Y-174","Y-175"],"group":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,1,2,15,15,2,1,15,15,16,8,2,2,15,17,15,17,8,17,18,1,3,19,15,2,1,1,2,1,17,2,1,2,15,2,4,2,2,2,15,15,1,19,2,20,2,2,2,3,15,16,1,1,8,19,15,19,20,1,19,4,3,19,2,2,1,15,2,1,1,2,15,1,15,15,2,1,19,17,19,1,20,17,15,15,15,2,4,2,1,2,1,2,18,3,19,15,19,2,21,8,1,8,16,3,18,22,4,1,19,1,3,18,3,16,4,4,1,8,19,18,4,4,3,4,18,3,19,4,8,8,16,1,16,8,1,19,22,4,21,1,8,3,3,19,3,4,18,3,18,4,8,16,16,21,16,18,18,4,22,4,16,3,3,3,3,23,16,15,23,4,4],"nodesize":[196,196,169,256,0,0,0,16,0,0,0,0,0,0,169,16,4,16,9,9,4,9,9,4,4,4,4,4,9,9,9,9,4,9,9,4,4,1,1,1,16,1,4,9,1,9,9,9,4,4,1,1,4,9,1,9,4,1,1,4,4,4,9,4,4,1,1,1,4,1,4,9,9,9,9,9,4,1,16,1,4,16,4,4,4,1,4,4,4,16,16,4,1,9,1,4,4,1,9,4,1,4,9,9,4,4,16,9,4,16,4,4,4,4,16,16,16,4,4,1,4,1,4,1,4,4,9,4,1,4,9,4,9,16,4,4,1,1,1,4,4,1,1,9,16,4,4,4,9,4,1,4,1,4,9,1,4,1,1,1,1,9,1,4,9,16,9,1,1,4,9,16,4,1,1,1,4,4,9,1,9,4,1,1,1]},"options":{"NodeID":"name","Group":"group","colourScale":"d3.scaleOrdinal(d3.schemeCategory20);","fontSize":12,"fontFamily":"serif","clickTextSize":30,"linkDistance":10,"linkWidth":"function(d) { return Math.sqrt(d.value); }","charge":-15,"opacity":0.9,"zoom":false,"legend":false,"arrows":false,"nodesize":true,"radiusCalculation":" Math.sqrt(d.nodesize)+6","bounded":true,"opacityNoHover":0,"clickAction":null}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-0345c9c9c77658b5f438" style="width:672px;height:480px;" class="forceNetwork html-widget"></div>
+<script type="application/json" data-for="htmlwidget-0345c9c9c77658b5f438">{"x":{"links":{"source":[0,78,3,3,40,106,3,3,18,1,109,118,107,117,116,2,3,120,114,114,108,110,3,3,124,3,106,124,2,122,55,135,131,3,116,102,123,144,115,107,93,132,2,3,134,112,130,121,143,2,110,3,106,158,107,156,15,3,2,113,115,2,144,146,133,112,165,133,162,169,3,109,2,119,150,27,3,165,2,2,117,126,155,2,154,171,165,109,17,179,23,14,129,3,27,14,1,0,0,0,1,14,0,1,15,25,14,29,25,14,43,21,0,1,43,1,17,0,33,52,0,1,45,18,56,0,16,1,21,22,0,19,23,28,46,57,19,14,48,3,2,45,61,67,69,72,56,1,64,0,0,14,73,31,14,1,20,36,19,46,79,26,76,34,14,71,82,1,55,72,35,2,42,72,78,70,31,29,16,20,87,62,89,17,1,51,48,1,83,0,33,47,49,59,14,0,1,80,35,28,2],"target":[14,114,114,115,116,118,120,122,24,24,125,125,126,126,127,127,128,129,130,131,132,132,134,135,136,137,138,139,139,140,140,141,143,144,144,145,145,146,147,148,148,149,149,151,151,152,153,153,154,156,157,159,160,161,161,161,28,163,163,164,164,164,165,166,166,167,168,170,170,170,171,171,171,172,172,29,173,174,175,176,176,177,177,178,178,180,180,181,181,182,30,30,183,184,31,32,15,33,34,36,37,38,39,40,40,40,41,42,43,44,45,46,47,47,49,50,52,53,53,53,54,55,58,60,60,61,62,18,63,63,64,65,66,68,68,70,71,71,73,73,74,74,74,75,75,75,76,77,78,78,81,81,81,81,82,83,84,84,85,86,86,87,88,88,89,89,89,90,90,90,90,91,91,92,93,94,95,95,96,96,97,98,98,98,99,99,100,101,101,102,102,103,103,103,104,104,105,105,108,109,111],"colour":["#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666","#666"]},"nodes":{"name":["chr14p17","chr5q17","chr22q24","chr15p17","chr9q26","chr22q4","chr18p25","chr6p32","chr16p32","chr19q30","chr3p19","chr15p13","chr12q16","chr16p20","gene1","gene2","gene3","gene4","gene5","gene6","gene7","gene8","gene9","gene10","gene11","gene12","gene13","gene14","gene15","gene16","gene17","gene18","gene19","gene20","gene21","gene22","gene23","gene24","gene25","gene26","gene27","gene28","gene29","gene30","gene31","gene32","gene33","gene34","gene35","gene36","gene37","gene38","gene39","gene40","gene41","gene42","gene43","gene44","gene45","gene46","gene47","gene48","gene49","gene50","gene51","gene52","gene53","gene54","gene55","gene56","gene57","gene58","gene59","gene60","gene61","gene62","gene63","gene64","gene65","gene66","gene67","gene68","gene69","gene70","gene71","gene72","gene73","gene74","gene75","gene76","gene77","gene78","gene79","gene80","gene81","gene82","gene83","gene84","gene85","gene86","gene87","gene88","gene89","gene90","gene91","gene92","gene93","gene94","gene95","gene96","gene97","gene98","gene99","gene100","gene101","gene102","gene103","gene104","gene105","gene106","gene107","gene108","gene109","gene110","gene111","gene112","gene113","gene114","gene115","gene116","gene117","gene118","gene119","gene120","gene121","gene122","gene123","gene124","gene125","gene126","gene127","gene128","gene129","gene130","gene131","gene132","gene133","gene134","gene135","gene136","gene137","gene138","gene139","gene140","gene141","gene142","gene143","gene144","gene145","gene146","gene147","gene148","gene149","gene150","gene151","gene152","gene153","gene154","gene155","gene156","gene157","gene158","gene159","gene160","gene161","gene162","gene163","gene164","gene165","gene166","gene167","gene168","gene169","gene170","gene171"],"group":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,2,1,1,16,15,1,17,17,15,16,2,18,19,17,19,15,19,15,1,16,20,1,2,15,1,2,15,19,2,15,3,17,2,19,2,2,2,1,1,1,2,16,21,3,2,16,1,1,17,1,15,15,22,17,22,21,15,22,19,3,22,16,2,23,17,2,19,15,2,1,15,17,18,16,15,2,19,22,23,21,19,1,18,1,2,19,2,1,2,1,2,24,3,20,24,20,3,25,26,23,26,3,3,24,27,4,23,2,1,3,24,3,3,4,4,23,23,20,24,4,4,3,4,24,3,2,4,28,23,24,1,24,26,23,20,27,4,25,23,23,3,3,20,3,4,24,3,24,3,26,24,24,25,24,24,24,24,27,4,24,3,3,3,23,29,24,1,29,4,4],"nodesize":[196,196,169,256,0,0,0,0,0,0,0,0,0,0,121,9,4,9,9,9,4,4,1,4,4,4,1,4,9,9,4,9,1,9,4,4,4,1,1,1,16,1,4,9,1,9,9,9,4,4,1,1,4,9,1,9,4,1,1,1,4,4,4,4,4,1,1,1,4,1,4,9,9,9,9,9,4,1,16,1,1,16,4,4,4,1,4,4,4,16,16,4,1,4,1,4,4,1,9,4,1,4,9,9,4,4,9,9,4,16,4,1,4,1,16,9,9,4,4,1,4,1,4,1,4,4,9,4,1,4,4,4,9,4,4,4,1,1,1,4,4,1,0,4,16,4,4,1,4,4,1,4,1,4,4,1,4,1,1,1,1,9,1,4,9,16,4,1,1,1,9,16,4,1,1,1,4,4,4,1,4,4,1,1,1]},"options":{"NodeID":"name","Group":"group","colourScale":"d3.scaleOrdinal(d3.schemeCategory20);","fontSize":12,"fontFamily":"serif","clickTextSize":30,"linkDistance":10,"linkWidth":"function(d) { return Math.sqrt(d.value); }","charge":-15,"opacity":0.9,"zoom":false,"legend":false,"arrows":false,"nodesize":true,"radiusCalculation":" Math.sqrt(d.nodesize)+6","bounded":true,"opacityNoHover":0,"clickAction":null}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div id="further-reading" class="section level2">
 <h2 class="hasAnchor">
 <a href="#further-reading" class="anchor"></a>Further Reading</h2>
-<p>With this basic understanding of the <code>spacemap</code> model fitting, we recommend looking at the next vignette which illustrates how to select tuning penalty parameters through an iterative grid-search with cross-validation criterion.</p>
+<p>With this basic understanding of the <code>spacemap</code> model fitting, we recommend looking at the <a href="https://topherconley.github.io/spacemap/articles/tuning.html">next vignette</a> which illustrates how to select tuning penalty parameters through an iterative grid-search with cross-validation criterion.</p>
 </div>
 </div>
   </div>
@@ -216,8 +336,10 @@ ig_d3$nodes$degree &lt;-<span class="st"> </span>igraph::<span class="kw">degree
         <div id="tocnav">
       <h2>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
-<li><a href="#background">Background</a></li>
-      <li><a href="#fitting-spacemapspacemap">Fitting <code>spacemap::spacemap</code></a></li>
+<li><a href="#purpose">Purpose</a></li>
+      <li><a href="#background">Background</a></li>
+      <li><a href="#example">Example</a></li>
+      <li><a href="#fitting-spacemap">Fitting <code>spacemap</code></a></li>
       <li><a href="#quick-visualization">Quick Visualization</a></li>
       <li><a href="#further-reading">Further Reading</a></li>
       </ul>

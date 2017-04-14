@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Simulate remMap scenario. — simRemMap â€¢ spacemap</title>
+<title>Adjacency matrix from spacemap and spacemap models — adjacency â€¢ spacemap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -100,26 +100,48 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Simulate remMap scenario.</h1>
+    <h1>Adjacency matrix from spacemap and spacemap models</h1>
     </div>
 
     
-    <p>Generate data suitable for remMap.</p>
+    <p>Output from <code><a href='spacemap.html'>spacemap</a></code> and <code><a href='space.joint.html'>space.joint</a></code> is 
+transformed into an adjacency matrix encoding a network.</p>
     
 
-    <pre><span class='fu'>simRemMap</span>(<span class='kw'>n</span> <span class='kw'>=</span> <span class='fl'>100</span>, <span class='kw'>p</span> <span class='kw'>=</span> <span class='fl'>300</span>, <span class='kw'>q</span> <span class='kw'>=</span> <span class='fl'>300</span>, <span class='kw'>seed</span> <span class='kw'>=</span> <span class='fl'>1</span>)</pre>
-        
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+    <pre><span class='fu'>adjacency</span>(<span class='no'>net</span>, <span class='kw'>aszero</span> <span class='kw'>=</span> <span class='fl'>1e-06</span>)</pre>
+    
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>net</th>
+      <td><p>Object output from <code><a href='spacemap.html'>spacemap</a></code> and <code><a href='space.joint.html'>space.joint</a></code></p></td>
+    </tr>
+    <tr>
+      <th>aszero</th>
+      <td><p>Positive numeric value (defaults to 1e-6) indicating at what point to consider extremely 
+small parameter estimates of \(\Gamma\) and \(\rho\) as zero.</p></td>
+    </tr>
+    </table>
+    
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Wrapper around example from remMap documentation.</p>
+    <p>A list containing</p><ul>
+<li><p><code>yy</code> A \(p \times p\) adjancency matrix 
+ indicates an edge\(y_q - y_l\) when <code>yy[q,l] == 1</code> and 0 otherwise.</p></li>
+<li><p><code>xy</code> A \(p \times q\) adjancency matrix 
+ indicates an edge\(x_p - y_q\) when <code>xy[p,q] == 1</code> and 0 otherwise.</p></li>
+</ul>
+
     
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
+      <li><a href="#arguments">Arguments</a></li>
       
-      <li><a href="#details">Details</a></li>
+      <li><a href="#value">Value</a></li>
           </ul>
 
   </div>
