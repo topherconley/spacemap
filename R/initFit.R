@@ -1,122 +1,114 @@
-
-#Fit the space over 
-
-#Arguments
-#model type
-# tuning grid
-# additional arguments
-
-initFit <- function(data, method = c("spacemap", "space"), tuneGrid, refit = TRUE, ...) {
+#' Identify scale of tuning penalties
+#' 
+#' When initially choosing tuning penalties, it can be 
+#' challenging to find the appropriate scale. This function fits either 
+#' \code{\link{spacemap}} or \code{\link{space.joint}} once for a specified 
+#' tuning grid on the whole data. It reports the corresponding number of
+#' \eqn{y-y} edges and \eqn{x-y} edges for each tuning penalty set. 
+#' Having a prior understanding of how sparse the network ought to 
+#' be can help narrow the scale of the tuning grid 
+#' based on the output of this function.   
+#' 
+#' 
+#' @inheritParams cvVote
+#' @return If \code{method=="spacemap"} or (\code{method=="space"} and \code{X!=NULL}),
+#'  return a  data.frame where the first column \code{nyy} reports the 
+#'  number of \eqn{y-y} edges  and the second column \code{nxy} reports 
+#'  the number of \eqn{x-y} edges. Rows of the data.frame correspond to 
+#'  the input parameter \code{tuneGrid}. 
+#'  
+#'  If \code{method=="space"} and \code{X==NULL}, return a vector 
+#'  of the number of \eqn{y-y} edges. 
+#' @seealso \code{\link{cvVote}}
+initFit <- function(Y, X = NULL, tuneGrid, method = c("spacemap", "space"), iscale = TRUE, aszero  = 1e-6, ...) {
   #additional arguments
   library(foreach)
-  opt <- list(...)
-  NN <- nrow(data$Y)
+  
+  opt <- variTrainParam(...)
+  
+  if(!is.matrix(Y)) stop("Y is not a matrix.")
+  givenX <- !is.null(X) 
+  Xindex <- NULL 
+  Yindex <- NULL
+  if(method == "space" & givenX)  {
+    if(!is.matrix(X)) stop("X is not a matrix.")
+    if(iscale) { 
+      X <- scale(X)
+      Y <- scale(Y)
+    }
+    XY = cbind(X, Y)
+    Xindex <- seq_len(ncol(X))
+    Yindex <- (ncol(X) + 1):(ncol(X) + ncol(Y))
+  } else if(method == "space" & !givenX){ 
+    if(iscale) { 
+      Y <- scale(Y)
+    }
+    XY = Y
+  } else if (method == "spacemap") { 
+    if(!is.matrix(X)) stop("X is not a matrix.")
+    if(iscale) { 
+      X <- scale(X)
+      Y <- scale(Y)
+    }
+  }
+  
   if (method == "spacemap") {
-    
-    outfits <- foreach(l = seq_len(nrow(tuneGrid)), .combine = 'rbind') %dopar% {
-      fit <- spacemap(Y.m = data$Y, X.m = data$X, 
-                      slasso = tuneGrid$slasso[l], sridge = opt$sridge, 
-                      rlasso = tuneGrid$rlasso[l], rgroup = tuneGrid$rgroup[l], 
-                      sig=opt$sig, weight=opt$weight, remWeight = opt$remWeight, iter= opt$iter,
-                      tol = opt$tol, cd_iter = opt$cd_iter)
+
+    nedges <- foreach(l = seq_len(nrow(tuneGrid)), .combine = 'rbind') %dopar% {
+      fit <- spacemap(Y = Y, X = X, 
+                      lam1 = tuneGrid$lam1[l], 
+                      lam2 = tuneGrid$lam2[l], 
+                      lam3 = tuneGrid$lam3[l], 
+                      sig=opt$sig, rho = opt$rho, 
+                      iter= opt$iter,
+                      tol = opt$tol,
+                      iscale = FALSE,
+                      cdmax = opt$cdmax, ...)
       if (fit$convergence) {
-        conv1 <- 1
-        
-        if (refit) {
-          #recompute ols estimates: note change fit object by reference
-          sparseFit <- olsRefitSpacemap(Y = data$Y, X = data$X, 
-                                        ParCor = fit$ParCor, Gamma = fit$Gamma, 
-                                        sigma = fit$sig.fit, RSS = fit$rss, tol = opt$tol)  
-        } else {
-          sparseFit <- TRUE
-        }
-    
-        
-        
-        if(sparseFit) {
-          conv2 <- 1
-          bcl <- bicCondLike(fit = fit, tol = opt$tol, model = method,
-                             Y = data$Y, X = data$X)
-        } else {
-          conv2 <- 0
-          bcl <- NA
-          brss <- NA
-        } # if else refit convergence
+        net <- adjacency(net = fit, aszero = aszero)
+        matrix(c(nyy = nonZeroUpper(net$yy,0.0), 
+                 nxy = nonZeroWhole(net$xy,0.0)),
+               nrow = 1, ncol = 2)
       } else {
-        conv1 <- 0
-        conv2 <- 0
-        bcl <- NA
-        brss <- NA
+        matrix(NA, nrow = 1, ncol = 2)
       } # if else convergence
       
-      #degrees of freedom
-      dfParCor <- nonZeroUpper(fit$ParCor, opt$tol)
-      dfGamma <- nonZeroWhole(fit$Gamma, opt$tol) 
-      degFree <- dfParCor + dfGamma
-      brss <- NN*log( fit$rss / NN) + degFree*log(NN)
-      
-      
-      matrix(c(conv1, conv2, bcl["bic"], brss, degFree, dfParCor, dfGamma), nrow = 1, ncol = 7)
     } # end foreach over tuneGrid
-    outfits <- as.data.frame(outfits)
-    names(outfits) <- c("convFit", "convRefit", "bicCondLike", "bicRSS", "dfTotal", "dfParCor", "dfGamma")
+    nedges <- as.data.frame(nedges)
+    names(nedges) <- c("nyy", "nxy")
   } else if (method == "space") {
     
-    outfits <- foreach(l = seq_len(nrow(tuneGrid)), .combine = 'rbind') %dopar% {
-      fit <- spacemap::space.joint(Y.m = data$XY, lam1 = tuneGrid$slasso[l], lam2 = opt$sridge, iter = opt$iter, 
-                                   cd_iter = opt$cd_iter, tol = opt$tol)
-      if (fit$convergence) {
-        conv1 <- 1
-        
-        if (refit) {
-          sparseFit <- spacemap::olsRefitSpace(Y = data$XY,
-                                               ParCor = fit$ParCor, 
-                                               sigma = fit$sig.fit, RSS = fit$rss, tol = opt$tol) 
-          #sparseFit <- TRUE
-          #fit <- spacemap::rolsRefit(fit, data$XY, tol = opt$tol)  
-        } else { 
-          sparseFit <- TRUE
-        }
-        
-        if(sparseFit) {
-          conv2 <- 1
-          #bl <- bicLike(fit = fit, tol = opt$tol, dat = data$XY)
-          #brss <- bicRSS(model = method, fit = fit, NN = NN, df = bl["df"], tol = opt$tol)
-          bcl <- bicCondLike(fit = fit, tol = opt$tol, model = method,
-                             Y = data$Y, X = data$X,
-                             Yindex = opt$Yindex, Xindex = opt$Xindex)
-          degFree <- bcl["df"]
-          dfGamma <- bcl["dfGamma"]
-          dfParCor <- bcl["dfParCor"]
-          brss <- NN*log( fit$rss / NN) + degFree*log(NN)
-        } else {
-          conv2 <- 0
-          bcl <- NA
-          brss <- NA
-          dfGamma <- NA
-          dfParCor <-NA
-          degFree <- nonZeroUpper(fit$ParCor, opt$tol)
-          #        bcl <- NA
-        } # if else refit convergence
-      } else {
-        conv1 <- 0
-        conv2 <- 0
-        bl <- NA
-        brss <- NA
-        dfGamma <- NA
-        dfParCor <-NA
-        degFree <- nonZeroUpper(fit$ParCor, opt$tol)
-      }  # if else convergence
+    combf <- ifelse(givenX, 'rbind', 'c')
+    nedges <- foreach(l = seq_len(nrow(tuneGrid)), .combine = combf) %dopar% {
       
-      matrix(c(conv1, conv2, bcl["bic"], brss, degFree, dfGamma, dfParCor), nrow = 1, ncol = 7)
+      fit <- spacemap::space.joint(Y = XY, lam1 = tuneGrid$lam1[l], sridge = opt$sridge, 
+                                   sig = opt$sig, rho = opt$rho, iter = opt$iter, 
+                                   tol = opt$tol, cd_iter = opt$cd_iter, iscale = FALSE)
+      if (fit$convergence) {
+        net <- adjacency(net = fit, aszero = aszero)
+        if(givenX) { 
+          matrix(c(nyy = nonZeroUpper(net$yy[Yindex, Yindex],0.0), 
+                   nxy = nonZeroWhole(net$yy[Xindex, Yindex],0.0)),
+                 nrow = 1, ncol = 2)
+        } else { 
+          nonZeroUpper(net$yy,0.0)  
+        }
+      } else {
+        if(givenX) { 
+          matrix(NA, nrow = 1, ncol = 2)
+        } else { 
+          NA
+        }
+      }  # if else convergence
     }  # end foreach over tuneGrid
-    outfits <- as.data.frame(outfits)
-    names(outfits) <- c("convFit", "convRefit", "bicCondLike", "bicRSS", "dfTotal", "dfGamma", "dfParCor")
+    if (givenX) { 
+      nedges <- as.data.frame(nedges)
+      names(nedges) <- c("nyy", "nxy")
+    }
   } else {
-    message("Incorrect method arguments.")
-    return(NULL)
+    stop("Incorrect method arguments.")
   }
-  outfits
+  nedges
 }
 
 #

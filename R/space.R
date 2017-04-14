@@ -2,39 +2,72 @@
 ######11-30-07: R package "space"
 ######R functions for fitting JSRM and MB: 
 
-space.nested <- function(Y.m, seq_lam1, lam2=0, sig=NULL, weight=NULL,iter=2, tol = 1e-6, cd_iter = 1e7L,
+space.nested <- function(Y, seq_lam1, sridge=0, sig=NULL, weight=NULL,iter=2, tol = 1e-6, cdmax = 1e7L,
                            verbose = FALSE) { 
   #sequence of penalty parameters should be decreasing.
   vlam1 <- sort(seq_lam1, decreasing = TRUE)
   library(foreach)
   
   res <- vector("list", length(vlam1))
-  res[[1]] <- space.joint(Y.m = Y.m, lam1 = vlam1[1], lam2 = lam2, sig=sig, weight = weight,
-                          iter = iter, tol = tol, cd_iter = cd_iter,
+  res[[1]] <- space.joint(Y = Y, lam1 = vlam1[1], sridge = sridge, sig=sig, weight = weight,
+                          iter = iter, tol = tol, cdmax = cdmax,
                           verbose = verbose, rho  = NULL)
   
   for(i in 2:length(vlam1)) { 
-    res[[i]] <- space.joint(Y.m = Y.m, lam1 = vlam1[i], lam2 = lam2, sig = res[[i-1]]$sig.fit, weight = weight,
-                            iter = iter, tol = tol, cd_iter = cd_iter,
+    res[[i]] <- space.joint(Y = Y, lam1 = vlam1[i], sridge = sridge, sig = res[[i-1]]$sig.fit, weight = weight,
+                            iter = iter, tol = tol, cdmax = cdmax,
                             verbose = verbose, rho = res[[i-1]]$ParCor)
   }
   res
 }
 
-#'Estimate partial correlations using the Joint Sparse Regression Model
+#' Fit the SPACE model. 
 #'
-#'Estimate partial correlations using the Joint Sparse Regression Model
+#' Estimate partial correlations according to SPACE model. 
+#' @inheritParams spacemap
+#' @param sridge The \eqn{l_2} penalty parameter defaults to 0. When it is positive, 
+#' it imposes an elastic net  penalty in tandem with \code{lam1} on \eqn{\rho}. 
+#' @param weight The weights applied to the Q regressions in the SPACE model. 
+#' 
+#'  If \code{weight==NULL}, each regression has equal weight.
 #'  
-#' @usage See space::space.joint
-space.joint <-function(Y.m, lam1, lam2=0, sig=NULL, weight=NULL,iter=2, tol = 1e-6, cd_iter = 1e7L,
-                       verbose = FALSE, rho = NULL, iscale = TRUE)
+#'  If \code{weight==1}, each regression is weighted according to 
+#'  \eqn{\sigma^{ii}} and enforces \code{iter>=2}.
+#'  
+#'  If \code{weight==2} each regression is weighted according to
+#'   the out-degree of \eqn{q}th response variable and enforces \code{iter>=2}.
+#'  
+#'  Otherwise, \code{weight=}user-specified vector of length p. 
+#' 
+#' The scale of weight does not matter. In this function, weight will be rescaled to have mean=1 
+#' @return A list containing 
+#'\enumerate{
+#'   \item \code{ParCor} The estimated partial correlation matrix (\eqn{P \times P}), 
+#'   where off-diagonals  \eqn{ |\hat \rho^{p,q}_{yy}| > 1e-6}  encode the edges \eqn{\{ y_q - y_l : q \neq l \} }
+#'   and the diagonals are 1's. 
+#'   \item \code{sig.fit} The estimated diagonal \eqn{\hat \sigma^{ii}}.
+#'   \item \code{rss} The residual sums of squares from the model fit. 
+#'   \item convergence logical: true for successful convergence, otherwise failed to converge. Failure can be 
+#'   mitigated by increasing \code{tol} and/or \code{cdmax}. 
+#'   \item \code{deltaMax} The maximum change in parameter values between the penultimate and ultimate iteration. 
+#'   If \code{spacemap} does not converge, \code{deltaMax} provides some measure of how far away it was from converging
+#'   when compared to \code{tol}. 
+#' }
+#' @seealso \code{\link{spacemap}}, \code{\link{cvVote}}, \code{\link{bootEnsemble}}, \code{\link{bootVote}}
+#' @examples
+#' data(sim1)
+#' net <- space.joint(Y = sim1$Y, lam1 = 70)
+#' #adjacency matrix of y-y edges. 
+#' adjnet <- adjacency(net)
+space.joint <-function(Y, lam1, sridge=0, sig=NULL, weight=NULL,iter=3, tol = 1e-6, cdmax = 1e7L,
+                       rho = NULL, iscale = TRUE)
 {
   ########################parameters: 
-  ## Y.m: n (sample size) by p (number of variables) data matrix; 
+  ## Y: n (sample size) by p (number of variables) data matrix; 
   ##            (In this function, Y will be first standardized to mean zero and l_2 norm 1)
   ## lam1:l_1 penalty paramter; corresponding to Y scaled as norm being one, 
   ##     suggested range is: O(n^{3/2}\Phi^{-1}(1-\alpha/(2p^2))) for small $\alpha$ such as 0.1 
-  ## lam2: l_2 penalty paramter
+  ## sridge: l_2 penalty paramter
   ## sig: vector of {sigma^{ii}}; If sig==NULL, then set the initial value as sig=rep(1,p) and then iter>=2  
   ##     remark: the scale of sig does not matter
   ## weight: if weight==NULL: equal weight; if weight==1, set weight=sig and iter>=2; 
@@ -48,18 +81,18 @@ space.joint <-function(Y.m, lam1, lam2=0, sig=NULL, weight=NULL,iter=2, tol = 1e
   ## A list: the estimated \{\rho^{ij}\}: p by p matrix, and $\{\sigma^{ii}\}$: p by 1 vector
   #######################
   
-  n=nrow(Y.m)
-  p=ncol(Y.m)
+  n=nrow(Y)
+  p=ncol(Y)
   ITER=iter
   
   #check for missing data
-  if (any(is.na(Y.m))) { 
-    stop("Missing values found in input matrix Y.m; imputation is required prior to Spacemap fitting.")
+  if (any(is.na(Y))) { 
+    stop("Missing values found in input matrix Y; imputation is required prior to Spacemap fitting.")
   } 
   
   if (iscale) { 
     #Standardize the response vector
-    Y.s <- scale(Y.m)
+    Y.s <- scale(Y)
     #Keep the same scale as user input:
     # W = diag(apply(Y, 2, sd))
     # R = inv(W) \Sigma inv(W)
@@ -67,15 +100,15 @@ space.joint <-function(Y.m, lam1, lam2=0, sig=NULL, weight=NULL,iter=2, tol = 1e
     # \Sigma = inv(W) inv(R) inv(W)
     Y.stddev <- attr(Y.s, "scaled:scale")  
   } else { 
-    Y.s <- Y.m
+    Y.s <- Y
     Y.stddev <- rep(1,p)
   }
   
   
   ################### preparation
   if(!is.null(sig))
-  { #### if the user specify "sig", do not need to update sig.
-    SIG.update=F
+  { #### if the user specify "sig", still update sig
+    SIG.update=T
     SIG=sig
   } else { #### otherwise, need to update sig in each iteration
     SIG.update=T
@@ -110,17 +143,13 @@ space.joint <-function(Y.m, lam1, lam2=0, sig=NULL, weight=NULL,iter=2, tol = 1e
     WEIGHT.update=F
   }
   ################## begin to iterate
-  if (verbose)
-    cat("iter: ")
-  for(i in 1:iter) {
-    if(verbose)
-      cat(i, "\t"); flush.console();
+  for(i in 1:ITER) {
     
     Y.u<-Y.s*matrix(sqrt(WEIGHT),n,p,byrow=TRUE)
     sig.u<-SIG/WEIGHT
     
-    jsrm.fit <-jsrm(Y.u,sig.u,n,p,lam1,lam2, 
-                    n_iter = cd_iter, tol = tol, rho = rho)
+    jsrm.fit <-jsrm(Y.u,sig.u,n,p,lam1,sridge, 
+                    n_iter = cdmax, tol = tol, rho = rho)
     ParCor.fit <- jsrm.fit$ParCor.fit
     diag(ParCor.fit)<-1
     
@@ -208,13 +237,13 @@ Hub.net<-function(p,hub.no=3,hub.size=16,umin=0.5,umax=1)
 #######JSRM
 ###### call C function directly in R
 
-jsrm<-function(Y,sig.use,n,p,lam1,lam2, n_iter, tol, rho = NULL) {
+jsrm<-function(Y,sig.use,n,p,lam1,sridge, n_iter, tol, rho = NULL) {
   
   #cat("Y is:", class(Y)); flush.console();
   stopifnot(is.matrix(Y), is.numeric(sig.use), 
             length(sig.use) == ncol(Y))
   lambda1=lam1
-  lambda2=lam2
+  lambda2=sridge
   sigma_sr=sig.use^0.5
   
   if (!is.null(rho) & is.matrix(rho)) {

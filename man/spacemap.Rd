@@ -4,28 +4,23 @@
 \alias{spacemap}
 \title{Fit the spacemap model.}
 \usage{
-spacemap(Y.m, X.m, slasso, sridge = 0, rlasso, rgroup, sig = NULL,
-  rho = NULL, weight = NULL, remWeight = NULL, iter = 3, tol = 1e-06,
-  cd_iter = 10000000L, verbose = FALSE, iscale = TRUE)
+spacemap(Y, X, lam1, lam2, lam3, sig = NULL, rho = NULL, iter = 3,
+  tol = 1e-06, iscale = TRUE, cdmax = 10000000L, ...)
 }
 \arguments{
-\item{Y.m}{Numeric matrix \eqn{(N \times Q)} containing N iid samples of the response vector \eqn{\textbf{y}}.}
+\item{Y}{Numeric matrix \eqn{(N \times Q)} containing N iid samples of the response vector \eqn{\textbf{y}}.}
 
-\item{X.m}{Numeric matrix \eqn{(N \times P)} containing N iid samples of the predictor vector \eqn{\textbf{x}}.}
+\item{X}{Numeric matrix \eqn{(N \times P)} containing N iid samples of the predictor vector \eqn{\textbf{x}}.}
 
-\item{slasso}{Non-negative numeric value, the space-lasso penalty corresponding to \eqn{\lambda_1}, 
+\item{lam1}{Non-negative numeric value, the space-lasso penalty corresponding to \eqn{\lambda_1}, 
 which subjects the partial correlation vector, \eqn{\bf \rho_{yy}}, to  the \eqn{l_1} norm. 
-It induces overall sparsity of \eqn{\{ y_q - y_l : q \neq l \}} edges.}
+It induces overall sparsity of \eqn{\{ y_q - y_l : q \neq l \}} edges. .}
 
-\item{sridge}{Non-negative numeric value defaults to 0, which is the recommended value. Otherwise, 
-a positive value applies an elastic net penalty to \eqn{\bf \rho_{yy}}, 
-where \code{sridge} serves as the squared \eqn{l_2} norm penalty parameter.}
-
-\item{rlasso}{Non-negative numeric value, the MAP-lasso penalty corresponding to \eqn{\lambda_2}, 
+\item{lam2}{Non-negative numeric value, the MAP-lasso penalty corresponding to \eqn{\lambda_2}, 
 which subjects the regression coefficients in \eqn{ \bf \Gamma}, to the  \eqn{l_1} norm.  
 It induces overall sparsity of \eqn{\{ x_p - y_q \}} edges.}
 
-\item{rgroup}{Non-negative numeric value, the MAP-group penalty corresponding to \eqn{\lambda_3},
+\item{lam3}{Non-negative numeric value, the MAP-group penalty corresponding to \eqn{\lambda_3},
 which subjects the regression coefficients in the \eqn{p}th row of \eqn{ \bf \Gamma_{P \times Q}}, to the \eqn{l_2} norm. 
 It encourages selection of predictor variables with many edges to response variables, in other words, hub nodes.}
 
@@ -34,45 +29,38 @@ the inverse covariance matrix. It defaults to NULL and
 and will be estimated \code{iter} times during the model fitting with initial 
 values set to the ones vector.}
 
-\item{weight}{Numeric value or vector (Q x 1) specifying the weights or the type of
-weights used for each regression in JSRM. The default value is NULL, 
-which means all regressions will be weighted equally in the joint model. 
-If \code{weight=1}, residue variances will be used for weights. 
-If \code{weight=2}, the estimated degree of each variable will be used for weights. 
-Otherwise, it should be a positive numeric vector, whose length is equal to 
-the number of columns of Y.m.}
-
-\item{remWeight}{Optional weighting scheme [fill in the details].}
+\item{rho}{Numeric matrix (\eqn{p \times p}) representing the estimate of \eqn{\hat\rho}, the partial correlation matrix. 
+It defaults to NULL and and will be estimated \code{iter} times during the model fitting.}
 
 \item{iter}{Positive integer specifying the number of iterations for estimating 
-\eqn{\sigma^{ii}} and partial correlations. Defaults to 3. When \code{sig=NULL} and/or 
-(\code{weight=NULL} or \code{weight=2}), then \code{iter} \eqn{\ge 2}.}
+\eqn{\sigma^{ii}} and \eqn{\rho}. Defaults to 3.}
 
 \item{tol}{Positive numeric value specifying the convergence tolerance of the coordinate descent algorithm; 
 in other words, it is criterion that stops parameter estimation when no parameter changes value exceeding \code{tol} 
-between iterations. \code{tol} defaults to 1e-6, but may be lowered (e.g. 1e-4) to speed up network learning.}
+between iterations. \code{tol} defaults to 1e-6, but may be lowered (e.g. 1e-4) to speed
+up network learning.}
 
-\item{cd_iter}{Positive integer specifiying the maximum number of parameter updates allowed before reporting the algorithm
+\item{iscale}{Logical indicating to standardize the whole input data. Defaults to TRUE. 
+See \code{\link{base::scale(x, center = TRUE, scale = TRUE)}} for details of standardization.}
+
+\item{cdmax}{Positive integer specifiying the maximum number of parameter updates allowed before reporting the algorithm
 as having failed to converge. Default may need to be increased for inferring very large-scale networks (i.e. \eqn{p,q > 1000}).}
-
-\item{verbose}{Logical indicating to print out the current status of \code{iter}. Default is FALSE.}
-
-\item{iscale}{Logical indicating to standardize the input data internally. Defaults to TRUE if just running \code{spacemap}. If running 
-\code{\link{crossValidation}} or \code{\link{bootEnsemble}}, user should set to FALSE.}
 }
 \value{
-list containing 
+A list containing 
 \enumerate{
   \item \code{ParCor} The estimated partial correlation matrix (\eqn{P \times P}), 
-  where off-diagonals  \eqn{ |\hat \rho^{p,q}_{yy}| > } \code{tol} encode the edges \eqn{\{ y_q - y_l : q \neq l \} }
+  where off-diagonals  \eqn{ |\hat \rho^{p,q}_{yy}| > 1e-6}  encode the edges \eqn{\{ y_q - y_l : q \neq l \} }
   and the diagonals are 1's. 
   \item \code{sig.fit} The estimated diagonal \eqn{\hat \sigma^{ii}}.
   \item \code{Gamma} The estimated regression coefficients matrix  (\eqn{P \times Q}), 
-  where elements \eqn{ |\hat \gamma_{pq}| > } \code{tol} encode the edges \eqn{\{ x_p - y_q \}}. 
+  where elements \eqn{ |\hat \gamma_{pq}| > 1e-6} encode the edges \eqn{\{ x_p - y_q \}}. 
   \item \code{rss} The residual sums of squares from the model fit. 
   \item convergence logical: true for successful convergence, otherwise failed to converge. Failure can be 
-  mitigated by increasing \code{tol} and/or \code{cd_iter}. 
+  mitigated by increasing \code{tol} and/or \code{cdmax}. 
   \item \code{deltaMax} The maximum change in parameter values between the penultimate and ultimate iteration. 
+  If \code{spacemap} does not converge, \code{deltaMax} provides some measure of how far away it was from converging
+  when compared to \code{tol}. 
 }
 }
 \description{
@@ -89,8 +77,10 @@ and edge set \eqn{\textbf{E}= \{ x_p - y_q \} \cup \{ y_q - y_l : q \neq l \}}.
 }
 \examples{
 data(sim1)
-net <- spacemap(Y.m = sim1$Y, X.m = sim1$X, slasso = 70, rlasso = 28.8, rgroup = 12.38)
+net <- spacemap(Y = sim1$Y, X = sim1$X, lam1 = 70, lam2 = 28.8, lam3 = 12.38)
+#adjacency matrix of y-y and x-y edges. 
+adjnet <- adjacency(net)
 }
 \seealso{
-\code{\link{crossValidation}}, \code{\link{bootVote}}
+\code{\link{cvVote}}, \code{\link{bootEnsemble}}, \code{\link{bootVote}}
 }

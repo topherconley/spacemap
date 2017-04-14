@@ -4,18 +4,18 @@
 \alias{bootEnsemble}
 \title{Ensemble networks through boostrapping.}
 \usage{
-bootEnsemble(Y.m, X.m, tune, boot = TRUE, B = 1000L, seed = 55139,
-  p0 = 1, iter = 3, tol = 1e-04, cd_iter = 1e+09, refitRidge = 0.1,
-  iscale = FALSE)
+bootEnsemble(Y, X = NULL, tune, method = c("spacemap", "space"),
+  boot = TRUE, B = 1000L, iscale = TRUE, aszero = 1e-06,
+  seed = sample.int(n = 1e+06, size = 1), p0 = 1, ...)
 }
 \arguments{
-\item{Y.m}{Numeric matrix \eqn{(N \times Q)} containing N iid samples of the response vector \eqn{\textbf{y}}.}
+\item{Y}{Numeric matrix \eqn{(N \times Q)} containing N iid samples of the response vector \eqn{\textbf{y}}.}
 
-\item{X.m}{Numeric matrix \eqn{(N \times P)} containing N iid samples of the predictor vector \eqn{\textbf{x}}.}
+\item{X}{Numeric matrix \eqn{(N \times P)} containing N iid samples of the predictor vector \eqn{\textbf{x}}.}
 
-\item{tune}{Data.frame with three columns requiring names to be the tuning penalties
-\code{slasso, rlasso, rgroup} that are input to \code{spacemap}. Each row is a tuning penalty set 
-that indexes an ensemble network of \code{spacemap} fits to \code{B} boostrap replicates of \code{Y.m, X.m}.}
+\item{tune}{List with names being the tuning penalties
+\code{lam1, lam2, lam3} and each element being a single numeric value that is input to \code{spacemap}. One might  
+consider the output from \code{\link{cvVote}} (i.e. list \code{minTune}) as input for this parameter.}
 
 \item{boot}{Logical. Default is \code{boot=TRUE} and implies sampling with replacement (i.e. boostrap). 
 \code{boot=FALSE} will resample without replacement.}
@@ -23,45 +23,36 @@ that indexes an ensemble network of \code{spacemap} fits to \code{B} boostrap re
 \item{B}{Positive integer denoting the number of model fits making up the ensemble. Default is 1000, but can 
 be lowered to save time.}
 
+\item{iscale}{Logical indicating to standardize the whole input data. Defaults to TRUE. 
+See \code{\link{base::scale(x, center = TRUE, scale = TRUE)}} for details of standardization.}
+
+\item{aszero}{Positive numeric value (defaults to 1e-6) indicating at what point to consider extremely 
+small parameter estimates of \eqn{\Gamma} and \eqn{\rho} as zero.}
+
 \item{seed}{Positive integer allowing user to set the random seed for reproducing the network ensemble.}
 
 \item{p0}{Positive numeric not exceeding the default of 1, which represents the proportion of the original 
 samples that will be down-sampled for each model fitting iteration of the ensemble.}
-
-\item{iter}{Positive integer specifying the number of iterations for estimating 
-\eqn{\sigma^{ii}} and partial correlations. Defaults to 3. When \code{sig=NULL} and/or 
-(\code{weight=NULL} or \code{weight=2}), then \code{iter} \eqn{\ge 2}.}
-
-\item{tol}{Positive numeric value specifying the convergence tolerance of the coordinate descent algorithm; 
-in other words, it is criterion that stops parameter estimation when no parameter changes value exceeding \code{tol} 
-between iterations. \code{tol} defaults to 1e-6, but may be lowered (e.g. 1e-4) to speed up network learning.}
-
-\item{cd_iter}{Positive integer specifiying the maximum number of parameter updates allowed before reporting the algorithm
-as having failed to converge. Default may need to be increased for inferring very large-scale networks (i.e. \eqn{p,q > 1000}).}
-
-\item{refitRidge}{Positive numeric value specifying a ridge penalty, which is applied when 
-refitting the model to the data after having selected the network with \code{spacemap}. Defaults to 0.1, 
-but can be set to zero for ordinary least squares refit.}
-
-\item{iscale}{Logical indicating to standardize the input data internally. Defaults to TRUE if just running \code{spacemap}. If running 
-\code{\link{crossValidation}} or \code{\link{bootEnsemble}}, user should set to FALSE.}
 }
 \value{
-a list of length B, where the bth element contains the refit of \code{spacemap} model. The model output is identical to 
-\code{\link{spacemap}}, but the partial correlations matrix \code{ParCor} and the regression coefficients matrix \code{Gamma}
-are stored in a sparse matrix format, (dgCMatrix format), from the \code{\link{Matrix}} package. If the bth model is not 
-sufficiently sparse, a character vector will be returned as "Not Sparse". If the bth model did not converge, a 
-character vector will be returned as "No Convergence".
+A list up to length \code{B} of convergent and sparse model fits from 
+either \code{\link{spacemap}} or \code{\link{space.joint}}. The list object should typically
+not be modified by the user, but passed on to the  \code{\link{bootVote}} function.
+Model fits that are not convergent or produce networks that are not sparse are not reported.
 }
 \description{
 Fits spacemap model to B bootstrapped data replicates to create an ensemble network.
 }
 \examples{
+
 #Load simulation
 data(sim1)
+
 #Boostrap Ensemble (B = 10) for illustration only
-tune <- data.frame(slasso = 70, rlasso = 28.8, rgroup = 14)
-out <- bootEnsemble(Y.m = sim1$Y, X.m = sim1$X, tune = tune, B = 10, iter = 3,
-                    cd_iter = 1e7, tol = 1e-6, refitRidge = 0)
-bv <- bootVote(fits = out[[1]], P = ncol(sim1$X), Q = ncol(sim1$Y))
+tune <- data.frame(lam1 = 70, lam2 = 28, lam3 = 17.5)
+ens <- bootEnsemble(Y = sim1$Y, X = sim1$X, tune = tune, 
+                    method = "spacemap", B = 10)
+}
+\seealso{
+\code{\link{bootVote}}, \code{\link{cvVote}}
 }
