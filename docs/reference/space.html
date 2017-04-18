@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Fit the spacemap model. — spacemap â€¢ spacemap</title>
+<title>Fit the SPACE model. — space â€¢ spacemap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -103,16 +103,15 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Fit the spacemap model.</h1>
+    <h1>Fit the SPACE model.</h1>
     </div>
 
     
-    <p>The conditional graphical model called spacemap learns a
-sparse network encoding the interactions between two high dimensional data inputs denoted as response and predictor variables.</p>
+    <p>Estimate partial correlations according to SPACE model.</p>
     
 
-    <pre><span class='fu'>spacemap</span>(<span class='no'>Y</span>, <span class='no'>X</span>, <span class='no'>lam1</span>, <span class='no'>lam2</span>, <span class='no'>lam3</span>, <span class='kw'>sig</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>rho</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>3</span>,
-  <span class='kw'>tol</span> <span class='kw'>=</span> <span class='fl'>1e-06</span>, <span class='kw'>iscale</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>cdmax</span> <span class='kw'>=</span> <span class='fl'>10000000L</span>, <span class='no'>...</span>)</pre>
+    <pre><span class='fu'>space</span>(<span class='no'>Y</span>, <span class='no'>lam1</span>, <span class='kw'>sridge</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>sig</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>weight</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>3</span>,
+  <span class='kw'>tol</span> <span class='kw'>=</span> <span class='fl'>1e-06</span>, <span class='kw'>cdmax</span> <span class='kw'>=</span> <span class='fl'>10000000L</span>, <span class='kw'>rho</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>iscale</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
@@ -122,26 +121,15 @@ sparse network encoding the interactions between two high dimensional data input
       <td><p>Numeric matrix \((N \times Q)\) containing N iid samples of the response vector \(\textbf{y}\).</p></td>
     </tr>
     <tr>
-      <th>X</th>
-      <td><p>Numeric matrix \((N \times P)\) containing N iid samples of the predictor vector \(\textbf{x}\).</p></td>
-    </tr>
-    <tr>
       <th>lam1</th>
       <td><p>Non-negative numeric value, the space-lasso penalty corresponding to \(\lambda_1\), 
 which subjects the partial correlation vector, \(\bf \rho_{yy}\), to  the \(l_1\) norm. 
 It induces overall sparsity of \(\{ y_q - y_l : q \neq l \}\) edges. .</p></td>
     </tr>
     <tr>
-      <th>lam2</th>
-      <td><p>Non-negative numeric value, the MAP-lasso penalty corresponding to \(\lambda_2\), 
-which subjects the regression coefficients in \( \bf \Gamma\), to the  \(l_1\) norm.  
-It induces overall sparsity of \(\{ x_p - y_q \}\) edges.</p></td>
-    </tr>
-    <tr>
-      <th>lam3</th>
-      <td><p>Non-negative numeric value, the MAP-group penalty corresponding to \(\lambda_3\),
-which subjects the regression coefficients in the \(p\)th row of \( \bf \Gamma_{P \times Q}\), to the \(l_2\) norm. 
-It encourages selection of predictor variables with many edges to response variables, in other words, hub nodes.</p></td>
+      <th>sridge</th>
+      <td><p>The \(l_2\) penalty parameter defaults to 0. When it is positive, 
+it imposes an elastic net  penalty in tandem with <code>lam1</code> on \(\rho\).</p></td>
     </tr>
     <tr>
       <th>sig</th>
@@ -151,9 +139,18 @@ and will be estimated <code>iter</code> times during the model fitting with init
 values set to the ones vector.</p></td>
     </tr>
     <tr>
-      <th>rho</th>
-      <td><p>Numeric matrix (\(p \times p\)) representing the estimate of \(\hat\rho\), the partial correlation matrix. 
-It defaults to NULL and and will be estimated <code>iter</code> times during the model fitting.</p></td>
+      <th>weight</th>
+      <td><p>The weights applied to the Q regressions in the SPACE model.</p>
+<p>If <code>weight==NULL</code>, each regression has equal weight.
+ 
+ If <code>weight==1</code>, each regression is weighted according to 
+ \(\sigma^{ii}\) and enforces <code>iter&gt;=2</code>.
+ 
+ If <code>weight==2</code> each regression is weighted according to
+  the out-degree of \(q\)th response variable and enforces <code>iter&gt;=2</code>.
+ 
+ Otherwise, <code>weight=</code>user-specified vector of length p.</p>
+<p>The scale of weight does not matter. In this function, weight will be rescaled to have mean=1</p></td>
     </tr>
     <tr>
       <th>iter</th>
@@ -168,14 +165,19 @@ between iterations. <code>tol</code> defaults to 1e-6, but may be lowered (e.g. 
 up network learning.</p></td>
     </tr>
     <tr>
-      <th>iscale</th>
-      <td><p>Logical indicating to standardize the whole input data. Defaults to TRUE. 
-See <code>base::scale(x, center = TRUE, scale = TRUE)</code> for details of standardization.</p></td>
-    </tr>
-    <tr>
       <th>cdmax</th>
       <td><p>Positive integer specifiying the maximum number of parameter updates allowed before reporting the algorithm
 as having failed to converge. Default may need to be increased for inferring very large-scale networks (i.e. \(p,q &gt; 1000\)).</p></td>
+    </tr>
+    <tr>
+      <th>rho</th>
+      <td><p>Numeric matrix (\(p \times p\)) representing the estimate of \(\hat\rho\), the partial correlation matrix. 
+It defaults to NULL and and will be estimated <code>iter</code> times during the model fitting.</p></td>
+    </tr>
+    <tr>
+      <th>iscale</th>
+      <td><p>Logical indicating to standardize the whole input data. Defaults to TRUE. 
+See <code>base::scale(x, center = TRUE, scale = TRUE)</code> for details of standardization.</p></td>
     </tr>
     </table>
     
@@ -186,8 +188,6 @@ as having failed to converge. Default may need to be increased for inferring ver
   where off-diagonals  \( |\hat \rho^{p,q}_{yy}| &gt; 1e-6\)  encode the edges \(\{ y_q - y_l : q \neq l \} \)
   and the diagonals are 1's.</p></li>
 <li><p><code>sig.fit</code> The estimated diagonal \(\hat \sigma^{ii}\).</p></li>
-<li><p><code>Gamma</code> The estimated regression coefficients matrix  (\(P \times Q\)), 
-  where elements \( |\hat \gamma_{pq}| &gt; 1e-6\) encode the edges \(\{ x_p - y_q \}\).</p></li>
 <li><p><code>rss</code> The residual sums of squares from the model fit.</p></li>
 <li><p>convergence logical: true for successful convergence, otherwise failed to converge. Failure can be 
   mitigated by increasing <code>tol</code> and/or <code>cdmax</code>.</p></li>
@@ -197,24 +197,15 @@ as having failed to converge. Default may need to be increased for inferring ver
 </ol>
 
     
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
-
-    <p>The two data types input are response random vector 
-\(\textbf{y} = (y_1, \dots, y_Q)\) and predictor random vector \(\textbf{x} = (x_1, \dots, x_P)\). 
-Provided \(N\) iid samples from \((\textbf{x},\textbf{y})\), spacemap learns a sparse network, where the degree
-of sparsity is determined by tuning penalties \(\lambda_1, \lambda_2, \lambda_3\).
-When we fit the spaceMap model, we seek to learn the network comprised of node set \(\textbf{V}= (\textbf{x},\textbf{y})\)
-and edge set \(\textbf{E}= \{ x_p - y_q \} \cup \{ y_q - y_l : q \neq l \}\).</p>
-    
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <p><code><a href='cvVote.html'>cvVote</a></code>, <code><a href='bootEnsemble.html'>bootEnsemble</a></code>, <code><a href='bootVote.html'>bootVote</a></code></p>
+    <p><code><a href='spacemap.html'>spacemap</a></code>, <code><a href='cvVote.html'>cvVote</a></code>, <code><a href='bootEnsemble.html'>bootEnsemble</a></code>, <code><a href='bootVote.html'>bootVote</a></code></p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='fu'>data</span>(<span class='no'>sim1</span>)
-<span class='no'>net</span> <span class='kw'>&lt;-</span> <span class='fu'>spacemap</span>(<span class='kw'>Y</span> <span class='kw'>=</span> <span class='no'>sim1</span>$<span class='no'>Y</span>, <span class='kw'>X</span> <span class='kw'>=</span> <span class='no'>sim1</span>$<span class='no'>X</span>, <span class='kw'>lam1</span> <span class='kw'>=</span> <span class='fl'>70</span>, <span class='kw'>lam2</span> <span class='kw'>=</span> <span class='fl'>28.8</span>, <span class='kw'>lam3</span> <span class='kw'>=</span> <span class='fl'>12.38</span>)
-<span class='co'>#adjacency matrix of y-y and x-y edges. </span>
+<span class='no'>net</span> <span class='kw'>&lt;-</span> <span class='fu'>space</span>(<span class='kw'>Y</span> <span class='kw'>=</span> <span class='no'>sim1</span>$<span class='no'>Y</span>, <span class='kw'>lam1</span> <span class='kw'>=</span> <span class='fl'>70</span>)
+<span class='co'>#adjacency matrix of y-y edges. </span>
 <span class='no'>adjnet</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='adjacency.html'>adjacency</a></span>(<span class='no'>net</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
@@ -223,8 +214,6 @@ and edge set \(\textbf{E}= \{ x_p - y_q \} \cup \{ y_q - y_l : q \neq l \}\).</p
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
-
-      <li><a href="#details">Details</a></li>
 
       <li><a href="#see-also">See also</a></li>
       

@@ -78,6 +78,9 @@
   <a href="https://topherconley.github.io/neta-bcpls/">Network Toolkit</a>
 </li>
 <li>
+  <a href="../news/index.html">News</a>
+</li>
+<li>
   <a href="https://github.com/topherconley/spacemap/issues">Contact Us</a>
 </li>
       </ul>
@@ -137,8 +140,8 @@ be of the same length as <code>trainIds</code>.</p></td>
       <th>method</th>
       <td><p>Character vector indicates network inference with function 
 <code><a href='spacemap.html'>spacemap</a></code> when <code>method = "spacemap"</code> or function 
-<code><a href='space.joint.html'>space.joint</a></code> when <code>method = "space"</code>. If <code>X</code> is 
-non-null and <code>method = "space"</code>, then <code>space.joint</code> will 
+<code><a href='space.html'>space</a></code> when <code>method = "space"</code>. If <code>X</code> is 
+non-null and <code>method = "space"</code>, then <code>space</code> will 
 infer (x--x, x--y, y--y) edges but only report (x--y, y--y) edges.</p></td>
     </tr>
     <tr>
@@ -180,7 +183,7 @@ small parameter estimates of \(\Gamma\) and \(\rho\) as zero.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Additional arguments for <code><a href='spacemap.html'>spacemap</a></code> or <code><a href='space.joint.html'>space.joint</a></code>
+      <td><p>Additional arguments for <code><a href='spacemap.html'>spacemap</a></code> or <code><a href='space.html'>space</a></code>
 to change their default settings (e.g. setting <code>tol = 1e-4</code>).</p></td>
     </tr>
     </table>
@@ -206,7 +209,8 @@ to change their default settings (e.g. setting <code>tol = 1e-4</code>).</p></td
     <pre class="examples"><div class='input'><span class='fu'>data</span>(<span class='no'>sim1</span>)
 <span class='co'>##########################</span>
 <span class='co'>#DEFINE TRAINING/TEST SETS</span>
-<span class='fu'>library</span>(<span class='no'>caret</span>)</div><div class='output co'>#&gt; <span class='message'>Loading required package: lattice</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: ggplot2</span></div><div class='input'><span class='co'>#sample size</span>
+<span class='fu'>library</span>(<span class='no'>caret</span>)
+<span class='co'>#sample size</span>
 <span class='no'>N</span> <span class='kw'>&lt;-</span> <span class='fu'>nrow</span>(<span class='no'>sim1</span>$<span class='no'>X</span>)
 <span class='co'>#number of folds</span>
 <span class='no'>K</span> <span class='kw'>&lt;-</span> <span class='fl'>5L</span>
@@ -220,14 +224,14 @@ to change their default settings (e.g. setting <code>tol = 1e-4</code>).</p></td
 <span class='no'>tsp</span> <span class='kw'>&lt;-</span> <span class='fu'>expand.grid</span>(<span class='kw'>lam1</span> <span class='kw'>=</span> <span class='fu'>seq</span>(<span class='fl'>65</span>, <span class='fl'>75</span>, <span class='kw'>length</span> <span class='kw'>=</span> <span class='fl'>3</span>))
 <span class='no'>cvspace</span> <span class='kw'>&lt;-</span> <span class='fu'>cvVote</span>(<span class='kw'>Y</span> <span class='kw'>=</span> <span class='no'>sim1</span>$<span class='no'>Y</span>,
                  <span class='kw'>trainIds</span> <span class='kw'>=</span> <span class='no'>trainSets</span>, <span class='kw'>testIds</span> <span class='kw'>=</span> <span class='no'>testSets</span>,
-                 <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"space"</span>, <span class='kw'>tuneGrid</span> <span class='kw'>=</span> <span class='no'>tsp</span>)</div><div class='output co'>#&gt; <span class='message'>Computing CV scores over the grid...</span></div><div class='output co'>#&gt; <span class='error'>Error in {    parts &lt;- dataPart(f = f, trainIds = trainIds, testIds = testIds,         data = data, method = method, givenX = givenX)    trained &lt;- trainModel(train = parts$train, method = method,         tuneGrid = tuneGrid[l, ], refit = refit, fold_id = f,         tune_id = l, resPath = resPath, givenX = givenX, Xindex = Xindex,         Yindex = Yindex, aszero = aszero, ...)    tmp &lt;- testModel(test = parts$test, fit = trained$fit, sparseFit = trained$sparseFit,         method = method, refit = refit, givenX = givenX, Xindex = Xindex,         Yindex = Yindex)    tmp}: task 1 failed - "unused arguments (Y.m = train$XY, lam2 = opt$sridge)"</span></div><div class='input'><span class='co'>##########################</span>
+                 <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"space"</span>, <span class='kw'>tuneGrid</span> <span class='kw'>=</span> <span class='no'>tsp</span>)</div><div class='output co'>#&gt; <span class='message'>Computing CV scores over the grid...</span></div><div class='input'><span class='co'>##########################</span>
 <span class='co'># SPACEMAP (Y and X input)</span>
 <span class='no'>tmap</span> <span class='kw'>&lt;-</span> <span class='fu'>expand.grid</span>(<span class='kw'>lam1</span> <span class='kw'>=</span> <span class='fu'>seq</span>(<span class='fl'>65</span>, <span class='fl'>75</span>, <span class='kw'>length</span> <span class='kw'>=</span> <span class='fl'>2</span>),
                    <span class='kw'>lam2</span> <span class='kw'>=</span> <span class='fu'>seq</span>(<span class='fl'>21</span>, <span class='fl'>35</span>, <span class='kw'>length</span> <span class='kw'>=</span> <span class='fl'>2</span>),
                    <span class='kw'>lam3</span> <span class='kw'>=</span> <span class='fu'>seq</span>(<span class='fl'>10</span>, <span class='fl'>40</span>, <span class='kw'>length</span> <span class='kw'>=</span> <span class='fl'>2</span>))
 <span class='no'>cvsmap</span> <span class='kw'>&lt;-</span> <span class='fu'>cvVote</span>(<span class='kw'>Y</span> <span class='kw'>=</span> <span class='no'>sim1</span>$<span class='no'>Y</span>, <span class='kw'>X</span> <span class='kw'>=</span> <span class='no'>sim1</span>$<span class='no'>X</span>,
                 <span class='kw'>trainIds</span> <span class='kw'>=</span> <span class='no'>trainSets</span>, <span class='kw'>testIds</span> <span class='kw'>=</span> <span class='no'>testSets</span>,
-                <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"spacemap"</span>, <span class='kw'>tuneGrid</span> <span class='kw'>=</span> <span class='no'>tmap</span>)</div><div class='output co'>#&gt; <span class='message'>Computing CV scores over the grid...</span></div><div class='input'>                
+                <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"spacemap"</span>, <span class='kw'>tuneGrid</span> <span class='kw'>=</span> <span class='no'>tmap</span>)</div><div class='output co'>#&gt; <span class='message'>Computing CV scores over the grid...</span></div><div class='output co'>#&gt; <span class='error'>Error in array(x, c(length(x), 1L), if (!is.null(names(x))) list(names(x),     NULL) else NULL): 'data' must be of a vector type, was 'NULL'</span></div><div class='input'>                
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Mathew's Correlation Coefficient of Classifier — algoMCC â€¢ spacemap</title>
+<title>Simulation 1 — sim1 â€¢ spacemap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -103,41 +103,55 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Mathew's Correlation Coefficient of Classifier</h1>
+    <h1>Simulation 1</h1>
     </div>
 
-
-
-    <pre><span class='fu'>algoMCC</span>(<span class='no'>tp</span>, <span class='no'>fn</span>, <span class='no'>fp</span>, <span class='no'>tn</span>)</pre>
     
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>tp</th>
-      <td><p>The number of true positive classifications.</p></td>
-    </tr>
-    <tr>
-      <th>fn</th>
-      <td><p>The number of false negative classifications.</p></td>
-    </tr>
-    <tr>
-      <th>fp</th>
-      <td><p>The number of false positive classifications.</p></td>
-    </tr>
-    <tr>
-      <th>tn</th>
-      <td><p>The number of true negative classifications.</p></td>
-    </tr>
-    </table>
+    <p>A simulation of a hub network in the high-dimension and
+  low sample size regime.
+
+    @details The variables are as follows:</p>
+    
+
+    <pre><span class='fu'>data</span>(<span class='no'>sim1</span>)</pre>
+        
+    <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
+
+    <p>A list of data elements Y,X,truth.</p>
+    
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <ul>
+<li><p><code>Y</code> Numeric matrix of 150 iid samples of 171 of response variables.</p></li>
+<li><p><code>X</code> Numeric matrix of 150 iid samples of 14 predictor variables.</p></li>
+<li><p><code>truth</code> List containing</p><ol>
+<li><p><code>xy</code> Adjacency matrix encoding \(x-y\) edges.</p></li>
+<li><p><code>yy</code> Adjacency matrix encoding \(y-y\) edges.</p></li>
+</ol></li>
+</ul>
+    <p>The simulation contains response variables \(Y = (y_1, \dots, y_Q)\) 
+ and predictor variables \(X = (x_1, \dots, x_P)\), where \(P=14,Q=171\). 
+ \(N=150\) iid samples were drawn from \((X,Y) ~ N(0, \Theta^{-1})\)
+  where non-zero off-diagonal elements of \(\Theta\) encode the 
+  edges of the hub network. The network contains 
+   10 predictors that have no edges at all, 
+   while 2 hub predictors have 13 \(x-y\) edges 
+   and 2 other hub predictors have 14 \(x-y\) edges.
+   Among the response edges \(y-y\), there are 2 hub variables with degree 12 and 13,
+    but the degree of the other response variables does not exceed 4. 
+    There are two disconnected components in the graph of size 94 and 81. 
+    The data has been standardized (mean-centered with unit variance) for all variables.</p>
     
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-                </ul>
+      
+      <li><a href="#format">Format</a></li>
+
+      <li><a href="#details">Details</a></li>
+          </ul>
 
   </div>
 </div>

@@ -78,6 +78,9 @@
   <a href="https://topherconley.github.io/neta-bcpls/">Network Toolkit</a>
 </li>
 <li>
+  <a href="../news/index.html">News</a>
+</li>
+<li>
   <a href="https://github.com/topherconley/spacemap/issues">Contact Us</a>
 </li>
       </ul>
@@ -106,7 +109,7 @@
     
     <p>When initially choosing tuning penalties, it can be 
 challenging to find the appropriate scale. This function fits either 
-<code><a href='spacemap.html'>spacemap</a></code> or <code><a href='space.joint.html'>space.joint</a></code> once for a specified 
+<code><a href='spacemap.html'>spacemap</a></code> or <code><a href='space.html'>space</a></code> once for a specified 
 tuning grid on the whole data. It reports the corresponding number of
 \(y-y\) edges and \(x-y\) edges for each tuning penalty set. 
 Having a prior understanding of how sparse the network ought to 
@@ -140,8 +143,8 @@ being <code>lam1</code>.</p></td>
       <th>method</th>
       <td><p>Character vector indicates network inference with function 
 <code><a href='spacemap.html'>spacemap</a></code> when <code>method = "spacemap"</code> or function 
-<code><a href='space.joint.html'>space.joint</a></code> when <code>method = "space"</code>. If <code>X</code> is 
-non-null and <code>method = "space"</code>, then <code>space.joint</code> will 
+<code><a href='space.html'>space</a></code> when <code>method = "space"</code>. If <code>X</code> is 
+non-null and <code>method = "space"</code>, then <code>space</code> will 
 infer (x--x, x--y, y--y) edges but only report (x--y, y--y) edges.</p></td>
     </tr>
     <tr>
@@ -156,7 +159,7 @@ small parameter estimates of \(\Gamma\) and \(\rho\) as zero.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Additional arguments for <code><a href='spacemap.html'>spacemap</a></code> or <code><a href='space.joint.html'>space.joint</a></code>
+      <td><p>Additional arguments for <code><a href='spacemap.html'>spacemap</a></code> or <code><a href='space.html'>space</a></code>
 to change their default settings (e.g. setting <code>tol = 1e-4</code>).</p></td>
     </tr>
     </table>

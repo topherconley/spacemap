@@ -21,13 +21,22 @@ Bootstrap aggregation, or bagging, is known to be a powerful tool for stabilizin
 
 ## Purpose and Scope
 
-Motivated by the advantages of bagging, we implemented the "Boot.Vote" procedure as an additional option to CV.Vote. The Boot.Vote procedure fits the model on $B$ bootstrapped re-samples. If the majority of the bootstrapped model fits report the same edge, then that edge is considered sufficiently reliable to include in the Boot.Vote network output. While the voting component is similar to CV.Vote, Boot.Vote differs in the data sampling. In bootstrap re-sampling, the model is fit to $N$ samples drawn with replacement (i.e., any sample can be drawn more than once in a bootstrapped re-sample), while CV.Vote sub-samples without replacement depending on the number of hold out sets. In simulations and in an application to breast cancer, we have seen Boot.Vote lower the FDR on average at limited cost to the power compared to the CV.vote procedure. However, Boot.Vote may not always be preferable to CV.Vote. The scope of this article is to demonstrate the application of Boot.Vote and leave it to the user to decide if Boot.Vote enhances the CV.Vote selected model depending on the nature of the application. 
+Motivated by the advantages of bagging, we implemented the "Boot.Vote" procedure as an additional option to CV.Vote for both spaceMap and SPACE models. The Boot.Vote procedure fits the model on $B$ bootstrapped re-samples. If the majority of the bootstrapped model fits report the same edge, then that edge is considered sufficiently reliable to include in the Boot.Vote network output. While the voting component is similar to CV.Vote, Boot.Vote differs in the data sampling. In bootstrap re-sampling, the model is fit to $N$ samples drawn with replacement (i.e., any sample can be drawn more than once in a bootstrapped re-sample), while CV.Vote sub-samples without replacement depending on the number of hold out sets. In simulations and in an application to breast cancer, we have seen Boot.Vote lower the FDR on average at limited cost to the power compared to the CV.vote procedure. However, Boot.Vote may not always be preferable to CV.Vote. The scope of this article is to demonstrate the application of Boot.Vote and leave it to the user to decide if Boot.Vote enhances the CV.Vote selected model depending on the nature of the application. 
 
 ## Example 
 
-Tuning will be much faster if parallel computation is leveraged. Set up a parallel back-end, in this case for a multicore machine. This code will use all available cores minus 1. 
+This section contains a basic illustration on how to build ensemble networks for the spaceMap model and the SPACE model. 
+Load the [sim1](https://topherconley.github.io/spacemap/reference/sim1.html) simulation data, which is further described in the [tuning](https://topherconley.github.io/spacemap/articles/tuning#tuning-example.html) vignette . 
 
 ```{r}
+library(spacemap)
+data(sim1)
+```
+
+Model fitting is much faster if parallel computation is leveraged. If you choose to set up a parallel back-end (in this case for a multicore machine), it will use all available cores minus 1.
+
+```{r}
+#if dopar==true, then model tuning done in parallel 
 dopar <- FALSE
 if (dopar) { 
   suppressPackageStartupMessages(library(doParallel))
@@ -38,16 +47,32 @@ if (dopar) {
 }
 ```
 
-Load the `sim1` example. 
+### spaceMap 
+
+Fit an ensemble network for the spaceMap model (i.e. `method="spacemap"`) with 100 bootstrap replicates with the [bootEnsemble](https://topherconley.github.io/spacemap/reference/bootEnsemble.html) and [bootVote](https://topherconley.github.io/spacemap/reference/bootVote.html ) functions. 
 
 ```{r}
-library(spacemap)
-data(sim1)
+#define tune penalty parameters
+tune <- list(lam1 = 73, lam2 = 31, lam3 = 20.5)
+smapens <- bootEnsemble(Y = sim1$Y, X = sim1$X, tune = tune,
+                    method = "spacemap", B = 100)
+smapbv <- bootVote(smapens)
+```
+
+Below the ensemble network is stored as a list of adjacency matrices.
+
+```{r}
+str(smapbv$bv)
+```
+
+```{r, eval = FALSE, echo=FALSE}
+bvOut <- list(cvVote = list(xy = bv$bv$xy, yy = bv$bv$yy))
+spacemap::cvPerf(cvOut = bvOut, trueParCor = sim1$trueParCor, method = "spacemap")[1:8]
 ```
 
 ### SPACE 
 
-Fit an ensemble network for the SPACE model with 300 bootstrap replicates as follows: 
+Fit an ensemble network for the SPACE model (i.e. `method="space"`) with 100 bootstrap replicates.
 
 ```{r}
 sens <- bootEnsemble(Y = sim1$Y, tune = list(lam1 = 70), 
@@ -68,26 +93,4 @@ bvOut <- list(cvVote = list(yy = spacebv$bv$yy))
 kable(t(as.matrix(cvPerf(cvOut = bvOut, trueParCor = sim1$trueParCor, method = "space")[1:3])))
 ```
 
-### spaceMap 
-
-Fit an ensemble network for the spaceMap model with 300 bootstrap replicates as follows. 
-
-```{r}
-tune <- data.frame(lam1 = 73, lam2 = 31, lam3 = 20.5)
-#suppress warnings because parallel backend not set up.
-smapens <- bootEnsemble(Y = sim1$Y, X = sim1$X, tune = tune,
-                    method = "spacemap", B = 100)
-smapbv <- bootVote(smapens)
-```
-
-Below the ensemble network is stored as a list of adjacency matrices.
-
-```{r}
-str(smapbv$bv)
-```
-
-```{r, eval = FALSE, echo=FALSE}
-bvOut <- list(cvVote = list(xy = bv$bv$xy, yy = bv$bv$yy))
-spacemap::cvPerf(cvOut = bvOut, trueParCor = sim1$trueParCor, method = "spacemap")[1:8]
-```
 

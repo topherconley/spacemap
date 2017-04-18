@@ -1,16 +1,18 @@
 ---
 title: "spacemap"
 output: 
-  GitHub_document
+  github_document
 ---
 
 ## Description
 
-The spaceMap R package constructs _de novo_ networks from heterogeneous data types in a high-dimensional context by applying a novel conditional graphical model. The underlying statistical model is motivated by applications in integrative genomics, where two (or more) -omic data profiles are modeled jointly to discover their interactions. spaceMap is particularly effective in learning networks in diverse applications that exhibit hub topology. In an application to breast cancer tumor data, spaceMap learned regulatory networks that generated novel hypotheses of cancer drivers, while also identifying known signatures of various molecular sub-types. Additionally, an accompanying network analysis toolkit is provided, which helps interpret the complex biological interactions from the inferred networks. 
+The spaceMap R package constructs _de novo_ networks from heterogeneous data types in a high-dimensional context by applying a novel conditional graphical model. The underlying statistical model is motivated by applications in integrative genomics, where two (or more) -omic data profiles are modeled jointly to discover their interactions. spaceMap is particularly effective in learning networks in diverse applications that exhibit hub topology. In an application to breast cancer tumor data, spaceMap learned regulatory networks that generated novel hypotheses of cancer drivers, while also identifying known signatures of various molecular sub-types. Additionally, an accompanying network analysis toolkit is provided, which helps interpret the complex biological interactions from the inferred networks. The image below provides an overview of how to fit spaceMap, perform network analysis in an integrative genomic context, and visualize important network signatures. 
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+![](figures/flow-chart-4.png)
 
 ## Installation
 

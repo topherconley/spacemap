@@ -78,6 +78,9 @@
   <a href="https://topherconley.github.io/neta-bcpls/">Network Toolkit</a>
 </li>
 <li>
+  <a href="../news/index.html">News</a>
+</li>
+<li>
   <a href="https://github.com/topherconley/spacemap/issues">Contact Us</a>
 </li>
       </ul>
@@ -162,7 +165,7 @@ samples that will be down-sampled for each model fitting iteration of the ensemb
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>A list up to length <code>B</code> of convergent and sparse model fits from 
-either <code><a href='spacemap.html'>spacemap</a></code> or <code><a href='space.joint.html'>space.joint</a></code>. The list object should typically
+either <code><a href='spacemap.html'>spacemap</a></code> or <code><a href='space.html'>space</a></code>. The list object should typically
 not be modified by the user, but passed on to the  <code><a href='bootVote.html'>bootVote</a></code> function.
 Model fits that are not convergent or produce networks that are not sparse are not reported.</p>
     
@@ -179,12 +182,10 @@ Model fits that are not convergent or produce networks that are not sparse are n
 <span class='co'>#Boostrap Ensemble (B = 10) for illustration only</span>
 <span class='no'>tune</span> <span class='kw'>&lt;-</span> <span class='fu'>data.frame</span>(<span class='kw'>lam1</span> <span class='kw'>=</span> <span class='fl'>70</span>, <span class='kw'>lam2</span> <span class='kw'>=</span> <span class='fl'>28</span>, <span class='kw'>lam3</span> <span class='kw'>=</span> <span class='fl'>17.5</span>)
 <span class='no'>ens</span> <span class='kw'>&lt;-</span> <span class='fu'>bootEnsemble</span>(<span class='kw'>Y</span> <span class='kw'>=</span> <span class='no'>sim1</span>$<span class='no'>Y</span>, <span class='kw'>X</span> <span class='kw'>=</span> <span class='no'>sim1</span>$<span class='no'>X</span>, <span class='kw'>tune</span> <span class='kw'>=</span> <span class='no'>tune</span>,
-                    <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"spacemap"</span>, <span class='kw'>B</span> <span class='kw'>=</span> <span class='fl'>10</span>)</div><div class='output co'>#&gt; <span class='message'>Loading required package: foreach</span></div><div class='output co'>#&gt; <span class='message'>foreach: simple, scalable parallel programming from Revolution Analytics</span>
-#&gt; <span class='message'>Use Revolution R for scalability, fault tolerance and more.</span>
-#&gt; <span class='message'>http://www.revolutionanalytics.com</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: rngtools</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: pkgmaker</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: registry</span></div><div class='output co'>#&gt; <span class='message'></span>
+                    <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"spacemap"</span>, <span class='kw'>B</span> <span class='kw'>=</span> <span class='fl'>10</span>)</div><div class='output co'>#&gt; <span class='message'>Loading required package: rngtools</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: pkgmaker</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: registry</span></div><div class='output co'>#&gt; <span class='message'></span>
 #&gt; <span class='message'>Attaching package: ‘pkgmaker’</span></div><div class='output co'>#&gt; <span class='message'>The following object is masked from ‘package:base’:</span>
 #&gt; <span class='message'></span>
-#&gt; <span class='message'>    isNamespaceLoaded</span></div><div class='output co'>#&gt; <span class='warning'>Warning: executing %dopar% sequentially: no parallel backend registered</span></div></pre>
+#&gt; <span class='message'>    isNamespaceLoaded</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
