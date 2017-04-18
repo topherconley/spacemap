@@ -97,11 +97,19 @@ library(igraph)
 ig <- spacemap::adj2igraph(YY = adjnet$yy, XY = adjnet$xy)
 ```
 
-The igraph object `ig` has a very convenient sparse representation, with `ig` occupying `r round(object.size(adjnet) / object.size(ig),0)` times smaller memory than `adjnet`.  Many powerful network analysis tools are available in the igraph R package that enhance the visualization. For example, we identify modules of the spaceMap network with igraph's edge-betweenness algorithm. Each module discovered will be colored differently when we visualize the network. 
+The igraph object `ig` has a very convenient sparse representation, with `ig` occupying `r round(object.size(adjnet) / object.size(ig),0)` times smaller memory than `adjnet`.  Many powerful network analysis tools are available in the igraph R package that enhance the visualization. For example, we identify modules or communities of the spaceMap network with igraph's edge-betweenness algorithm.
 
 ```{r}
 ceb <- igraph::cluster_edge_betweenness(graph = ig)
 members <- igraph::membership(ceb)
+```
+ 
+Color the nodes according to their communities and since this community detection method is hierarchical, we can further group higher order structure of the communities with shaded polygons. Edges between communities are colored red and edges  
+
+```{r}
+dg <- degree(ig)*1.5
+plot(ceb, ig, vertex.label= "", vertex.size = dg,
+edge.width = rep(2, ecount(ig)))
 ```
 
 

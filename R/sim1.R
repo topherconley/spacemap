@@ -1,0 +1,36 @@
+#' Simulation 1
+#'
+#'
+#'  A simulation of a hub network in the high-dimension and
+#'   low sample size regime. 
+#'  
+#'  @details The variables are as follows:
+#'
+#' \itemize{
+#'  \item \code{Y} Numeric matrix of 150 iid samples of 171 of response variables.  
+#'  \item \code{X} Numeric matrix of 150 iid samples of 14 predictor variables.  
+#'  \item \code{truth} List containing
+#'  \enumerate{
+#'  \item \code{xy} Adjacency matrix encoding \eqn{x-y} edges. 
+#'  \item \code{yy} Adjacency matrix encoding \eqn{y-y} edges. 
+#'  }
+#' }
+#' 
+#'  The simulation contains response variables \eqn{Y = (y_1, \dots, y_Q)} 
+#'  and predictor variables \eqn{X = (x_1, \dots, x_P)}, where \eqn{P=14,Q=171}. 
+#'  \eqn{N=150} iid samples were drawn from \eqn{(X,Y) ~ N(0, \Theta^{-1})}
+#'   where non-zero off-diagonal elements of \eqn{\Theta} encode the 
+#'   edges of the hub network. The network contains 
+#'    10 predictors that have no edges at all, 
+#'    while 2 hub predictors have 13 \eqn{x-y} edges 
+#'    and 2 other hub predictors have 14 \eqn{x-y} edges.
+#'    Among the response edges \eqn{y-y}, there are 2 hub variables with degree 12 and 13,
+#'     but the degree of the other response variables does not exceed 4. 
+#'     There are two disconnected components in the graph of size 94 and 81. 
+#'     The data has been standardized (mean-centered with unit variance) for all variables. 
+#' @docType data
+#' @keywords datasets
+#' @name sim1
+#' @usage data(sim1)
+#' @format A list of data elements Y,X,truth. 
+NULL
