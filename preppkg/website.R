@@ -5,10 +5,10 @@ setwd("~/repos/spacemap/")
 #UPDATE R PACKAGE
 #############################
 library(devtools)
-load_all()
-document()
-install(quick = TRUE, dependencies = F)
-devtools::clean_dll()
+#load_all()
+#document()
+#install(quick = TRUE, dependencies = F)
+#devtools::clean_dll()
 
 #############################
 #BUILD WEBSITE 
