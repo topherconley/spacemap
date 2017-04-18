@@ -23,15 +23,15 @@ Igor Stravinsky
 
 ## Motivation
 
-The spaceMap model learns networks in the high dimension and low sample size regime by imposing a sparsity assumption on the network topology. The sparsity assumption means that most nodes in the network have very few conditional dependencies amongst themselves relative to the potential number of edges. Penalty terms in the multivariate regression are the technical means to impose a sparse network, which were briefly introduced in the previous vignette [spacemap basics ](https://topherconley.github.io/spacemap/articles/basics#fitting-spacemap.html). Three penalty terms, sometimes called tuning penalties, are employed in spaceMap to more precisely control the amount of sparsity imposed on different interactions. These parameters ought to be tuned for each data set to find the appropriate amount of sparsity. Adding more specialized parameters increases the range of network topologies learned by spaceMap, just as increasing the number of strings on a musical instrument can enhance the range of the artist's expression. However, there exists a trade-off of model complexity versus computation time expended in paramter tuning that needs to be appropriately managed. This vignette illustrates a successful strategy that helps balances computation time with improving network learning performance. 
+The spaceMap model learns networks in the high dimension and low sample size regime by imposing a sparsity assumption on the network topology. The sparsity assumption means that most nodes in the network have very few conditional dependencies among themselves relative to the potential number of edges. Penalty terms in the multivariate regression are the technical means to impose a sparse network, which were briefly introduced in the previous vignette [spacemap basics ](https://topherconley.github.io/spacemap/articles/basics#fitting-spacemap.html). Three penalty terms, sometimes called tuning penalties, are employed in spaceMap to more precisely control the amount of sparsity imposed on different interactions. These parameters ought to be tuned for each data set to find the appropriate amount of sparsity. Adding more specialized parameters increases the range of network topologies learned by spaceMap, just as increasing the number of strings on a musical instrument can enhance the range of the artist's expression. However, there exists a trade-off of model complexity versus computation time expended in parameter tuning that needs to be appropriately managed. This vignette illustrates a successful strategy that helps balances computation time with improving network learning performance. 
 
 ### Penalty parameters
 
-We begin by describing the special purpose of each penalty parameter that must be tuned. The first penalty parameter $\lambda_1$ controls the overall sparisty  among response variable interactions, hereafter refered to as ($y-y$). The second penalty parameter $\lambda_2$ limits the number of predictor-response interactions, hereafter refered to as $x-y$. Lastly, increasing the penalty parameter $\lambda_3$ will result in networks with greater representation of hub predictor nodes---possessing many interations with response nodes---rather than reporting many predictors with very few interactions with the responses. These penalty parameters are all non-negative, where larger values impose greater sparsity in the case of $\lambda_1, \lambda_2$, or encourage hub topology in the case of $\lambda_3$. 
+We begin by describing the special purpose of each penalty parameter that must be tuned. The first penalty parameter $\lambda_1$ controls the overall sparsity  among response variable interactions, which are  to as ($y-y$). The second penalty parameter $\lambda_2$ limits the number of predictor-response interactions, hereafter referred to as $x-y$. Lastly, increasing the penalty parameter $\lambda_3$ will result in networks with greater representation of hub predictor nodes---possessing many interactions with response nodes---rather than reporting many predictors with very few interactions with the responses. These penalty parameters are all non-negative, where larger values impose greater sparsity in the case of $\lambda_1, \lambda_2$, or encourage hub topology in the case of $\lambda_3$. 
 
 ## Tuning Strategy
 
-Exploring a large grid of penalty parameters can be very computationally demanding. In this tutorial we illustrate a strategy for finding a a good neighborhood of tuning penalties. The strategy finds suitiable neighborhoods of each tuning penalty by:
+Exploring a large grid of penalty parameters can be very computationally demanding. In this tutorial we illustrate a strategy for finding a a good neighborhood of tuning penalties. The strategy finds suitable neighborhoods of each tuning penalty by:
 
 1. Cross validation of SPACE model on $Y$ input data across a one-dimensional grid of tuning penalty $\lambda_1$, parameterized as `lam1`. Identify best performing neighborhood of $\lambda_1$. 
 2. Cross validation of `spacemap` with input $X$ and $Y$ across a three-dimensional grid of $\lambda_1, \lambda_2, \lambda_3$. The neighborhood of $\lambda_1$ is specified from step 1. Explore a broad range of values for $\lambda_2, \lambda_3$, which are parameterized as `lam2` and `lam3`.  
@@ -66,7 +66,7 @@ trueParCor <- sim1$trueParCor
 str(trueParCor)
 ```
 
-Tuning will be much faster if parallel computation is leveraged. Set up a parallel backend, in this case for a multicore machine. This code will use all available cores minus 1. 
+Tuning will be much faster if parallel computation is leveraged. Set up a parallel back-end, in this case for a multicore machine. This code will use all available cores minus 1. 
 
 ```{r}
 dopar <- FALSE
@@ -127,7 +127,7 @@ cvspace <- cvVote(Y = dat$Y,
                   method = "space", tuneGrid = tsp) 
 ```
 
-The `tuneVis` function plots several diagonostic metrics for tuning the models. Below the plot on the left shows the log(CV score) curve aross `lam1`, where the vertical line denotes the minimizer. The CV score curve has an approximately convex shape with a little bit variability at the valley. To the right the average number of $y-y$ edges across CV training splits is shown to decrease with increasing `lam1`. The intersecting lines indicate the optimal lambda produces a CV.vote SPACE model of `r nonZeroUpper(cvspace$cvVote$yy,0)` $y-y$ edges, which is about 30 edges lower than the average no. of edges due to the model stabilizing influence of the CV.vote procedure. 
+The `tuneVis` function plots several diagnostic metrics for tuning the models. Below the plot on the left shows the log(CV score) curve across `lam1`, where the vertical line denotes the minimizer. The CV score curve has an approximately convex shape with a little bit variability at the valley. To the right the average number of $y-y$ edges across CV training splits is shown to decrease with increasing `lam1`. The intersecting lines indicate the optimal lambda produces a CV.vote SPACE model of `r nonZeroUpper(cvspace$cvVote$yy,0)` $y-y$ edges, which is about 30 edges lower than the average no. of edges due to the model stabilizing influence of the CV.vote procedure. 
 
 ```{r}
 cvVis <- tuneVis(cvOut = cvspace, 
@@ -213,7 +213,7 @@ smapPerf <- cvPerf(cvOut = cvsmap, trueParCor = sim1$trueParCor, method = "space
 smapPerf
 ```
 
-The spaceMap model dramatically lowers the $y-y$ FDR when compared with SPACE in this example. The FDR is lowered from  over 25% to below 8%, while experiencing a small drop in $y-y$ power. This benefit is beleived to be because spaceMap learns the $x-y$ edges that encode predictor variable perturbations to the response varialbes. With a relatively high $x-y$ power and limted overall FDR, spaceMap shows its added-value. 
+The spaceMap model dramatically lowers the $y-y$ FDR when compared with SPACE in this example. The FDR is lowered from  over 25% to below 8%, while experiencing a small drop in $y-y$ power. This benefit is believed to be because spaceMap learns the $x-y$ edges that encode predictor variable perturbations to the response variables. With a relatively high $x-y$ power and limited overall FDR, spaceMap shows its added-value. 
 
 ### Refinement of Grid
 
@@ -244,5 +244,5 @@ spacemap::cvPerf(cvOut = cvsmap2, trueParCor = sim1$trueParCor, method = "spacem
 
 ## Further Reading 
 
-Completion of this vignette ought to have taught how to tune penalty parameters to near optimal settings for the `spacemap` model. We recommend looking at the [next vignette](https://topherconley.github.io/spacemap/articles/ensemble.html) which illustrates how to have more precise control of the FDR through an ensembled network. 
+Completion of this vignette ought to have taught how to tune penalty parameters to near optimal settings for the `spacemap` model. We recommend looking at the [next vignette](https://topherconley.github.io/spacemap/articles/ensemble.html) which illustrates how to have more precise control of the FDR through an ensemble network. 
 

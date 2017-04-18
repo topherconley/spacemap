@@ -21,11 +21,11 @@ Bootstrap aggregation, or bagging, is known to be a powerful tool for stabilizin
 
 ## Purpose and Scope
 
-Motivated by the advantages of bagging, we implemented the "Boot.Vote" procedure as an additional option to CV.Vote. The Boot.Vote procedure fits the model on $B$ bootstrapped resamples. If the majority of the bootstrapped model fits report the same edge, then that edge is considered sufficiently reliable to include in the Boot.Vote network output. While the voting component is similar to CV.Vote, Boot.Vote differs in the data sampling. In boostrap resampling, the model is fit to $N$ samples drawn with replacement (i.e., any sample can be drawn more than once in a bootstrapped resample), while CV.Vote sub-samples without replacement depending on the number of hold out sets. In simulations and in an application to breast cancer, we have seen Boot.Vote lower the FDR on average at limited cost to the power compared to the CV.vote procedure. However, Boot.Vote may not always be preferable to CV.Vote. The scope of this article is to demonstrate the application of Boot.Vote and leave it to the user to decide if Boot.Vote enhances the CV.Vote selected model depending on the nature of the application. 
+Motivated by the advantages of bagging, we implemented the "Boot.Vote" procedure as an additional option to CV.Vote. The Boot.Vote procedure fits the model on $B$ bootstrapped re-samples. If the majority of the bootstrapped model fits report the same edge, then that edge is considered sufficiently reliable to include in the Boot.Vote network output. While the voting component is similar to CV.Vote, Boot.Vote differs in the data sampling. In bootstrap re-sampling, the model is fit to $N$ samples drawn with replacement (i.e., any sample can be drawn more than once in a bootstrapped re-sample), while CV.Vote sub-samples without replacement depending on the number of hold out sets. In simulations and in an application to breast cancer, we have seen Boot.Vote lower the FDR on average at limited cost to the power compared to the CV.vote procedure. However, Boot.Vote may not always be preferable to CV.Vote. The scope of this article is to demonstrate the application of Boot.Vote and leave it to the user to decide if Boot.Vote enhances the CV.Vote selected model depending on the nature of the application. 
 
 ## Example 
 
-Tuning will be much faster if parallel computation is leveraged. Set up a parallel backend, in this case for a multicore machine. This code will use all available cores minus 1. 
+Tuning will be much faster if parallel computation is leveraged. Set up a parallel back-end, in this case for a multicore machine. This code will use all available cores minus 1. 
 
 ```{r}
 dopar <- FALSE

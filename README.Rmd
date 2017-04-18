@@ -1,12 +1,12 @@
 ---
 title: "spacemap"
 output: 
-  github_document
+  GitHub_document
 ---
 
 ## Description
 
-The spaceMap R package constructs _de novo_ networks from heterogenous data types in a high-dimensional context by applying a novel conditional graphical model. The underlying statistical model is motivated by applications in integrative genomics, where two (or more) -omic data profiles are modeled jointly to discover their interactions. spaceMap is particularly effective in learning networks in diverse applications that exhibit hub topology. In an application to breast cancer tumor data, spaceMap learned regulatory networks that generated novel hypotheses of cancer drivers, while also identifying known signatures of various molecular sub-types. Additionally, an accompanying network analysis toolkit is provided, which helps interpret the complex biological interactions from the inferred networks. 
+The spaceMap R package constructs _de novo_ networks from heterogeneous data types in a high-dimensional context by applying a novel conditional graphical model. The underlying statistical model is motivated by applications in integrative genomics, where two (or more) -omic data profiles are modeled jointly to discover their interactions. spaceMap is particularly effective in learning networks in diverse applications that exhibit hub topology. In an application to breast cancer tumor data, spaceMap learned regulatory networks that generated novel hypotheses of cancer drivers, while also identifying known signatures of various molecular sub-types. Additionally, an accompanying network analysis toolkit is provided, which helps interpret the complex biological interactions from the inferred networks. 
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -21,9 +21,9 @@ The R package `spacemap` is available from GitHub. Please see the [most recent b
 
 ### Learning robust networks
 
-We built model selection and model aggregation tools into spaceMap for learning networks robust to the challenges of integrative genomics data due to high-dimensionality and complex noise structure.  High throughput -omic experiments often have small sample sizes and the signal-to-noise can be low.  Models applied to the resulting data can be prone to overfitting and high variability. By  a procedure called *CV.Vote* based on K-fold cross validation, one can learn model tuning parameters that will help balance the tradeoff of power and false discovery rate (FDR). *CV.Vote* reports a network where edges must be present in a majority of networks fit under the training sets. Please see [Model Tuning](https://topherconley.github.io/spacemap/articles/tune_sim1.html) under the Vignettes tab for an example of how to tune networks with cross validation. Specific usage details of *CV.Vote* are documented in the function [cvVote](https://topherconley.github.io/spacemap/reference/cvVote.html). 
+We built model selection and model aggregation tools into spaceMap for learning networks robust to the challenges of integrative genomics data due to high-dimensional and complex noise structure.  High throughput -omic experiments often have small sample sizes and the signal-to-noise can be low.  Models applied to the resulting data can be prone to over-fitting and high variability. By  a procedure called *CV.Vote* based on K-fold cross validation, one can learn model tuning parameters that will help balance the trade-off of power and false discovery rate (FDR). *CV.Vote* reports a network where edges must be present in a majority of networks fit under the training sets. Please see [Model Tuning](https://topherconley.github.io/spacemap/articles/tune_sim1.html) under the Vignettes tab for an example of how to tune networks with cross validation. Specific usage details of *CV.Vote* are documented in the function [cvVote](https://topherconley.github.io/spacemap/reference/cvVote.html). 
 
-Making your network robust to overfitting can be further enhanced through bootstrap aggregation---called *Boot.Vote*---especially when sample size relative to dimensionality is a real concern. This procedure learns networks on $B$ bootstrap replicates of data under CV-selected tuning parameters. Only those edges with majority representation among these networks are reported in the final network.  Specific usage details and an example of *Boot.Vote* are documented in the functions [bootEnsemble](https://topherconley.github.io/spacemap/reference/bootEnsemble.html) and [bootVote](https://topherconley.github.io/spacemap/reference/bootVote.html). 
+Making your network robust to over-fitting can be further enhanced through bootstrap aggregation---called *Boot.Vote*---especially when sample size relative to dimensionality is a real concern. This procedure learns networks on $B$ bootstrap replicates of data under CV-selected tuning parameters. Only those edges with majority representation among these networks are reported in the final network.  Specific usage details and an example of *Boot.Vote* are documented in the functions [bootEnsemble](https://topherconley.github.io/spacemap/reference/bootEnsemble.html) and [bootVote](https://topherconley.github.io/spacemap/reference/bootVote.html). 
 
 #### Simulations
 

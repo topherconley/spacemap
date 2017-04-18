@@ -20,7 +20,7 @@ This vignette will help users become familiar with the implementation of the mod
 
 ## Background 
 
-The spaceMap model is a conditional graphical model suited for learning networks from high-dimensional data constrained by limited sample size. Two distinct data types are input to the model; one data type labeled as $X$'s are predictor variables that can be continuous, discrete, or categorical in nature; another data type is labeled as $Y$'s and are continous response variables. When we fit the spaceMap model, we seek to learn the network comprised of node set $\textbf{V}= (X,Y)$ and edge set $\textbf{E}= \{ x_p - y_q : p \in \{1, \dots, P\}, q \in \{1, \dots, Q\} \} \cup \{ y_q - y_l : q \neq l \in \{1, \dots, Q\} \}$. The output of the model is the network containing the edges $x-y$ and $y-y$, but not $x-x$ edges. Motivated by integrative genomics applications, it has been applied to learn how genomic copy number alterations (i.e. $x$'s) regulate protein expression covariation (i.e. $y$'s) in breast cancer. In this specific application, it learned $x-y$ edges to identify which genomic alterations disrupt which protein pathways, while simultaneously accounting for the $y-y$ interactions among the proteins in dysregulated cancer pathways. The model can be applied in a general sense to diverse high dimensional data types, not just those pertaining to integrative genomics. 
+The spaceMap model is a conditional graphical model suited for learning networks from high-dimensional data constrained by limited sample size. Two distinct data types are input to the model; one data type labeled as $X$'s are predictor variables that can be continuous, discrete, or categorical in nature; another data type is labeled as $Y$'s and are continuous response variables. When we fit the spaceMap model, we seek to learn the network comprised of node set $\textbf{V}= (X,Y)$ and edge set $\textbf{E}= \{ x_p - y_q : p \in \{1, \dots, P\}, q \in \{1, \dots, Q\} \} \cup \{ y_q - y_l : q \neq l \in \{1, \dots, Q\} \}$. The output of the model is the network containing the edges $x-y$ and $y-y$, but not $x-x$ edges. Motivated by integrative genomics applications, it has been applied to learn how genomic copy number alterations (i.e. $x$'s) regulate protein expression co-variation (i.e. $y$'s) in breast cancer. In this specific application, it learned $x-y$ edges to identify which genomic alterations disrupt which protein pathways, while simultaneously accounting for the $y-y$ interactions among the proteins in dysregulated cancer pathways. The model can be applied in a general sense to diverse high dimensional data types, not just those pertaining to integrative genomics. 
 
 ## Example 
 
@@ -37,7 +37,7 @@ The spaceMap model learns the structure of the network from data by estimating t
 
 ### Tuning penalties
 
-Tuning penalties $\lambda_1, \lambda_2$ correspond to parameters `lam1` and `lam2`, where each determines the degree of overall sparsity of the $y-y$ and $x-y$ edges in the network, respectively. Tuning penalty $\lambda_3$ corresponds to parameter `lam3` and encourages selection of $x$ hubs--that is $x$'s that infuence many $y$'s. The selection of appropriate penalty parameters is of primary importance when evaluating `spacemap::spacemap` to learn a network. In this simplified scenario we set the tuning parameters based on previous cross validation results. The task of selecting appropriate tuning parameters requires a robust model-selection routine and is discussed in more advanced vignettes. 
+Tuning penalties $\lambda_1, \lambda_2$ correspond to parameters `lam1` and `lam2`, where each determines the degree of overall sparsity of the $y-y$ and $x-y$ edges in the network, respectively. Tuning penalty $\lambda_3$ corresponds to parameter `lam3` and encourages selection of $x$ hubs--that is $x$'s that influence many $y$'s. The selection of appropriate penalty parameters is of primary importance when evaluating `spacemap::spacemap` to learn a network. In this simplified scenario we set the tuning parameters based on previous cross validation results. The task of selecting appropriate tuning parameters requires a robust model-selection routine and is discussed in more advanced vignettes. 
 
 ```{r}
 lam1 <- 72
@@ -53,7 +53,7 @@ Fit the spacemap model to the data matrices $\bf X$ and $\bf Y$ with the selecte
 net <- spacemap(Y = sim1$Y, X = sim1$X, lam1 = lam1, lam2 = lam2, lam3 = lam3)
 ```
 
-Most users wiil be interested in the network topology, which is encoded in the adjacency matrices `yy` and `xy` output from the `adjacency` auxillary function. 
+Most users will be interested in the network topology, which is encoded in the adjacency matrices `yy` and `xy` output from the `adjacency` auxiliary function. 
 
 ```{r}
 adjnet <- adjacency(net = net)
@@ -70,7 +70,7 @@ The intermediate output of `spacemap` is a list of estimated parameters and mode
 #### Estimated parameters:
 
 + The estimated partial correlations $\bf \hat  \rho$ are reported as a symmetric matrix `ParCor` where the off-diagonal entries exceeding the convergence tolerance in absolute value encode $y-y$ edges. 
-+ The estimated diagnoal of the inverse covariation matrix for the $y$ variables is denoted as $\bf \hat \theta$ and is reported as the numeric vector `sig.fit`. 
++ The estimated diagonal of the inverse co-variation matrix for the $y$ variables is denoted as $\bf \hat \theta$ and is reported as the numeric vector `sig.fit`. 
 + The estimated regression coefficients $\bf \hat \Gamma$ are reported in matrix form as `Gamma`, where  coefficients exceeding the convergence tolerance encode $x-y$ edges. 
 
 #### Model Diagnostics: 
@@ -78,7 +78,7 @@ The intermediate output of `spacemap` is a list of estimated parameters and mode
 + The residual sum of squares is reported as a numeric `rss`. 
 + The logical variable `convergence` indicates whether the model converged subject to the specified tolerance and number of maximum iterations; 
 + The numeric `deltaMax` reports the maximum $\Delta$ in parameter values in the last iteration. This helps diagnose how close 
-the algorithm is to converging if it does not coverge. 
+the algorithm is to converging if it does not converge. 
 
 The structure of the intermediate output is shown below. 
 
@@ -88,9 +88,9 @@ str(net)
 
 ## Quick Visualization
 
-Network analysis is enhanced through visualizing the network topology. There are many external software libraries dedicated to visualization.  We recommend using Cytoscape (not part of R) for publication quality visualizations. However, such a tool may involve some manual curation and the sophisticated options makes for a steeper learning curve. If you simply need a quick way to visualize the network output, the following section illusrates how to do so within R. 
+Network analysis is enhanced through visualizing the network topology. There are many external software libraries dedicated to visualization.  We recommend using Cytoscape (not part of R) for publication quality visualizations. However, such a tool may involve some manual curation and the sophisticated options makes for a steeper learning curve. If you simply need a quick way to visualize the network output, the following section illustrates how to do so within R. 
 
-Frist, export the the spacemap output to an igraph object. 
+First, export the the spacemap output to an igraph object. 
 
 ```{r}
 library(igraph)
@@ -104,7 +104,7 @@ ceb <- igraph::cluster_edge_betweenness(graph = ig)
 members <- igraph::membership(ceb)
 ```
  
-Color the nodes according to their communities and since this community detection method is hierarchical, we can further group higher order structure of the communities with shaded polygons. Edges between communities are colored red and edges  
+Color the nodes according to their communities. Since the community detection method we used was hierarchical, we can further group higher-order structure of the communities with shaded polygons. Edges between communities are colored red and edges  within communities are colored in black. Nodes with higher degree are scaled to be larger. 
 
 ```{r}
 dg <- degree(ig)*1.5
@@ -112,8 +112,7 @@ plot(ceb, ig, vertex.label= "", vertex.size = dg,
 edge.width = rep(2, ecount(ig)))
 ```
 
-
-While there are many visualization options, For interactive visualization, we may make use of the `networkD3` package. The following snippet will visualize `spacemap`'s network where $X$ and $Y$ hub nodes are larger in size. Colors denote the 14 different modules of the network. Hover over a node with your mouse if you wish to see the node ID and its adjacent neighbors. 
+For interactive visualization, we may make use of the `networkD3` package. The following snippet will visualize `spacemap`'s network where $X$ and $Y$ hub nodes are larger in size. Colors denote the 14 different modules of the network. Hover over a node with your mouse if you wish to see the node ID and its adjacent neighbors. 
 
  
 ```{r}
