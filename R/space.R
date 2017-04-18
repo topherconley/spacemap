@@ -9,12 +9,12 @@ space.nested <- function(Y, seq_lam1, sridge=0, sig=NULL, weight=NULL,iter=2, to
   library(foreach)
   
   res <- vector("list", length(vlam1))
-  res[[1]] <- space.joint(Y = Y, lam1 = vlam1[1], sridge = sridge, sig=sig, weight = weight,
+  res[[1]] <- space(Y = Y, lam1 = vlam1[1], sridge = sridge, sig=sig, weight = weight,
                           iter = iter, tol = tol, cdmax = cdmax,
                           verbose = verbose, rho  = NULL)
   
   for(i in 2:length(vlam1)) { 
-    res[[i]] <- space.joint(Y = Y, lam1 = vlam1[i], sridge = sridge, sig = res[[i-1]]$sig.fit, weight = weight,
+    res[[i]] <- space(Y = Y, lam1 = vlam1[i], sridge = sridge, sig = res[[i-1]]$sig.fit, weight = weight,
                             iter = iter, tol = tol, cdmax = cdmax,
                             verbose = verbose, rho = res[[i-1]]$ParCor)
   }
@@ -56,10 +56,10 @@ space.nested <- function(Y, seq_lam1, sridge=0, sig=NULL, weight=NULL,iter=2, to
 #' @seealso \code{\link{spacemap}}, \code{\link{cvVote}}, \code{\link{bootEnsemble}}, \code{\link{bootVote}}
 #' @examples
 #' data(sim1)
-#' net <- space.joint(Y = sim1$Y, lam1 = 70)
+#' net <- space(Y = sim1$Y, lam1 = 70)
 #' #adjacency matrix of y-y edges. 
 #' adjnet <- adjacency(net)
-space.joint <-function(Y, lam1, sridge=0, sig=NULL, weight=NULL,iter=3, tol = 1e-6, cdmax = 1e7L,
+space <-function(Y, lam1, sridge=0, sig=NULL, weight=NULL,iter=3, tol = 1e-6, cdmax = 1e7L,
                        rho = NULL, iscale = TRUE)
 {
   ########################parameters: 

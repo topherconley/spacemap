@@ -13,7 +13,7 @@ bootVote(bfits, thresh = 0.5, givenX = FALSE)
 replicate model fits with a particular edge such that the edge is included in the Boot.Vote model.}
 
 \item{givenX}{Logical. Defaults to FALSE. Should be set to TRUE when 
-\code{attr(bfits, "method) == "space} and \code{space.joint} was used
+\code{attr(bfits, "method) == "space} and \code{space} was used
 to infer (x--x, x--y, y--y) edges  but only reported (x--y, y--y) edges.}
 }
 \value{

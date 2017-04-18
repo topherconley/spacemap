@@ -52,7 +52,7 @@ trainModel <- function(train, method, tuneGrid, refit = TRUE, fold_id, tune_id, 
     saveRDS(out, file = outfile)
     
   } else if (method == "space") {
-    fit <- space.joint(Y = train$XY, lam1 = tuneGrid, sridge = opt$sridge, iter = opt$iter, 
+    fit <- space(Y = train$XY, lam1 = tuneGrid, sridge = opt$sridge, iter = opt$iter, 
                        cdmax = opt$cdmax, tol = opt$tol, iscale = FALSE,
                        sig = opt$sig, rho = opt$rho)
     #zero out those below tolerance. 
@@ -223,8 +223,8 @@ minScoreIndex <- function(cvScoresAvg) {
 #' be of the same length as \code{trainIds}. 
 #' @param method Character vector indicates network inference with function 
 #' \code{\link{spacemap}} when \code{method = "spacemap"} or function 
-#' \code{\link{space.joint}} when \code{method = "space"}. If \code{X} is 
-#' non-null and \code{method = "space"}, then \code{space.joint} will 
+#' \code{\link{space}} when \code{method = "space"}. If \code{X} is 
+#' non-null and \code{method = "space"}, then \code{space} will 
 #' infer (x--x, x--y, y--y) edges but only report (x--y, y--y) edges. 
 #' @param tuneGrid Named with columns \code{lam1, lam2, lam3} 
 #' when \code{method = "spacemap"}. Each row in the data.frame corresponds to a
@@ -243,7 +243,7 @@ minScoreIndex <- function(cvScoresAvg) {
 #' @param thresh 
 #' @param aszero Positive numeric value (defaults to 1e-6) indicating at what point to consider extremely 
 #' small parameter estimates of \eqn{\Gamma} and \eqn{\rho} as zero. 
-#' @param ... Additional arguments for \code{\link{spacemap}} or \code{\link{space.joint}}
+#' @param ... Additional arguments for \code{\link{spacemap}} or \code{\link{space}}
 #' to change their default settings (e.g. setting \code{tol = 1e-4}). 
 #'
 #' @return A list containing  

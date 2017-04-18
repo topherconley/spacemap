@@ -234,10 +234,10 @@ spacemap <- function(Y, X, lam1, lam2, lam3, sig=NULL, rho = NULL,
 
 #' Adjacency matrix from spacemap and spacemap models
 #' 
-#' Output from \code{\link{spacemap}} and \code{\link{space.joint}} is 
+#' Output from \code{\link{spacemap}} and \code{\link{space}} is 
 #' transformed into an adjacency matrix encoding a network.
 #' 
-#' @param net Object output from \code{\link{spacemap}} and \code{\link{space.joint}}
+#' @param net Object output from \code{\link{spacemap}} and \code{\link{space}}
 #' @param aszero Positive numeric value (defaults to 1e-6) indicating at what point to consider extremely 
 #' small parameter estimates of \eqn{\Gamma} and \eqn{\rho} as zero. 
 #' @return A list containing 

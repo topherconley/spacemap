@@ -8,7 +8,7 @@ bicCondLike(fit, tol, Y, X, model = c("spacemap", "space", "scggm"),
   Yindex = NULL, Xindex = NULL)
 }
 \arguments{
-\item{fit}{The fitted model object returned from spacemap::[spacemap, space.joint].}
+\item{fit}{The fitted model object returned from spacemap::[spacemap, space].}
 
 \item{tol}{A numeric lower bound on non-zero parameter values.}
 

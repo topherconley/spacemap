@@ -16,7 +16,7 @@
 #' @param p0 Positive numeric not exceeding the default of 1, which represents the proportion of the original 
 #' samples that will be down-sampled for each model fitting iteration of the ensemble. 
 #' @return A list up to length \code{B} of convergent and sparse model fits from 
-#' either \code{\link{spacemap}} or \code{\link{space.joint}}. The list object should typically
+#' either \code{\link{spacemap}} or \code{\link{space}}. The list object should typically
 #' not be modified by the user, but passed on to the  \code{\link{bootVote}} function.
 #' Model fits that are not convergent or produce networks that are not sparse are not reported. 
 #' 
@@ -111,7 +111,7 @@ bootEnsemble <- function(Y, X = NULL, tune, method = c("spacemap", "space"),
     ens <- foreach(j = seq_len(B),  r = rng[seq_len(B)], .packages = c("Matrix")) %dopar% {
       rngtools::setRNG(r)
       sidx <- sample.int(n = N, size = rN, replace = boot)
-      fit <- spacemap::space.joint(Y = XY[sidx,], lam1 = tune$lam1[1], 
+      fit <- spacemap::space(Y = XY[sidx,], lam1 = tune$lam1[1], 
                                    sridge = opt$sridge, iter = opt$iter, 
                                    cdmax = opt$cdmax, tol = opt$tol, 
                                    iscale = FALSE)
@@ -163,7 +163,7 @@ sparseAdjMat <- function(x) {
 #' @param thresh Positive numeric threshold for the minimum proportion of bootstrap 
 #' replicate model fits with a particular edge such that the edge is included in the Boot.Vote model. 
 #' @param givenX Logical. Defaults to FALSE. Should be set to TRUE when 
-#' \code{attr(bfits, "method) == "space} and \code{space.joint} was used
+#' \code{attr(bfits, "method) == "space} and \code{space} was used
 #' to infer (x--x, x--y, y--y) edges  but only reported (x--y, y--y) edges. 
 #' @return Returns a list of lists. 
 #' First list is \code{bv}, which encodes the edges in two logical adjacency matrices.

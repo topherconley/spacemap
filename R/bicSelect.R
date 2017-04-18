@@ -61,7 +61,7 @@
 # 
 # #'@title BIC for space under conditional chain graph likelihood setting.
 # #'@description Calculate the BIC under the conditional chain graph likelihood.
-# #'@param fit The fitted model object returned from spacemap::[spacemap, space.joint]. 
+# #'@param fit The fitted model object returned from spacemap::[spacemap, space]. 
 # #'@param NN An integer, the sample size. 
 # #'@param tol A numeric lower bound on non-zero parameter values.  
 # #'@param Y A numeric matrix of N X Q responses.
@@ -122,7 +122,7 @@
 # #                     phi0 = NULL, W.m = NULL, tol = tol)
 # #       bic <- bicRemMap(fit, NN, tol)
 # #     } else if (method == "space") {
-# #       fit <- space.joint(cbind(X.m, Y.m), lam1 = lseq$s1[l], lam2=0, iter=iter, 
+# #       fit <- space(cbind(X.m, Y.m), lam1 = lseq$s1[l], lam2=0, iter=iter, 
 # #                          cd_iter = cd_iter, tol = tol)
 # #       bicSpace(fit, NN, tol)
 # #     } else {

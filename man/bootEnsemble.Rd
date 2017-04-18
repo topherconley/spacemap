@@ -36,7 +36,7 @@ samples that will be down-sampled for each model fitting iteration of the ensemb
 }
 \value{
 A list up to length \code{B} of convergent and sparse model fits from 
-either \code{\link{spacemap}} or \code{\link{space.joint}}. The list object should typically
+either \code{\link{spacemap}} or \code{\link{space}}. The list object should typically
 not be modified by the user, but passed on to the  \code{\link{bootVote}} function.
 Model fits that are not convergent or produce networks that are not sparse are not reported.
 }

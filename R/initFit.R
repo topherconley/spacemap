@@ -2,7 +2,7 @@
 #' 
 #' When initially choosing tuning penalties, it can be 
 #' challenging to find the appropriate scale. This function fits either 
-#' \code{\link{spacemap}} or \code{\link{space.joint}} once for a specified 
+#' \code{\link{spacemap}} or \code{\link{space}} once for a specified 
 #' tuning grid on the whole data. It reports the corresponding number of
 #' \eqn{y-y} edges and \eqn{x-y} edges for each tuning penalty set. 
 #' Having a prior understanding of how sparse the network ought to 
@@ -81,7 +81,7 @@ initFit <- function(Y, X = NULL, tuneGrid, method = c("spacemap", "space"), isca
     combf <- ifelse(givenX, 'rbind', 'c')
     nedges <- foreach(l = seq_len(nrow(tuneGrid)), .combine = combf) %dopar% {
       
-      fit <- spacemap::space.joint(Y = XY, lam1 = tuneGrid$lam1[l], sridge = opt$sridge, 
+      fit <- spacemap::space(Y = XY, lam1 = tuneGrid$lam1[l], sridge = opt$sridge, 
                                    sig = opt$sig, rho = opt$rho, iter = opt$iter, 
                                    tol = opt$tol, cd_iter = opt$cd_iter, iscale = FALSE)
       if (fit$convergence) {

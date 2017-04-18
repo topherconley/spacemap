@@ -172,7 +172,7 @@ neta <- function(net, bdeg, info, go2eg, cis_window = 2e6, lmods = NULL,
 #' weights of the vertices. Defaults to FALSE.
 #' @param dropnull logical indicating to remove vertices with degree zero from the graph. Defaults to TRUE.
 #' @export
-adj2igraph <- function(YY, XY = NULL, info, weighted = F, dropnull = TRUE) { 
+adj2igraph <- function(YY, XY = NULL, info = NULL, weighted = F, dropnull = TRUE) { 
 
   if (!is.null(XY)) { 
     adj_yyxy <- rbind(cbind(matrix(FALSE, nrow(XY), nrow(XY)), XY), 
@@ -187,12 +187,14 @@ adj2igraph <- function(YY, XY = NULL, info, weighted = F, dropnull = TRUE) {
     ig <- graph_from_adjacency_matrix(adj_yyxy, mode = "max", diag = FALSE, add.colnames = NA)  
   }
   
-  #label with info
-  for(var in names(info)) { 
-    if (var == "id") { 
-      ig <- igraph::set_vertex_attr(graph = ig, name = "name", value = info[,var])
-    } else { 
-      ig <- igraph::set_vertex_attr(graph = ig, name = var, value = info[,var])
+  if (!is.null(info)) { 
+    #label with info
+    for(var in names(info)) { 
+      if (var == "id") { 
+        ig <- igraph::set_vertex_attr(graph = ig, name = "name", value = info[,var])
+      } else { 
+        ig <- igraph::set_vertex_attr(graph = ig, name = var, value = info[,var])
+      }
     }
   }
   

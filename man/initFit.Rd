@@ -20,8 +20,8 @@ being \code{lam1}.}
 
 \item{method}{Character vector indicates network inference with function 
 \code{\link{spacemap}} when \code{method = "spacemap"} or function 
-\code{\link{space.joint}} when \code{method = "space"}. If \code{X} is 
-non-null and \code{method = "space"}, then \code{space.joint} will 
+\code{\link{space}} when \code{method = "space"}. If \code{X} is 
+non-null and \code{method = "space"}, then \code{space} will 
 infer (x--x, x--y, y--y) edges but only report (x--y, y--y) edges.}
 
 \item{iscale}{Logical indicating to standardize the whole input data. Defaults to TRUE. 
@@ -30,7 +30,7 @@ See \code{\link{base::scale(x, center = TRUE, scale = TRUE)}} for details of sta
 \item{aszero}{Positive numeric value (defaults to 1e-6) indicating at what point to consider extremely 
 small parameter estimates of \eqn{\Gamma} and \eqn{\rho} as zero.}
 
-\item{...}{Additional arguments for \code{\link{spacemap}} or \code{\link{space.joint}}
+\item{...}{Additional arguments for \code{\link{spacemap}} or \code{\link{space}}
 to change their default settings (e.g. setting \code{tol = 1e-4}).}
 }
 \value{
@@ -46,7 +46,7 @@ If \code{method=="spacemap"} or (\code{method=="space"} and \code{X!=NULL}),
 \description{
 When initially choosing tuning penalties, it can be 
 challenging to find the appropriate scale. This function fits either 
-\code{\link{spacemap}} or \code{\link{space.joint}} once for a specified 
+\code{\link{spacemap}} or \code{\link{space}} once for a specified 
 tuning grid on the whole data. It reports the corresponding number of
 \eqn{y-y} edges and \eqn{x-y} edges for each tuning penalty set. 
 Having a prior understanding of how sparse the network ought to 

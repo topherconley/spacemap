@@ -93,7 +93,9 @@ mean(deg2)
 
 ## generate true covariance matrix, and the X, Y indices 
 #evaluate model parameters
-source("~/repos/spacemap/sim/utils/model1/simulateMod1.R")
+#moved
+#source("~/repos/spacemap/sim/utils/model1/simulateMod1.R")
+source("~/repos/sim-spacemap/hub11-20/gen-data/hub-simulator.R")
 model.c <- simSpaceMapModel1(ParCor.true = trueParCorXY, mdegree = masterDegree, 
                              randxy = randxy,
                              pnone = indepX, tol = tol)
@@ -120,8 +122,9 @@ data.c$Y <- scale(data.c$Y)
 Yindex <- data.c$Yindex
 Xindex <- data.c$Xindex     
 #useful for repeated evaluation of performance against truth
-trueParCor <- list(xy = model.c$trueXY, yy = model.c$trueYY)
-
+#trueParCor <- list(xy = model.c$trueXY, yy = model.c$trueYY)
+truth <- list(xy = (abs(model.c$trueXY) > tol) + 0, 
+              yy = (abs(model.c$trueYY) > tol) + 0)
 #The particular model 1 parameter settings generated a true graph comprised of: 
 #  ```{r model_dims} 
 length(Yindex) ## number of Y nodes
@@ -135,7 +138,8 @@ length(Xindex) - indepX ## number of master predictors.
 # all.equal(tmp$data.c$X[1,], data.c$X[1,])
 # tmp$cvSpmap$tuneGrid
 
-sim1 <- data.c
-sim1$trueParCor <- trueParCor
+sim1 <- data.c[c("Y", "X")]
+#sim1$trueParCor <- trueParCor
+sim1$truth <- truth
 library(devtools)
-devtools::use_data(sim1)
+devtools::use_data(sim1, overwrite = TRUE)

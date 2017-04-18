@@ -22,8 +22,8 @@ be of the same length as \code{trainIds}.}
 
 \item{method}{Character vector indicates network inference with function 
 \code{\link{spacemap}} when \code{method = "spacemap"} or function 
-\code{\link{space.joint}} when \code{method = "space"}. If \code{X} is 
-non-null and \code{method = "space"}, then \code{space.joint} will 
+\code{\link{space}} when \code{method = "space"}. If \code{X} is 
+non-null and \code{method = "space"}, then \code{space} will 
 infer (x--x, x--y, y--y) edges but only report (x--y, y--y) edges.}
 
 \item{tuneGrid}{Named with columns \code{lam1, lam2, lam3} 
@@ -51,7 +51,7 @@ See \code{\link{base::scale(x, center = TRUE, scale = TRUE)}} for details of sta
 \item{aszero}{Positive numeric value (defaults to 1e-6) indicating at what point to consider extremely 
 small parameter estimates of \eqn{\Gamma} and \eqn{\rho} as zero.}
 
-\item{...}{Additional arguments for \code{\link{spacemap}} or \code{\link{space.joint}}
+\item{...}{Additional arguments for \code{\link{spacemap}} or \code{\link{space}}
 to change their default settings (e.g. setting \code{tol = 1e-4}).}
 }
 \value{

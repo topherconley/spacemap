@@ -14,65 +14,30 @@ library(knitr)
 opts_chunk$set(message=F, warning=F)
 ```
 
-##Purpose 
+## Motivation 
 
-This vignette will help users become familiar with the implementation of the model parameters and the output associated with the `spacemap` function, which is the fundamental model fitting function of the R package. Familiarity with the mathematical expression of the spaceMap model will help the reader map the notation to R object variables (see the Methods section of the spacemap publication).  
+This vignette will help users become familiar with the implementation of the model parameters and the output associated with the [spacemap](https://topherconley.github.io/spacemap/reference/spacemap.html) function, which is the fundamental model fitting function of the R package. Familiarity with the mathematical expression of the spaceMap model will help the reader map the notation to R object variables (see the Methods section of the spacemap publication).  
 
-##Background 
+## Background 
 
-spaceMap is a  conditional graphical model suited for learning networks from high-dimensional data constrained by limited sample size. The spaceMap model was motivated by integrative genomics applications to learn how genomic copy number alterations (CNA) predict and regulate the protein covariation response. It takes as input two distinct data types--predictors (.e.g. CNA)  and responses (e.g. proteins). The model can generally be applied to diverse high dimensional data types where interactions between predictors and response variables and also among responses are of primary importance, while interactions  among predictors is not of primary importance. Together, these interactions form a network and it is the goal of spaceMap to learn the network from predictor and response data. 
+The spaceMap model is a conditional graphical model suited for learning networks from high-dimensional data constrained by limited sample size. Two distinct data types are input to the model; one data type labeled as $X$'s are predictor variables that can be continuous, discrete, or categorical in nature; another data type is labeled as $Y$'s and are continous response variables. When we fit the spaceMap model, we seek to learn the network comprised of node set $\textbf{V}= (X,Y)$ and edge set $\textbf{E}= \{ x_p - y_q : p \in \{1, \dots, P\}, q \in \{1, \dots, Q\} \} \cup \{ y_q - y_l : q \neq l \in \{1, \dots, Q\} \}$. The output of the model is the network containing the edges $x-y$ and $y-y$, but not $x-x$ edges. Motivated by integrative genomics applications, it has been applied to learn how genomic copy number alterations (i.e. $x$'s) regulate protein expression covariation (i.e. $y$'s) in breast cancer. In this specific application, it learned $x-y$ edges to identify which genomic alterations disrupt which protein pathways, while simultaneously accounting for the $y-y$ interactions among the proteins in dysregulated cancer pathways. The model can be applied in a general sense to diverse high dimensional data types, not just those pertaining to integrative genomics. 
 
-##Example 
+## Example 
 
-Load the data set labeled `sim1`, which was generated under a hub network topology with two data types: predictor variables $\bf X \in \mathbb{R}^P$ and response variables $\bf Y \in \mathbb{R}^Q$, where $P = 14$ and $Q = 171$. When we fit the spaceMap model, we seek to learn the network comprised of node set $\textbf{V}= (X,Y)$ and edge set $\textbf{E}= \{ x_p - y_q : p \in \{1, \dots, P\}, q \in \{1, \dots, Q\} \} \cup \{ y_q - y_l : q \neq l \in \{1, \dots, Q\} \}$ 
+The following simulation example illustrates how to fit spaceMap to $N=150$ iid samples of $P=14$ predictor variables $X$ and $Q=171$ response variables $Y$ generated under a Gaussian Graphical Model; that is to say, $ (X,Y) \sim N_{P + Q}(0,\Theta^{-1})$, where the non-zero elements of the inverse covariance matrix $\Theta$ specify edges between $x-y$ and $y-y$ and $x-x$. Normality is not a required model assumption for either predictor or response, but is useful for simulations because conditional dependencies  (i.e. edges) are easily parameterized through the inverse covariance matrix, or precision matrix. In this case, we parameterized the network to have 4 prominent $X$ hubs and two prominent $Y$ hubs. More details of the simulation and how to access the data and true network topology can be found in the [sim1](https://topherconley.github.io/spacemap/reference/sim1.html) documentation. We load the `sim1` R object, containing the $N\times Q$ response matrix $\bf Y$, the $N\times P$ response matrix $\bf X$, and the the true edges of the network.  
 
 ```{r}
-suppressPackageStartupMessages(library(spacemap))
+library(spacemap)
 data(sim1)
 ```
 
-The `sim1` object contains the true network as well as data generated under the network topology.  Further details of `sim1` can be found by entering `help(spacemap::sim1)` at the R console. 
-
-```{r, eval = FALSE, inlcude = FALSE, echo = FALSE, message=FALSE, warning=FALSE}
-##In the interactive graphic below it can be seen there are 4 $X$ hubs depicted as large dark blue circles and a handful of $X$ variables with no edges at all depicted as small dark blue circles. There are two large disconnected components each containing 2 $X$ hubs and at least one $Y$ hub depicted as a large light blue circle. Other $Y$ variables are depicted as small light blue circles.
-library(networkD3)
-library(igraph)
-info <- data.frame(id = c(sim1$Xindex, sim1$Yindex), 
-                   type = c(rep(x = "x", times = length(sim1$Xindex)),
-                            rep(x = "y", times = length(sim1$Yindex))),
-                   hub = c(sim1$Xindex, sim1$Yindex) %in% sim1$XMasterIndex)
-library(knitr)
-info$id <- paste(toupper(info$type), info$id, sep = "-")
-#set the diagonal to zero to avoid self-loops
-tParCor <- sim1$trueParCor$yy
-tGamma <- sim1$trueParCor$xy
-diag(tParCor) <- 0
-#the default convergence tolerance
-tol <- 1e-6
-tig <- spacemap::adj2igraph(YY = abs(tParCor) > tol, XY = abs(tGamma) > tol, info = info, dropnull = F)
-#Convert the object suitable for `networkD3`
-tig_d3 <- igraph_to_networkD3(tig, group = info$type)
-#make the node size bigger according to degree
-tig_d3$nodes$degree <- igraph::degree(tig)^2
-forceNetwork(Links = tig_d3$links, Nodes = tig_d3$nodes, 
-             #height = 700, width = 700,
-             linkDistance = 5,
-             Source = 'source', Target = 'target',
-             fontSize = 12,
-             NodeID = 'name', Group = 'group', Nodesize = "degree", 
-             opacity = 0.90, 
-             bounded = T, 
-             charge = -15)
-```
-
-The spaceMap model learns the structure of the above network from data by estimating the edge set $\bf\hat E$. The following steps will discuss basic input parameters to learn the network. 
-
+The spaceMap model learns the structure of the network from data by estimating the edge set $\bf\hat E$. The following steps will discuss basic input parameters to learn the network. 
 
 ## Fitting `spacemap`
 
 ### Tuning penalties
 
-Tuning penalties $\lambda_1, \lambda_2$ correspond to parameters `lam1` and `lam2`, respectively, where each determines the degree of overall sparsity of the $y-y$ and $x-y$ edges in the network. Tuning penalty $\lambda_3$ corresponds to parameter `lam3` and encourages selection of $x$ hubs--that is $x$'s that infuence many $y$'s. The selection of appropriate penalty parameters is of primary importance when evaluating `spacemap::spacemap` to learn a network. In this simplified scenario we set the tuning parameters based on previous cross validation results. The task of selecting appropriate tuning parameters requires a robust model-selection routine and is discussed in more advanced vignettes. 
+Tuning penalties $\lambda_1, \lambda_2$ correspond to parameters `lam1` and `lam2`, where each determines the degree of overall sparsity of the $y-y$ and $x-y$ edges in the network, respectively. Tuning penalty $\lambda_3$ corresponds to parameter `lam3` and encourages selection of $x$ hubs--that is $x$'s that infuence many $y$'s. The selection of appropriate penalty parameters is of primary importance when evaluating `spacemap::spacemap` to learn a network. In this simplified scenario we set the tuning parameters based on previous cross validation results. The task of selecting appropriate tuning parameters requires a robust model-selection routine and is discussed in more advanced vignettes. 
 
 ```{r}
 lam1 <- 72
@@ -123,75 +88,16 @@ str(net)
 
 ## Quick Visualization
 
-Often network analysis is enhanced by compelling visualizations that have nodes annotated with specific attributes like genomic ID,  genomic coordinates, and any pathways associated with the node. Annotating and visualizing network output from `spacemap` output is aided by several external and independent software libraries. The spacemap R package has auxillary functions to interact with the igraph R package, which contains a rich suite of network analysis tools. Below we illustrate how to quickly integrate annotation information into the network. 
+Network analysis is enhanced through visualizing the network topology. There are many external software libraries dedicated to visualization.  We recommend using Cytoscape (not part of R) for publication quality visualizations. However, such a tool may involve some manual curation and the sophisticated options makes for a steeper learning curve. If you simply need a quick way to visualize the network output, the following section illusrates how to do so within R. 
 
-
-```{r, eval = FALSE, echo = FALSE}
-#NOT RUN
-info <- data.frame(id = c(sim1$Xindex, sim1$Yindex), 
-                   type = c(rep(x = "x", times = length(sim1$Xindex)),
-                            rep(x = "y", times = length(sim1$Yindex))),
-                   hub = c(sim1$Xindex, sim1$Yindex) %in% sim1$XMasterIndex)
-library(knitr)
-info$id <- paste(toupper(info$type), info$id, sep = "-")
-kable(head(info))
-```
-
-Suppose you have nodes annotated in a data.frame where the rows are sorted to correspond to $(X_1, \dots, X_P, Y_1, \dots, Y_Q$). Suppose that predictor variables $X$ are genomic copy number aberations and response variables $Y$ are gene expression. Suppose that it has the following structure where 
-
-```{r, echo = FALSE}
-set.seed(15)
-nx <- length(sim1$Xindex)
-ny <- length(sim1$Yindex)
-n <- nx + ny
-xchr <- sample(x = 1:22, size = nx, replace = T)
-ychr <- sample(x = 1:22, size = ny, replace = T)
-chr <- c(xchr, ychr)
-arm <- sample(x = c("p", "q"), size = nx, replace = T)
-loc <- sample(x = 1:34, size = nx, replace = T)
-xids <- paste0("chr", xchr, arm, loc)
-yids <- paste0("gene", seq_len(ny))
-begin <- sample(x = 1e7, size = n)
-end <- sample(x = 2e7, size = n)
-strand <- ifelse(begin < end, "+", "-")
-pathways <- paste0("GO:", sprintf("%07d", sample(1e5, n)))
-pathwayid <- replicate(ny, paste0(sample(x = pathways, size = sample(x = c(1,2,3),size = 1)), collapse = ";"))
-type <- c(rep(x = "x", times = length(sim1$Xindex)),
-                            rep(x = "y", times = length(sim1$Yindex)))
-info <- data.frame(id = c(xids, yids),
-                   node_level  = type,
-                   chr = chr, 
-                   begin = begin, 
-                   end = end, 
-                   strand = strand, 
-                   pathways = c(rep(NA, nx), pathwayid), 
-                   stringsAsFactors = F, row.names = c(xids, yids))
-kable(info[10:20,], row.names = FALSE)
-```
-
-Load the node annotation data.frame.  
-
-```{r, eval = F}
-if(0) { 
-  info <- readRDS(file = "/path/to/my/annotation/file.rds")
-}
-```
-
-Convert the spacemap output to igraph format together with the annotation information. 
+Frist, export the the spacemap output to an igraph object. 
 
 ```{r}
 library(igraph)
-ig <- spacemap::adj2igraph(YY = adjnet$yy, XY = adjnet$xy, info = info, dropnull = F)
+ig <- spacemap::adj2igraph(YY = adjnet$yy, XY = adjnet$xy)
 ```
 
-The `igraph` object has a very convenient sparse representation as shown below. 
-
-```{r}
-ig
-```
-
-
-Identify modules of the inferred network with `igraph`'s edge-betweenness algorithm. Each module discovered will be colored differently when we visualize the network. 
+The igraph object `ig` has a very convenient sparse representation, with `ig` occupying `r round(object.size(adjnet) / object.size(ig),0)` times smaller memory than `adjnet`.  Many powerful network analysis tools are available in the igraph R package that enhance the visualization. For example, we identify modules of the spaceMap network with igraph's edge-betweenness algorithm. Each module discovered will be colored differently when we visualize the network. 
 
 ```{r}
 ceb <- igraph::cluster_edge_betweenness(graph = ig)
@@ -199,7 +105,7 @@ members <- igraph::membership(ceb)
 ```
 
 
-While there are many visualization options, we recommend using Cytoscape (not part of R) to visually inspect networks. However, Cytoscape may involve some manual curation and is a sophisticated tool with a learning curve. If you simply need a quick way to visualize the network output, the following section illusrates how to do so within R.  For interactive visualization, we may make use of the `networkD3` package. The following snippet will visualize `spacemap`'s network where $X$ and $Y$ hub nodes are larger in size. Colors denote the 14 different modules of the network. Hover over a node with your mouse if you wish to see the node ID and its adjacent neighbors. 
+While there are many visualization options, For interactive visualization, we may make use of the `networkD3` package. The following snippet will visualize `spacemap`'s network where $X$ and $Y$ hub nodes are larger in size. Colors denote the 14 different modules of the network. Hover over a node with your mouse if you wish to see the node ID and its adjacent neighbors. 
 
  
 ```{r}

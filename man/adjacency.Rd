@@ -7,7 +7,7 @@
 adjacency(net, aszero = 1e-06)
 }
 \arguments{
-\item{net}{Object output from \code{\link{spacemap}} and \code{\link{space.joint}}}
+\item{net}{Object output from \code{\link{spacemap}} and \code{\link{space}}}
 
 \item{aszero}{Positive numeric value (defaults to 1e-6) indicating at what point to consider extremely 
 small parameter estimates of \eqn{\Gamma} and \eqn{\rho} as zero.}
@@ -22,6 +22,6 @@ A list containing
 }
 }
 \description{
-Output from \code{\link{spacemap}} and \code{\link{space.joint}} is 
+Output from \code{\link{spacemap}} and \code{\link{space}} is 
 transformed into an adjacency matrix encoding a network.
 }
