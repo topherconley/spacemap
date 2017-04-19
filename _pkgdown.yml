@@ -12,10 +12,13 @@ authors:
 
 reference:
   - title: R package overview
-    desc: The functions of the spacemap R package are perhaps best conceptualized in three categories. The model fitting category concerns functions that learns a network from input data for a given set of parameters. The model selection category encompasses functions that select the optimal parameters of spacemap for a specific dataset. The last category is network analysis, which contains tools to annotate and interpret model output. 
+    desc: The functions of the spaceMap R package are perhaps best conceptualized in three categories. 
+    The model fitting category concerns functions that learn a network from input data. 
+    The model selection category encompasses functions that select the optimal tuning parameters and build robust networks through aggregation. 
+    The  network analysis category contains tools to annotate and interpret inferred networks. 
     contents:
   - title: Model fitting
-    desc: Details on how to fit spacemap and space with selected tuning parameters. 
+    desc: Details on how to fit spaceMap and space (a special case of spaceMap) with selected tuning parameters. 
     contents:
     - spacemap
     - space
