@@ -1,10 +1,10 @@
 ---
-title: "spacemap basics"
+title: "Model Fitting Basics"
 author: "Christopher Conley, Pei Wang, Jie Peng"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{spacemap basics}
+  %\VignetteIndexEntry{Model Fitting Basics}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

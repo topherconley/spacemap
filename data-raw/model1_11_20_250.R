@@ -141,5 +141,6 @@ length(Xindex) - indepX ## number of master predictors.
 sim1 <- data.c[c("Y", "X")]
 #sim1$trueParCor <- trueParCor
 sim1$truth <- truth
+
 library(devtools)
-devtools::use_data(sim1, overwrite = TRUE)
+devtools::use_data(sim1, overwrite = FALSE)

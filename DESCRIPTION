@@ -1,6 +1,6 @@
 Package: spacemap
 Title: Network inference for integrative genomics through conditional models
-Version: 0.50.0
+Version: 0.51.0
 Authors@R: c(person("Christopher Conley", role = c("aut", "cre"),
     email = "conley.christopher@gmail.com"),
     person("Jie Peng", role = c("aut")),
@@ -14,7 +14,8 @@ Description: A unified framework of space and remMap models for learning
 Imports:
     Matrix,
     igraph,
-    doRNG
+    doRNG,
+    foreach
 Depends:
     R (>= 3.0.2),
     Rcpp (>= 0.11.3),
@@ -22,6 +23,7 @@ Depends:
 Suggests:
     ggplot2,
     reshape2,
+    GenomicRanges
 License: See LICENSE file
 LazyData: true
 LinkingTo: Rcpp, RcppArmadillo
