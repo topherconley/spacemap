@@ -169,10 +169,10 @@ sparseAdjMat <- function(x) {
 #' First list is \code{bv}, which encodes the edges in two logical adjacency matrices.
 #' 
 #' \enumerate{
-#'   \item \code{yy} Logical matrix where TRUE for the (q,l) off-diagonals element indicate an edge 
-#'   between the qth and lth response variables. 
-#'   \item \code{xy}  Logical matrix where TRUE for the (p,q) element indicate an edge 
-#'   between the pth predictor and qth response variable. 
+#'   \item \code{yy} Adjacency matrix where 1 for the (q,l) off-diagonals element indicate an edge 
+#'   between the qth and lth response variables, and 0 otherwise. 
+#'   \item \code{xy}  Adjacency matrix where 1 for the (p,q) element indicate an edge 
+#'   between the pth predictor and qth response variable, and 0 otherwise. 
 #' }
 #' 
 #' Second list is \code{bdeg}, which contains the degree distribution for each bootstrap replicate fit. 
@@ -246,7 +246,7 @@ bootVote <- function(bfits, thresh = 0.5, givenX = FALSE) {
         rowSums(as.matrix(bfit$xy))
     }
     degyy <- foreach(bfit = bfits, .combine = 'rbind') %dopar% { 
-      rowSums(as.matrix(bfit$yy))
+      rowSums(as.matrix(bfit$yy)) + colSums(as.matrix(bfit$xy))
     }
     bdeg <- list(yy = degyy, xy = degxy)
     return(list(bv = bv,

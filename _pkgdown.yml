@@ -35,21 +35,22 @@ reference:
     
 navbar:
   left: 
+  - text: Install
+    href: https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta
+  - text: Docs
+    href: reference/index.html
   - text: Vignettes
     menu:
-      - text: "Basics"
+      - text: "Model Fitting Basics"
         href: articles/basics.html
       - text: "Model Tuning"
         href: articles/tuning.html
       - text: "Ensemble Network"
         href: articles/ensemble.html
-  - text: R Documentation
-    href: reference/index.html
-  - text: Installation
-    href: https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta
-  - text: Network Toolkit
+      - text: "Network Analysis Toolkit"
+        href: https://topherconley.github.io/neta-bcpls/neta/neta-bcpls.html
+  
+  - text: Application
     href: https://topherconley.github.io/neta-bcpls/
-  - text: News
-    href: news/index.html
-  - text: Contact Us
+  - text: Contact
     href: https://github.com/topherconley/spacemap/issues
