@@ -2,29 +2,74 @@
 % Please edit documentation in R/networkAnalysis.R
 \name{adj2igraph}
 \alias{adj2igraph}
-\title{Initialize network's vertex attributes}
+\title{Adjacency to igraph with annotations.}
 \usage{
-adj2igraph(YY, XY = NULL, info, weighted = F, dropnull = TRUE)
+adj2igraph(yy, xy = NULL, yinfo = NULL, xinfo = NULL, weighted = NULL)
 }
 \arguments{
-\item{YY}{adjacency matrix encoding y--y edges of conditional graphical model. If a 
-logical matrix, TRUE denotes the existence of an edge. Format should conform to 
-\code{igraph::graph_from_adjacency_matrix} input.}
+\item{yy}{Adjacency matrix encoding y--y edges of conditional graphical model.
+Format can be either a sparse matrix (i.e. from Matrix package) or a regular matrix.}
 
-\item{XY}{adjacency matrix encoding x--y edges of conditional graphical model. If NULL,
-then a network encoding just y--y edges is made and \code{info} should just contain attributes for (y(1), ..., y(Q)).}
+\item{xy}{Adjacency matrix encoding x--y edges of conditional graphical model. 
+Format can be either a sparse matrix (i.e. from Matrix package) or a regular matrix.
+If NULL, then a network encoding just y--y edges is made.}
 
-\item{info}{data.frame encoding the attributes of the vertices 
-in the order of (x(1), ..., x(p), y(1), ..., y(q)) if both YY and XY are specified.
-If just YY is specified, then \code{info} should just contain attributes for (y(1), ..., y(Q)). 
-See details for required attributes to include and optional attributes.}
+\item{yinfo}{Data.frame encoding the attributes of the y vertices. If non-null, 
+the column 'id' must exist for labelling vertices with a unique identifier. 
+The order of the rows must match the order of the \code{yy} columns/rows. 
+Other attributes in the form of data.frame columns are optional and 
+can have missing data for some of the vertices. 
+See 'Details' for further explanation.}
 
-\item{weighted}{logical indicating whether the values of YY and XY should indicate 
-weights of the vertices. Defaults to FALSE.}
+\item{xinfo}{Data.frame encoding the attributes of the x vertices. If non-null, 
+the column 'id' must exist for labelling vertices with a unique identifier. 
+The order of the rows must match the order of the \code{xy} columns/rows. 
+Other attributes in the form of data.frame columns are optional and 
+can have missing data for some of the vertices. 
+See 'Details' for further explanation.}
 
-\item{dropnull}{logical indicating to remove vertices with degree zero from the graph. Defaults to TRUE.}
+\item{weighted}{Same argument passed to \code{igraph::graph_from_adjacency_matrix}. 
+Defaults to NULL.}
+}
+\value{
+An igraph network object.
 }
 \description{
-Label vertex attributes of a  conditional graphical model's
- output.
+Convert adjacency matrix output from conditional graphical model output (xy, yy) into 
+into an igraph object and optionally layer attributes onto the vertices.
+}
+\details{
+The annotation parameters \code{xinfo} and \code{yinfo}
+ are of type `data.frame`, where each row is expected to be ordered 
+ according to the rows of \code{xy} and \code{yy}, respectively. 
+ The first column `id` is always required and must be unique for each node.
+ The second column `alias` is an optional column that reserves more 
+ human-readable labels to be applied to nodes, and can be duplicated. 
+ For example, two protein isoforms may have different ID's,
+ but the same gene symbol alias. If gene coordinates are supplied for 
+ cis/trans identification, they require at least three variables: 
+ 'chr' a character for the chromosome location, 
+ 'start' an integer for the beginning of the genomic feature, 
+ and 'end' for the end location of the feature. 
+ The 'strand' argument is optional. 
+ Additional annotations such as `description` or
+ whatever other annotations are deemed important 
+ can be added as node attributes. Note that if any vertex
+ is missing some or all annotations, an `NA` should be used in its place.
+}
+\examples{
+
+#Load BCPLS CNA-protein network output
+library(spacemap)
+data("bcpls")
+#convert list to global environment
+.GlobalEnv <- list2env(x= bcpls, envir = globalenv())
+
+library(igraph)
+#Label y and x nodes with attributes
+ig <- spacemap::adj2igraph(yy = net$yy, xy = net$xy, 
+                           yinfo = yinfo, xinfo = xinfo)
+#Label y with attributes
+igy <- spacemap::adj2igraph(yy = net$yy, 
+                           yinfo = yinfo)
 }

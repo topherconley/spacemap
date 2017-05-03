@@ -7,7 +7,7 @@ setwd("~/repos/spacemap/")
 library(devtools)
 #load_all()
 #document()
-#install(quick = TRUE, dependencies = F)
+#install(quick = TRUE, dependencies = T)
 #devtools::clean_dll()
 
 #############################
@@ -36,9 +36,9 @@ install.packages(c("Rcpp", "RcppArmadillo",
 #build_win()
 
 #run this in command prompt
-"C:\Program Files\R\R-3.3.2\bin\R.exe CMD INSTALL --build compile-both spacemap/"
+"C:\Program Files\R\R-3.3.3\bin\R.exe CMD INSTALL --build compile-both spacemap/"
 remove.packages("spacemap")
-install.packages(pkgs = "C:/Users/topher/Shared/repos/spacemap_0.45.0.zip", 
+install.packages(pkgs = "C:/Users/topher/Shared/repos/spacemap_0.51.0.zip", 
                  repos = NULL)
 
 ##build on Linux an MAC OS

@@ -50,7 +50,13 @@
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <li class="dropdown">
+        <li>
+  <a href="https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta">Installation</a>
+</li>
+<li>
+  <a href="../reference/index.html">Docs</a>
+</li>
+<li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
     Vignettes
      
@@ -58,7 +64,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/basics.html">Basics</a>
+      <a href="../articles/basics.html">Model Fitting Basics</a>
     </li>
     <li>
       <a href="../articles/tuning.html">Model Tuning</a>
@@ -66,22 +72,16 @@
     <li>
       <a href="../articles/ensemble.html">Ensemble Network</a>
     </li>
+    <li>
+      <a href="../articles/neta.html">Network Analysis Toolkit</a>
+    </li>
   </ul>
 </li>
 <li>
-  <a href="../reference/index.html">R Documentation</a>
+  <a href="https://topherconley.github.io/neta-bcpls/">Application</a>
 </li>
 <li>
-  <a href="https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta">Installation</a>
-</li>
-<li>
-  <a href="https://topherconley.github.io/neta-bcpls/">Network Toolkit</a>
-</li>
-<li>
-  <a href="../news/index.html">News</a>
-</li>
-<li>
-  <a href="https://github.com/topherconley/spacemap/issues">Contact Us</a>
+  <a href="https://github.com/topherconley/spacemap/issues">Contact</a>
 </li>
       </ul>
       
@@ -136,10 +136,10 @@ to infer (x--x, x--y, y--y) edges  but only reported (x--y, y--y) edges.</p></td
 
     <p>Returns a list of lists. 
 First list is <code>bv</code>, which encodes the edges in two logical adjacency matrices.</p><ol>
-<li><p><code>yy</code> Logical matrix where TRUE for the (q,l) off-diagonals element indicate an edge 
-  between the qth and lth response variables.</p></li>
-<li><p><code>xy</code>  Logical matrix where TRUE for the (p,q) element indicate an edge 
-  between the pth predictor and qth response variable.</p></li>
+<li><p><code>yy</code> Adjacency matrix where 1 for the (q,l) off-diagonals element indicate an edge 
+  between the qth and lth response variables, and 0 otherwise.</p></li>
+<li><p><code>xy</code>  Adjacency matrix where 1 for the (p,q) element indicate an edge 
+  between the pth predictor and qth response variable, and 0 otherwise.</p></li>
 </ol>
 
 <p>Second list is <code>bdeg</code>, which contains the degree distribution for each bootstrap replicate fit.</p><ol>
@@ -169,6 +169,7 @@ then no <code>xy, dfxy</code> elements will be reported in the above lists.</p>
     <pre class="examples"><div class='input'>
 
 <span class='co'>#Load simulation</span>
+<span class='fu'>library</span>(<span class='no'>spacemap</span>)
 <span class='fu'>data</span>(<span class='no'>sim1</span>)
 
 <span class='co'>#Boostrap Ensemble (B = 10) for illustration only</span>

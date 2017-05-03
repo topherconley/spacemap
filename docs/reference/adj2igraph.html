@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Initialize network's vertex attributes — adj2igraph â€¢ spacemap</title>
+<title>Adjacency to igraph with annotations. — adj2igraph â€¢ spacemap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -50,7 +50,13 @@
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <li class="dropdown">
+        <li>
+  <a href="https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta">Installation</a>
+</li>
+<li>
+  <a href="../reference/index.html">Docs</a>
+</li>
+<li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
     Vignettes
      
@@ -58,7 +64,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/basics.html">Basics</a>
+      <a href="../articles/basics.html">Model Fitting Basics</a>
     </li>
     <li>
       <a href="../articles/tuning.html">Model Tuning</a>
@@ -66,22 +72,16 @@
     <li>
       <a href="../articles/ensemble.html">Ensemble Network</a>
     </li>
+    <li>
+      <a href="../articles/neta.html">Network Analysis Toolkit</a>
+    </li>
   </ul>
 </li>
 <li>
-  <a href="../reference/index.html">R Documentation</a>
+  <a href="https://topherconley.github.io/neta-bcpls/">Application</a>
 </li>
 <li>
-  <a href="https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta">Installation</a>
-</li>
-<li>
-  <a href="https://topherconley.github.io/neta-bcpls/">Network Toolkit</a>
-</li>
-<li>
-  <a href="../news/index.html">News</a>
-</li>
-<li>
-  <a href="https://github.com/topherconley/spacemap/issues">Contact Us</a>
+  <a href="https://github.com/topherconley/spacemap/issues">Contact</a>
 </li>
       </ul>
       
@@ -103,55 +103,111 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Initialize network's vertex attributes</h1>
+    <h1>Adjacency to igraph with annotations.</h1>
     </div>
 
     
-    <p>Label vertex attributes of a  conditional graphical model's
- output.</p>
+    <p>Convert adjacency matrix output from conditional graphical model output (xy, yy) into 
+into an igraph object and optionally layer attributes onto the vertices.</p>
     
 
-    <pre><span class='fu'>adj2igraph</span>(<span class='no'>YY</span>, <span class='kw'>XY</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>info</span>, <span class='kw'>weighted</span> <span class='kw'>=</span> <span class='no'>F</span>, <span class='kw'>dropnull</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
+    <pre><span class='fu'>adj2igraph</span>(<span class='no'>yy</span>, <span class='kw'>xy</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>yinfo</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>xinfo</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>weighted</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>YY</th>
-      <td><p>adjacency matrix encoding y--y edges of conditional graphical model. If a 
-logical matrix, TRUE denotes the existence of an edge. Format should conform to 
-<code>igraph::graph_from_adjacency_matrix</code> input.</p></td>
+      <th>yy</th>
+      <td><p>Adjacency matrix encoding y--y edges of conditional graphical model.
+Format can be either a sparse matrix (i.e. from Matrix package) or a regular matrix.</p></td>
     </tr>
     <tr>
-      <th>XY</th>
-      <td><p>adjacency matrix encoding x--y edges of conditional graphical model. If NULL,
-then a network encoding just y--y edges is made and <code>info</code> should just contain attributes for (y(1), ..., y(Q)).</p></td>
+      <th>xy</th>
+      <td><p>Adjacency matrix encoding x--y edges of conditional graphical model. 
+Format can be either a sparse matrix (i.e. from Matrix package) or a regular matrix.
+If NULL, then a network encoding just y--y edges is made.</p></td>
     </tr>
     <tr>
-      <th>info</th>
-      <td><p>data.frame encoding the attributes of the vertices 
-in the order of (x(1), ..., x(p), y(1), ..., y(q)) if both YY and XY are specified.
-If just YY is specified, then <code>info</code> should just contain attributes for (y(1), ..., y(Q)). 
-See details for required attributes to include and optional attributes.</p></td>
+      <th>yinfo</th>
+      <td><p>Data.frame encoding the attributes of the y vertices. If non-null, 
+the column 'id' must exist for labelling vertices with a unique identifier. 
+The order of the rows must match the order of the <code>yy</code> columns/rows. 
+Other attributes in the form of data.frame columns are optional and 
+can have missing data for some of the vertices. 
+See 'Details' for further explanation.</p></td>
+    </tr>
+    <tr>
+      <th>xinfo</th>
+      <td><p>Data.frame encoding the attributes of the x vertices. If non-null, 
+the column 'id' must exist for labelling vertices with a unique identifier. 
+The order of the rows must match the order of the <code>xy</code> columns/rows. 
+Other attributes in the form of data.frame columns are optional and 
+can have missing data for some of the vertices. 
+See 'Details' for further explanation.</p></td>
     </tr>
     <tr>
       <th>weighted</th>
-      <td><p>logical indicating whether the values of YY and XY should indicate 
-weights of the vertices. Defaults to FALSE.</p></td>
-    </tr>
-    <tr>
-      <th>dropnull</th>
-      <td><p>logical indicating to remove vertices with degree zero from the graph. Defaults to TRUE.</p></td>
+      <td><p>Same argument passed to <code>igraph::graph_from_adjacency_matrix</code>. 
+Defaults to NULL.</p></td>
     </tr>
     </table>
     
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
+    <p>An igraph network object.</p>
+    
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>The annotation parameters <code>xinfo</code> and <code>yinfo</code>
+ are of type `data.frame`, where each row is expected to be ordered 
+ according to the rows of <code>xy</code> and <code>yy</code>, respectively. 
+ The first column `id` is always required and must be unique for each node.
+ The second column `alias` is an optional column that reserves more 
+ human-readable labels to be applied to nodes, and can be duplicated. 
+ For example, two protein isoforms may have different ID's,
+ but the same gene symbol alias. If gene coordinates are supplied for 
+ cis/trans identification, they require at least three variables: 
+ 'chr' a character for the chromosome location, 
+ 'start' an integer for the beginning of the genomic feature, 
+ and 'end' for the end location of the feature. 
+ The 'strand' argument is optional. 
+ Additional annotations such as `description` or
+ whatever other annotations are deemed important 
+ can be added as node attributes. Note that if any vertex
+ is missing some or all annotations, an `NA` should be used in its place.</p>
+    
+
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'>
+<span class='co'>#Load BCPLS CNA-protein network output</span>
+<span class='fu'>library</span>(<span class='no'>spacemap</span>)
+<span class='fu'>data</span>(<span class='st'>"bcpls"</span>)
+<span class='co'>#convert list to global environment</span>
+<span class='no'>.GlobalEnv</span> <span class='kw'>&lt;-</span> <span class='fu'>list2env</span>(<span class='kw'>x</span><span class='kw'>=</span> <span class='no'>bcpls</span>, <span class='kw'>envir</span> <span class='kw'>=</span> <span class='fu'>globalenv</span>())
+
+<span class='fu'>library</span>(<span class='no'>igraph</span>)</div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>Attaching package: ‘igraph’</span></div><div class='output co'>#&gt; <span class='message'>The following objects are masked from ‘package:stats’:</span>
+#&gt; <span class='message'></span>
+#&gt; <span class='message'>    decompose, spectrum</span></div><div class='output co'>#&gt; <span class='message'>The following object is masked from ‘package:base’:</span>
+#&gt; <span class='message'></span>
+#&gt; <span class='message'>    union</span></div><div class='input'><span class='co'>#Label y and x nodes with attributes</span>
+<span class='no'>ig</span> <span class='kw'>&lt;-</span> <span class='kw'>spacemap</span><span class='kw'>::</span><span class='fu'>adj2igraph</span>(<span class='kw'>yy</span> <span class='kw'>=</span> <span class='no'>net</span>$<span class='no'>yy</span>, <span class='kw'>xy</span> <span class='kw'>=</span> <span class='no'>net</span>$<span class='no'>xy</span>,
+                           <span class='kw'>yinfo</span> <span class='kw'>=</span> <span class='no'>yinfo</span>, <span class='kw'>xinfo</span> <span class='kw'>=</span> <span class='no'>xinfo</span>)
+<span class='co'>#Label y with attributes</span>
+<span class='no'>igy</span> <span class='kw'>&lt;-</span> <span class='kw'>spacemap</span><span class='kw'>::</span><span class='fu'>adj2igraph</span>(<span class='kw'>yy</span> <span class='kw'>=</span> <span class='no'>net</span>$<span class='no'>yy</span>,
+                           <span class='kw'>yinfo</span> <span class='kw'>=</span> <span class='no'>yinfo</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
-                </ul>
+      
+      <li><a href="#value">Value</a></li>
+
+      <li><a href="#details">Details</a></li>
+      
+      <li><a href="#examples">Examples</a></li>
+    </ul>
 
   </div>
 </div>

@@ -50,7 +50,13 @@
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <li class="dropdown">
+        <li>
+  <a href="https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta">Installation</a>
+</li>
+<li>
+  <a href="../reference/index.html">Docs</a>
+</li>
+<li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
     Vignettes
      
@@ -58,7 +64,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/basics.html">Basics</a>
+      <a href="../articles/basics.html">Model Fitting Basics</a>
     </li>
     <li>
       <a href="../articles/tuning.html">Model Tuning</a>
@@ -66,22 +72,16 @@
     <li>
       <a href="../articles/ensemble.html">Ensemble Network</a>
     </li>
+    <li>
+      <a href="../articles/neta.html">Network Analysis Toolkit</a>
+    </li>
   </ul>
 </li>
 <li>
-  <a href="../reference/index.html">R Documentation</a>
+  <a href="https://topherconley.github.io/neta-bcpls/">Application</a>
 </li>
 <li>
-  <a href="https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta">Installation</a>
-</li>
-<li>
-  <a href="https://topherconley.github.io/neta-bcpls/">Network Toolkit</a>
-</li>
-<li>
-  <a href="../news/index.html">News</a>
-</li>
-<li>
-  <a href="https://github.com/topherconley/spacemap/issues">Contact Us</a>
+  <a href="https://github.com/topherconley/spacemap/issues">Contact</a>
 </li>
       </ul>
       
@@ -206,11 +206,11 @@ to change their default settings (e.g. setting <code>tol = 1e-4</code>).</p></td
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'>data</span>(<span class='no'>sim1</span>)
+    <pre class="examples"><div class='input'><span class='fu'>library</span>(<span class='no'>spacemap</span>)
+<span class='fu'>data</span>(<span class='no'>sim1</span>)
 <span class='co'>##########################</span>
 <span class='co'>#DEFINE TRAINING/TEST SETS</span>
-<span class='fu'>library</span>(<span class='no'>caret</span>)
-<span class='co'>#sample size</span>
+<span class='fu'>library</span>(<span class='no'>caret</span>)</div><div class='output co'>#&gt; <span class='message'>Loading required package: lattice</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: ggplot2</span></div><div class='input'><span class='co'>#sample size</span>
 <span class='no'>N</span> <span class='kw'>&lt;-</span> <span class='fu'>nrow</span>(<span class='no'>sim1</span>$<span class='no'>X</span>)
 <span class='co'>#number of folds</span>
 <span class='no'>K</span> <span class='kw'>&lt;-</span> <span class='fl'>5L</span>
@@ -231,7 +231,7 @@ to change their default settings (e.g. setting <code>tol = 1e-4</code>).</p></td
                    <span class='kw'>lam3</span> <span class='kw'>=</span> <span class='fu'>seq</span>(<span class='fl'>10</span>, <span class='fl'>40</span>, <span class='kw'>length</span> <span class='kw'>=</span> <span class='fl'>2</span>))
 <span class='no'>cvsmap</span> <span class='kw'>&lt;-</span> <span class='fu'>cvVote</span>(<span class='kw'>Y</span> <span class='kw'>=</span> <span class='no'>sim1</span>$<span class='no'>Y</span>, <span class='kw'>X</span> <span class='kw'>=</span> <span class='no'>sim1</span>$<span class='no'>X</span>,
                 <span class='kw'>trainIds</span> <span class='kw'>=</span> <span class='no'>trainSets</span>, <span class='kw'>testIds</span> <span class='kw'>=</span> <span class='no'>testSets</span>,
-                <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"spacemap"</span>, <span class='kw'>tuneGrid</span> <span class='kw'>=</span> <span class='no'>tmap</span>)</div><div class='output co'>#&gt; <span class='message'>Computing CV scores over the grid...</span></div><div class='output co'>#&gt; <span class='error'>Error in array(x, c(length(x), 1L), if (!is.null(names(x))) list(names(x),     NULL) else NULL): 'data' must be of a vector type, was 'NULL'</span></div><div class='input'>                
+                <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"spacemap"</span>, <span class='kw'>tuneGrid</span> <span class='kw'>=</span> <span class='no'>tmap</span>)</div><div class='output co'>#&gt; <span class='message'>Computing CV scores over the grid...</span></div><div class='input'>                
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">

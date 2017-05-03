@@ -50,7 +50,13 @@
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <li class="dropdown">
+        <li>
+  <a href="https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta">Installation</a>
+</li>
+<li>
+  <a href="../reference/index.html">Docs</a>
+</li>
+<li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
     Vignettes
      
@@ -58,7 +64,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/basics.html">Basics</a>
+      <a href="../articles/basics.html">Model Fitting Basics</a>
     </li>
     <li>
       <a href="../articles/tuning.html">Model Tuning</a>
@@ -66,22 +72,16 @@
     <li>
       <a href="../articles/ensemble.html">Ensemble Network</a>
     </li>
+    <li>
+      <a href="../articles/neta.html">Network Analysis Toolkit</a>
+    </li>
   </ul>
 </li>
 <li>
-  <a href="../reference/index.html">R Documentation</a>
+  <a href="https://topherconley.github.io/neta-bcpls/">Application</a>
 </li>
 <li>
-  <a href="https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta">Installation</a>
-</li>
-<li>
-  <a href="https://topherconley.github.io/neta-bcpls/">Network Toolkit</a>
-</li>
-<li>
-  <a href="../news/index.html">News</a>
-</li>
-<li>
-  <a href="https://github.com/topherconley/spacemap/issues">Contact Us</a>
+  <a href="https://github.com/topherconley/spacemap/issues">Contact</a>
 </li>
       </ul>
       
@@ -104,7 +104,7 @@
   <div class="col-md-9">
     <div class="page-header">
       <h1>Function reference</h1>
-      <h4>version&nbsp;0.50.0</h4>
+      <h4>version&nbsp;0.51.0</h4>
     </div>
 
     <div class="contents">
@@ -191,14 +191,44 @@
         <tr>
           <!--  -->
           <td>
-            <p><code><a href="neta.html">neta</a></code> </p>
+            <p><code><a href="adj2igraph.html">adj2igraph</a></code> </p>
           </td>
-          <td><p>Network analysis toolkit</p></td>
+          <td><p>Adjacency to igraph with annotations.</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="rankHub.html">rankHub</a></code> </p>
+          </td>
+          <td><p>Prioritize networks hubs with consistently high degree.</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="cisTrans.html">cisTrans</a></code> </p>
+          </td>
+          <td><p>Identify x-y cis and trans edges.</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="reportHubs.html">reportHubs</a></code> </p>
+          </td>
+          <td><p>Report top hub nodes with attributes.</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="xHubEnrich.html">xHubEnrich</a></code> </p>
+          </td>
+          <td><p>Functional enrichment of x neighborhood.</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="modAnalysis.html">modAnalysis</a></code> </p>
+          </td>
+          <td><p>Module enrichment analysis</p></td>
         </tr>
       </tbody><tbody>
         <tr>
           <th colspan="2">
-            <h2 id="section-simulation" class="hasAnchor"><a href="#section-simulation" class="anchor"></a>Simulation</h2>
+            <h2 id="section-data" class="hasAnchor"><a href="#section-data" class="anchor"></a>Data</h2>
             <p class="section-desc"></p>
           </th>
         </tr>
@@ -221,7 +251,7 @@
       <li><a href="#section-model-fitting">Model fitting</a></li>
       <li><a href="#section-model-selection">Model selection</a></li>
       <li><a href="#section-network-analysis-toolkit">Network Analysis Toolkit</a></li>
-      <li><a href="#section-simulation">Simulation</a></li>
+      <li><a href="#section-data">Data</a></li>
     </ul>
   </div>
 </div>

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>BIC for space under likelihood setting. — bicLike â€¢ spacemap</title>
+<title>Report top hub nodes with attributes. — reportHubs â€¢ spacemap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -103,35 +103,53 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>BIC for space under likelihood setting.</h1>
+    <h1>Report top hub nodes with attributes.</h1>
     </div>
 
     
-    <p>Calculate the BIC.</p>
+    <p>Organize x and y hub analysis into a publish-ready format.</p>
     
 
-    <pre><span class='fu'>bicLike</span>(<span class='no'>fit</span>, <span class='no'>tol</span>, <span class='no'>dat</span>)</pre>
+    <pre><span class='fu'>reportHubs</span>(<span class='no'>ig</span>, <span class='kw'>top</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>level</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"x"</span>, <span class='st'>"y"</span>), <span class='kw'>unit</span> <span class='kw'>=</span> <span class='st'>"Mb"</span>,
+  <span class='kw'>unit_base</span> <span class='kw'>=</span> <span class='fl'>1e+06</span>, <span class='kw'>sig</span> <span class='kw'>=</span> <span class='fl'>2</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>fit</th>
-      <td><p>The returned object from spacemap::space.</p></td>
+      <th>ig</th>
+      <td><p>An igraph network object returned from either 
+<code><a href='rankHub.html'>rankHub</a></code> or <code><a href='cisTrans.html'>cisTrans</a></code>.</p></td>
     </tr>
     <tr>
-      <th>tol</th>
-      <td><p>A numeric lower bound on non-zero parameter values.</p></td>
+      <th>top</th>
+      <td><p>An integer specifying the number of top-degree hubs to report.</p></td>
     </tr>
     <tr>
-      <th>NN</th>
-      <td><p>An integer, the sample size.</p></td>
+      <th>level</th>
+      <td><p>Character specifying nodes of level x or y, but not both. 
+Defaults to x.</p></td>
+    </tr>
+    <tr>
+      <th>unit</th>
+      <td><p>If gene coordinates for x hubs exist, then this will 
+label the chosen genome location scale in the table. Defaults to mega-base (Mb).</p></td>
+    </tr>
+    <tr>
+      <th>unit_base</th>
+      <td><p>Numeric divisor of the genome coordinates and should 
+correspond to <code>unit</code> label. Defaults to 1e6 for mega-base.</p></td>
+    </tr>
+    <tr>
+      <th>sig</th>
+      <td><p>Integer for controlling precision of genome coordinates.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>the Bayesian Information Criterion (BIC).</p>
+    <p>A table of top ranked node hubs with attributes deemed 
+relevant to report. See vignette on network analysis for examples.</p>
     
 
   </div>

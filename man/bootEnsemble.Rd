@@ -46,6 +46,7 @@ Fits spacemap model to B bootstrapped data replicates to create an ensemble netw
 \examples{
 
 #Load simulation
+library(spacemap)
 data(sim1)
 
 #Boostrap Ensemble (B = 10) for illustration only

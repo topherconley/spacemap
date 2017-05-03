@@ -21,10 +21,10 @@ Returns a list of lists.
 First list is \code{bv}, which encodes the edges in two logical adjacency matrices.
 
 \enumerate{
-  \item \code{yy} Logical matrix where TRUE for the (q,l) off-diagonals element indicate an edge 
-  between the qth and lth response variables. 
-  \item \code{xy}  Logical matrix where TRUE for the (p,q) element indicate an edge 
-  between the pth predictor and qth response variable. 
+  \item \code{yy} Adjacency matrix where 1 for the (q,l) off-diagonals element indicate an edge 
+  between the qth and lth response variables, and 0 otherwise. 
+  \item \code{xy}  Adjacency matrix where 1 for the (p,q) element indicate an edge 
+  between the pth predictor and qth response variable, and 0 otherwise. 
 }
 
 Second list is \code{bdeg}, which contains the degree distribution for each bootstrap replicate fit. 
@@ -55,6 +55,7 @@ Aggregate boostrap replicates of spacemap into a final Boot.Vote model.
 
 
 #Load simulation
+library(spacemap)
 data(sim1)
 
 #Boostrap Ensemble (B = 10) for illustration only

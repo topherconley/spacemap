@@ -23,6 +23,7 @@
 #' @examples 
 #' 
 #' #Load simulation
+#' library(spacemap)
 #' data(sim1)
 #' 
 #' #Boostrap Ensemble (B = 10) for illustration only
@@ -202,6 +203,7 @@ sparseAdjMat <- function(x) {
 #' 
 #' 
 #' #Load simulation
+#' library(spacemap)
 #' data(sim1)
 #' 
 #' #Boostrap Ensemble (B = 10) for illustration only

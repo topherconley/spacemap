@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>BIC for space under likelihood setting. — bicLike â€¢ spacemap</title>
+<title>Functional enrichment of x neighborhood. — xHubEnrich â€¢ spacemap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -103,35 +103,51 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>BIC for space under likelihood setting.</h1>
+    <h1>Functional enrichment of x neighborhood.</h1>
     </div>
 
     
-    <p>Calculate the BIC.</p>
+    <p>A means to assess functional 
+impact of x hub perturbations</p>
     
 
-    <pre><span class='fu'>bicLike</span>(<span class='no'>fit</span>, <span class='no'>tol</span>, <span class='no'>dat</span>)</pre>
+    <pre><span class='fu'>xHubEnrich</span>(<span class='no'>ig</span>, <span class='no'>go2eg</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>fit</th>
-      <td><p>The returned object from spacemap::space.</p></td>
+      <th>ig</th>
+      <td><p>An igraph network object output from either 
+<code><a href='adj2igraph.html'>adj2igraph</a>, <a href='rankHub.html'>rankHub</a>, <a href='cisTrans.html'>cisTrans</a></code></p></td>
     </tr>
     <tr>
-      <th>tol</th>
-      <td><p>A numeric lower bound on non-zero parameter values.</p></td>
-    </tr>
-    <tr>
-      <th>NN</th>
-      <td><p>An integer, the sample size.</p></td>
+      <th>go2eg</th>
+      <td><p>Named list where the names denote a
+ biological process (e.g. Gene Ontology ID) and
+the elements of the list is a vector of members 
+belonging to the biological process. 
+The list ought to be non-redundant in names.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>the Bayesian Information Criterion (BIC).</p>
+    <p>Data.frame with each x hub, out-degree, and the 
+neighborhood percentage.</p>
+    
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>A x hub is defined to be any x node with at least one edge to a y node. 
+A x neighborhood comprises all y nodes that are directly connected to a x hub by an edge. 
+x neighborhoods are of interest because they represent direct perturbations to y nodes.
+To quantitatively assess how much those perturbations are functionally meaningful,
+we compute a score called the GO-neighbor percentage. Two y nodes are called GO-neighbors 
+if they share a common Gene Ontology (GO) term in the same x neighborhood. We postulate 
+that a high percentage of GO-neighbors within an x neighborhood associates 
+the x hub with more functional meaning. These scores, 
+as presented in figure 5 of the spaceMap publication, 
+can be generated with a GO mapping</p>
     
 
   </div>
@@ -141,6 +157,8 @@
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
+
+      <li><a href="#details">Details</a></li>
           </ul>
 
   </div>

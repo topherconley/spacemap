@@ -1,165 +1,62 @@
-#' Network analysis toolkit
+#' Adjacency to igraph with annotations.
 #' 
-#' Downstream analysis of spaceMap networks
-#'
-#' @param net list containing two adjacency matrices, 
-#' named \code{yy} and \code{xy}, encoding the 
-#' response--response interactions and the predictor--response 
-#' interactions, respectively. 
-#' @param bdeg list containing two matrices, \code{xy} and \code{yy}, 
-#' where each row represents a bootstrap relicate of the degree distribution and 
-#' the columns contain the degree across all x nodes (in the case of \code{xy} )
-#'  or all y nodes (in the case of \code{yy}). 
-#' @param info data.frame containing several columns that describe the 
-#' attributes of the nodes in the network. The columns are currently required to 
-#' the following variables, but they can be missing values for all variables but the ID
-#' and levels of node. The variables are:
-#' id (a unique ID for the gene node); chr (chromosome location); 
-#' start (starting coordinate on the chromosome); end (ending coordinate); 
-#' cyto (cyotband abbreviation, e.g. 5q34); cytoscape (a gene symbol); 
-#' strand (the +/- strand); levels (either a "x" or "y" corresponding to predictor or response
-#' nodes).  
-#' @param go2eg named list where the names denote a biological process (e.g. GO ID) and
-#' the elements of the list is a vector of members belonging to the biological process. 
-#' The list ought to be non-redundant in names. 
-#' @param cis_window numeric denoting the half length of the genomic interval 
-#' used for calling a response node (i.e. of levels y) as cis regulated by a predictor 
-#' node (i.e. of levels x)..
-#' @param lmods named list of modules in the network. When \code{lmdods=NULL}, the 
-#' Girvan-Newman edge betweenness algorithm is used to find network modules. 
-#' @param min_module_size integer defining the minimum size a module must be to 
-#' be tested for enrichment. 
-#' @param mod_prefix character to prefix module ID's. 
-#' @param thresh numeric between 0 and 1 to denote the thresh threshold in the 
-#' Bonferroni-Hochberg correction. 
-#' @param min_go integer defining the minimum number of nodes required to be 
-#' to call a significant enrichment of a biological process based on the 
-#' hypergeometric test.  
+#' @description Convert adjacency matrix output from conditional graphical model output (xy, yy) into 
+#' into an igraph object and optionally layer attributes onto the vertices. 
+#' @param yy Adjacency matrix encoding y--y edges of conditional graphical model.
+#' Format can be either a sparse matrix (i.e. from Matrix package) or a regular matrix. 
+#' @param xy Adjacency matrix encoding x--y edges of conditional graphical model. 
+#' Format can be either a sparse matrix (i.e. from Matrix package) or a regular matrix.
+#' If NULL, then a network encoding just y--y edges is made.
+#' @param yinfo Data.frame encoding the attributes of the y vertices. If non-null, 
+#' the column 'id' must exist for labelling vertices with a unique identifier. 
+#' The order of the rows must match the order of the \code{yy} columns/rows. 
+#' Other attributes in the form of data.frame columns are optional and 
+#' can have missing data for some of the vertices. 
+#' See 'Details' for further explanation.
+#' @param xinfo Data.frame encoding the attributes of the x vertices. If non-null, 
+#' the column 'id' must exist for labelling vertices with a unique identifier. 
+#' The order of the rows must match the order of the \code{xy} columns/rows. 
+#' Other attributes in the form of data.frame columns are optional and 
+#' can have missing data for some of the vertices. 
+#' See 'Details' for further explanation.
+#' @param weighted Same argument passed to \code{igraph::graph_from_adjacency_matrix}. 
+#' Defaults to NULL. 
 #' 
-#' @return list
-#' \itemize{
-#'  \item \code{ig} The igraph object encoding the network and its attributes. 
-#'  \item \code{xhubtab} data.frame reporting prioritized predictor hubs and 
-#'  their attributes.
-#'  \item \code{emodstab} data.frame reporting which modules were enriched 
-#'  with biological processes and what they were. If the module contains 
-#'  predictor nodes (e.g. CNA) with at least \code{min_go} edges to other 
-#'  module members it is also reported for the module.
-#'  \item \code{lmodtab} list of data.frames corresponding to each module of size at least 
-#'  \code{min_module_size}. Each data.frame reports the nodes of the module and 
-#'  other information such as degree and which nodes participate in specific enrichment
-#'  of biological processes. 
-#'  \item \code{goneighbors} data.frame where each row corresponds to a predictor hub. 
-#'  The predictor hub induces a neighborhood of response nodes with which it has an 
-#'  edge. A certain proportion of response node neighbors share the same 
-#'  biological processes and this is reported.  
-#'  }
-neta <- function(net, bdeg, info, go2eg, cis_window = 2e6, lmods = NULL, 
-                 min_module_size = 15, mod_prefix = "P", thresh = 0.05, 
-                 min_go = 5) { 
-  
-  #make igraph object
-  message("Importing network attributes ...")
-  ig <- adj2igraph(yy = net$yy, 	
-                   xy = net$xy, 	
-                   info = info)	
-  #subset just the yy info for GO enrichment and cis/trans 
-  #functions later
-  infoy <- info[info$levels == "y",]
-  
-  message("Identify cis and trans regulation ...") 	
-  ig <- xyCisTrans(ig = ig, et = c("x-y", "y-y"))	
-  #E(ig)$cis_trans	
-  
-  #obtain the distribution of cis/trans edges for 
-  #reporting in X hub table
-  vseqx <- V(ig)[levels %in% "x"]	
-  xdct <- setCisTransDistr(ig = ig, vseq = vseqx)	
-  ig <- xdct$ig	
-  dct <- xdct$dct	
-  
-  #Which CNA are most stabl?e	
-  message("X hub prioritization")
-  pc <- potentialCis(pact = as_ids(V(ig)[levels %in% "x"]),	
-                     preg = infoy$id, 	
-                     info = info,	
-                     yy = net$yy, xy = net$xy, 	
-                     cw = cis_window, ignoreStrand = T)	
-  #REPORT TABLE 
-  xhubtab <- renderXhubTable(ig = ig, dct = dct, pc = pc, bdeg = bdeg$xy)	
-  
-  message("Identifying modules ... ")
-  #Obtain network modules using the `Girvan-Newman` algorithm for clust	
-  if(is.null(lmods)) { 
-    cebout <- cebModules(ig, glb = min_module_size, prefix = mod_prefix)	
-    ig <- cebout$ig	
-    lmods <- cebout$module_list	
-    yy_lmods <- cebout$yy_module_list	
-    ceb <- cebout$community_obj	
-    cross_edges <- crossing(communities = ceb, graph = ig)	
-    cross_edges2 <- names(cross_edges)[cross_edges]	
-    cross_edge_tab <- splitEdgeVector(cross_edges2, ig)	
-  } else { 
-    message("User supplied module list not yet supported.")
-    stop()
-  }
-  
-  message("GO enrichment analysis")
-  #GO neighbor enrichment:
-  #Identify the GO pair proportion for each CNA hub by considering any two response nodes with a common CNA hub as adjacent.	
-  hgp <- hubGOproportion(ig, go2eg)	
-  
-  #GO module enrichment:
-  #need to also consider nodes with no edges so use a different network 
-  #object
-  igy <- adj2igraph(yy = net$yy, info = infoy, dropnull = F)	
-  emods <- moduleEnrichment(lmods = yy_lmods, go2eg = go2eg, igy = igy, thresh = thresh)	
-  #head(emods)
-  #library(ggplot2)	
-  #qplot(emods$pvalue) + xlab("P-value of Module Enrichment Analysis")	
-  
-  #REPORT TABLE
-  #format the module enrichment results for displaying in a table.	 	
-  emodstab <- renderModuleTable(ig, lmods, emods, minGO = min_go) 	
-
-    #embed GO enrichment in igraph object 	
-  ig <- setGOTags(lmods = lmods, emods = emods, 	
-                  ig = ig, go2eg = go2eg, info = info)	
-
-  #REPORT LIST OF TABLES
-  #gather attributes of members each module in a data.frame 	
-  lmod_attr <- lapply(names(lmods), getModuleInfo,  	
-                      ig = ig,	
-                      go2eg = go2eg,	
-                      lmods = lmods,	
-                      emods = emods,	
-                      info = info, 	
-                      cross_edge_tab = cross_edge_tab, 	
-                      minGO = min_go)	
-  names(lmod_attr) <- names(lmods)	
-  
-  #return: xhubtab 
-  ret <- list(ig  = ig, 
-              xhubtab = xhubtab, 
-              emodstab = emodstab,
-              lmodtab = lmod_attr, 
-              goneighbors = hgp)
-  return(ret)
-}
-
-#' Initialize network's vertex attributes
+#' @details The annotation parameters \code{xinfo} and \code{yinfo}
+#'  are of type `data.frame`, where each row is expected to be ordered 
+#'  according to the rows of \code{xy} and \code{yy}, respectively. 
+#'  The first column `id` is always required and must be unique for each node.
+#'  The second column `alias` is an optional column that reserves more 
+#'  human-readable labels to be applied to nodes, and can be duplicated. 
+#'  For example, two protein isoforms may have different ID's,
+#'  but the same gene symbol alias. If gene coordinates are supplied for 
+#'  cis/trans identification, they require at least three variables: 
+#'  'chr' a character for the chromosome location, 
+#'  'start' an integer for the beginning of the genomic feature, 
+#'  and 'end' for the end location of the feature. 
+#'  The 'strand' argument is optional. 
+#'  Additional annotations such as `description` or
+#'  whatever other annotations are deemed important 
+#'  can be added as node attributes. Note that if any vertex
+#'  is missing some or all annotations, an `NA` should be used in its place. 
 #' 
-#' @description Label vertex attributes of a  conditional graphical model's
-#'  output. 
-#' @param yy adjacency matrix encoding y--y edges of conditional graphical model. Format can be 
-#' @param xy adjacency matrix encoding x--y edges of conditional graphical model. If NULL,
-#' then a network encoding just y--y edges is made and \code{info} should just contain attributes for (y(1), ..., y(Q)).  
-#' @param info data.frame encoding the attributes of the vertices 
-#' in the order of (x(1), ..., x(p), y(1), ..., y(q)) if both yy and xy are specified.
-#' If just yy is specified, then \code{info} should just contain attributes for (y(1), ..., y(Q)). 
-#' See details for required attributes to include and optional attributes. 
-#' @param weighted Same argument passed to \code{igraph::graph_from_adjacency_matrix}. Defaults to NULL.
-#' weights of the vertices. Defaults to FALSE.
+#' @return An igraph network object.
+#' 
+#' @examples 
+#' 
+#' #Load BCPLS CNA-protein network output
+#' library(spacemap)
+#' data("bcpls")
+#' #convert list to global environment
+#' .GlobalEnv <- list2env(x= bcpls, envir = globalenv())
+#' 
+#' library(igraph)
+#' #Label y and x nodes with attributes
+#' ig <- spacemap::adj2igraph(yy = net$yy, xy = net$xy, 
+#'                            yinfo = yinfo, xinfo = xinfo)
+#' #Label y with attributes
+#' igy <- spacemap::adj2igraph(yy = net$yy, 
+#'                            yinfo = yinfo)
 #' @export
 adj2igraph <- function(yy, xy = NULL, yinfo = NULL, xinfo = NULL, weighted = NULL) { 
   
@@ -202,10 +99,23 @@ adj2igraph <- function(yy, xy = NULL, yinfo = NULL, xinfo = NULL, weighted = NUL
     if(!givenX) { 
         stop("xy cannot be null and xinfo non-null.")
     }
+    if (nrow(xinfo) != length(Xindex)) { 
+      stop("xinfo and xy are not of the same dimension.")  
+    }
+    if (is.null(xinfo$id)) { 
+      stop("xinfo$id is null.")
+    } 
     ig <- layerInfo(ig = ig, info = xinfo, vs =  V(ig)[Xindex])
     
-  }
+  } 
+  
   if (!is.null(yinfo)) { 
+    if (nrow(yinfo) != length(Yindex)) { 
+      stop("yinfo and yy are not of the same dimension.")  
+    }
+    if (is.null(yinfo$id)) { 
+      stop("yinfo$id is null.")
+    }
     ig <- layerInfo(ig = ig, info = yinfo, vs =  V(ig)[Yindex])
   }
   
@@ -227,6 +137,10 @@ adj2igraph <- function(yy, xy = NULL, yinfo = NULL, xinfo = NULL, weighted = NUL
 
 layerInfo <- function(ig, info, vs) { 
   for(var in names(info)) { 
+    #require factors to be characters
+    if(is.factor(info[,var])) { 
+      info[,var] <- as.character(info[,var])
+    }
     if(var == "id") { 
       ig <- igraph::set_vertex_attr(graph = ig, name = "name", 
                                     index = vs,
@@ -240,14 +154,43 @@ layerInfo <- function(ig, info, vs) {
   ig
 }
 
-rankHub <- function(ig, bdeg = NULL, level = c("y", "x")) { 
+#' Prioritize networks hubs with consistently high degree.
+#' 
+#' @description Rank hubs by degree either with the final network or 
+#' according to how consistently the degree is high across bootstrap replicates. 
+#' @param ig An igraph network object output from \code{\link{adj2igraph}}
+#' @param bdeg If NULL, the ranking of hubs nodes is done by their 
+#' highest degree in the \code{ig} network within their respective node 
+#' \code{level = "y"} or \code{level = "x"}. 
+#' 
+#' If non-null, List output from list element of \code{\link{bootVote}}. 
+#' Element \code{bdeg$yy[b,]} is an integer vector representing 
+#' the degree distribution for the \eqn{b}th bootstrap replicate 
+#' across the y nodes.  
+#' Similarly, element \code{bdeg$xy[b,]} is an integer vector 
+#' representing the degree distribution for the \eqn{b}th bootstrap 
+#' replicate across the x nodes. 
+#' If `bdeg` is available, the hubs will be prioritized according to 
+#' their mean rank of degree across the \eqn{B} bootstrap replicates. 
+#' Highly ranked hubs consistently have a larger degree than other 
+#' nodes across the bootstrap replicates.
+#' @param level Character value either 'y' or 'x' (defaults to 'x') 
+#' specifying to rank hubs that are x or y nodes. Ranking levels 
+#' x and y together is not supported.
+#' @return The igraph object \code{ig} updated with a 
+#' 'rank_hub' attribute containing each nodes' respective rank. 
+#' If \code{bdeg} is non-null the mean degree rank across
+#' bootstrap replicates is labeled with attribute 'mean_rank_hub',
+#' and its corresponding standard deviation is labeled
+#' as attribute 'sd_rank_hub'.
+rankHub <- function(ig, bdeg = NULL, level = c("x", "y")) { 
   
   level <- match.arg(level)
   vs <- V(ig)[levels %in% level]
   
   if (is.null(bdeg)) { 
     deg <- igraph::degree(graph = ig, v = vs)
-    ig <- set_vertex_attr(graph = ig, name = "mean_rank_hub", index = vs, value = rank(-deg))
+    ig <- set_vertex_attr(graph = ig, name = "rank_hub", index = vs, value = rank(-deg))
   } else {
     brank <- apply(-bdeg, 1, rank)
     #average the ranks across the bootstrap replicates
@@ -281,6 +224,33 @@ splitEdgeVector <- function(evec, ig) {
   tab
 }
 
+#' Identify x-y cis and trans edges.
+#'
+#' @description Label igraph object with cis/trans 
+#' status for x-y edges. 
+#' 
+#' @param ig An igraph network object output from \code{\link{rankHub}}
+#' @param level Character vector currently only supporting 'x-y' edge 
+#' labeling of cis/trans status. 
+#' @param cw Numeric value denoting the half length of the genomic interval 
+#' used for calling a response node (i.e. of levels y) as cis regulated by a predictor 
+#' node (i.e. of levels x). Defaults to 2Mb. 
+#' @param ignoreStrand Logical defaults to TRUE specifying that strand specificity 
+#' is not required to call cis/trans edges.
+#' 
+#' @details This function requires the Genomic Ranges package. The \code{ig} 
+#' network parameter requires vertex attributes for genome coordinates 
+#' specified as \code{chr,start,end} 
+#' (see details section of \code{\link{adj2igraph}}).
+#' 
+#' @return The igraph object \code{ig} with x-y edges 
+#' updated with attribute 'cis_trans' indicating cis/trans status. 
+#' 
+#' Also x node vertices are updated with attributes 
+#' 'ntrans' reporting the number of trans regulations by a node
+#'  (similarly for attribute 'ncis') and 'regulates_in_cis'
+#'  lists specific y nodes regulated in cis by x nodes.
+#'  
 cisTrans <- function(ig, level = c("x-y"), cw = 2e6, ignoreStrand = TRUE) { 
   
   #get edges and vertex attributes for specified levels
@@ -398,9 +368,26 @@ setCisTransDistr <- function(ig, vseq) {
   ig
 }
 
+#' Report top hub nodes with attributes.
+#' 
+#' @description Organize x and y hub analysis into a publish-ready format.
+#' @param ig An igraph network object returned from either 
+#' \code{\link{rankHub}} or \code{\link{cisTrans}}.
+#' @param top An integer specifying the number of top-degree hubs to report.
+#' @param level Character specifying nodes of level x or y, but not both. 
+#' Defaults to x.
+#' @param unit If gene coordinates for x hubs exist, then this will 
+#' label the chosen genome location scale in the table. Defaults to mega-base (Mb).
+#' @param unit_base Numeric divisor of the genome coordinates and should 
+#' correspond to \code{unit} label. Defaults to 1e6 for mega-base.
+#' @param sig Integer for controlling precision of genome coordinates.
+#' 
+#' @return A table of top ranked node hubs with attributes deemed 
+#' relevant to report. See vignette on network analysis for examples. 
+reportHubs <- function(ig, top = 10, level = c("x", "y"), 
+                       unit = "Mb", unit_base = 1e6, sig = 2) {
 
-reportHubs <- function(top = 10, level = "x", unit = "Mb", unit_base = 1e6, sig = 2) {
-  
+  level <- match.arg(level)
   hubidx <- which(degree(ig) != 0 & V(ig)$levels == level)
   rawtab <- as_data_frame(x = ig, what = "vertices")[hubidx,]
   #remove those columns that are all NA's
@@ -447,6 +434,33 @@ reportHubs <- function(top = 10, level = "x", unit = "Mb", unit_base = 1e6, sig 
   tab[seq_len(min(top,nrow(tab))),]
 }
 
+#' Functional enrichment of x neighborhood.
+#' 
+#' @description A means to assess functional 
+#' impact of x hub perturbations
+#' 
+#' @param ig An igraph network object output from either 
+#' \code{\link{adj2igraph}, \link{rankHub}, \link{cisTrans}}
+#' @param go2eg  Named list where the names denote a
+#'  biological process (e.g. Gene Ontology ID) and
+#' the elements of the list is a vector of members 
+#' belonging to the biological process. 
+#' The list ought to be non-redundant in names. 
+#' 
+#' @details A x hub is defined to be any x node with at least one edge to a y node. 
+#' A x neighborhood comprises all y nodes that are directly connected to a x hub by an edge. 
+#' x neighborhoods are of interest because they represent direct perturbations to y nodes.
+#' To quantitatively assess how much those perturbations are functionally meaningful,
+#' we compute a score called the GO-neighbor percentage. Two y nodes are called GO-neighbors 
+#' if they share a common Gene Ontology (GO) term in the same x neighborhood. We postulate 
+#' that a high percentage of GO-neighbors within an x neighborhood associates 
+#' the x hub with more functional meaning. These scores, 
+#' as presented in figure 5 of the spaceMap publication, 
+#' can be generated with a GO mapping
+#' 
+#' @return Data.frame with each x hub, out-degree, and the 
+#' neighborhood percentage. 
+#'
 xHubEnrich <- function(ig, go2eg) { 
   xytab <- splitEdgeVector(igraph::as_ids(E(ig)[levels %in% "x-y"]), ig)
   hubHood <- split(x = xytab$right, f = as.factor(xytab$left))
@@ -500,10 +514,90 @@ rndHubGoProportion <- function(xy, yy, info, go2eg) {
   colMeans(rhgp[,c("m1","m2","m3")])
 }
 
-modAnalysis <- function(ig, mods, go2eg, glb = 15, prefix = "M", 
+#' Module enrichment analysis
+#' 
+#' @description Identify biological processes 
+#' which are significantly-enriched in network modules. 
+#' 
+#' @param ig An igraph network object output from either 
+#' \code{\link{adj2igraph}, \link{rankHub}, \link{cisTrans}}.
+#' @param mods modules with three accepted formats. 
+#' \itemize{ 
+#'   \item An igraph object of class 'communities', 
+#'   which is typically the output of the cluster_* functions of igraph.
+#'   \item A list where each element is a character vector that only contains 
+#'   the node identifiers from either \code{yinfo$id} or  \code{xinfo$id} input to 
+#'   function \code{\link{adj2igraph}}.
+#'   \item An integer vector with names as node identifiers and values as an integer. 
+#'   For example \code{c(id1 = 1, id2 = 2, id3 = 2, id4 = 1)}.
+#' }
+#' @param levels Any given module can contain x nodes or y nodes.
+#'   If both predictors and responses have a functional mapping 
+#'   in the \code{go2eg} argument, then specify \code{levels = c("y","x")}. 
+#'   Otherwise, specify only those nodes that have a functional mapping. 
+#'   See details for more discussion.
+#' @param go2eg  Named list where the names denote a
+#'  biological process (e.g. Gene Ontology ID) and
+#' the elements of the list is a vector of members 
+#' belonging to the biological process. 
+#' The list ought to be non-redundant in names. 
+#' 
+#' @param glb Integer defining the minimum size a module must be to 
+#' be tested for enrichment.
+#' 
+#' @param prefix Character to prefix module identifiers.
+#' @param thresh Numeric between 0 and 1 indicating the threshold at which 
+#' adjusted P-values should be considered significant.
+#' @param adjust Character of type \code{stats::p.adjust.methods} for 
+#' specifying the type of multiple comparison adjustment desired.
+#' @param minGO  Integer defining the minimum number of 
+#' node representation in a biological process 
+#' to called a significant enrichment of that biological process. 
+#' @param process_alias Vector mapping biological process identifiers in 
+#' \code{go2eg} with biologically meaningful descriptions. The vector 
+#' \code{process_alias} must have names
+#' as the same names in \code{go2eg} and the elements are the  
+#' biologically meaningful descriptions.
+#' 
+#' @details The hyper-geometric test is used to test for 
+#' over-representation of a biological process. In the 
+#' \code{phyper} R function, parameter \code{q} is the 
+#' overlap between the biological process group and the module, 
+#' where the module is reduced to only its y node members if \code{level = "y"}.
+#' Parameter \code{m} is the size of the biological process.
+#' Parameter \code{n} is the number of nodes in the network not 
+#' in the biological process. This excluding node levels that do not have a functional mapping.
+#' In other words, if no x nodes do not appear in the mapping of \code{go2eg}, 
+#' corresponding to \code{level = "y"}, then x nodes are not counted,
+#'  but "y" nodes without a mapping are counted, because most y nodes do have a mapping.  
+#'  
+#' @return A three-item list: 
+#' 
+#' \itemize{
+#' \item The element "ig" is the input igraph network object 
+#' updated with a "process_id" attribute 
+#' for nodes affiliated with a significant GO-term.
+#' The "process_id" and "module" attributes together can be especially
+#' useful for visualizing which nodes of a module 
+#' are enriched for a specific biological function. 
+#' \item The element "etab" is the polished module enrichment table
+#'  conveniently organized to report significant GO terms in modules,
+#'   the representation of the GO term in the module relative to the 
+#'   size of the GO term, and what x hubs may belong to the module. 
+#' \item The element "eraw" contains details for each (module, GO-term) pair
+#'  that was subjected to the hyper-geometric test. 
+#'  This output gives the user more control (if desired) over enrichment 
+#'  by reporting all tests, the relative over-representation 
+#'  of a GO-term in that module, the raw P-value, and the adjusted P-value.
+#' }
+#'
+modAnalysis <- function(ig, mods, levels = c("y", "x"), go2eg, glb = 15, prefix = "M", 
                         thresh = 0.05, adjust = "BH", minGO = 5, 
                         process_alias = NULL) { 
 
+  levels <- match.arg(levels, choices = c("y", "x"), several.ok = TRUE)
+  adjust <- match.arg(adjust, choices = stats::p.adjust.methods)
+  
   #list is easier to work with than a vector of members
   ll <- mods2list(ig = ig, mods = mods, glb = glb, prefix = prefix)
   lmods <- ll$all
@@ -516,8 +610,15 @@ modAnalysis <- function(ig, mods, go2eg, glb = 15, prefix = "M",
                           value = names(lmods)[i])
   }
   
+  if(sum(levels %in% c("x", "y")) == 2) { 
+    inmods <- lmods
+  } else { 
+    inmods <- ylmods
+  }
+
+  
   #hypothesis testing
-  emods <- moduleEnrichment(ig = ig, lmods = ylmods, go2eg = go2eg,
+  emods <- moduleEnrichment(ig = ig, levels = levels, lmods = inmods, go2eg = go2eg,
                             thresh = thresh, adjust = adjust,
                             process_alias = process_alias)
   #make pretty result
@@ -526,7 +627,16 @@ modAnalysis <- function(ig, mods, go2eg, glb = 15, prefix = "M",
   #store result in igraph
   ig <- setGOTags(lmods = lmods, emods = emods, ig = ig, go2eg = go2eg)
   
-  list(ig = ig, etab = etab, eraw = emods)
+  #organize raw results 
+  if (!is.null(process_alias)) { 
+    proc_alias_name <- "process_alias"
+  } else { 
+    proc_alias_name <- NULL
+  }
+  eraw <- emods[,c("modname", "process_id", proc_alias_name, "representation", "pvalue", "fdr")]
+  names(eraw)  <- c("Module", "process_id", proc_alias_name, "GO Obs./Total", "P_value", "Adjusted_P_value")
+  
+  list(ig = ig, etab = etab, eraw = eraw)
 }
 
 mods2list <- function(ig, mods, glb, prefix) { 
@@ -596,10 +706,10 @@ mods2list <- function(ig, mods, glb, prefix) {
   list(all = lmods, yy = ylmods)
 }
 
-moduleEnrichment <- function(ig, lmods, go2eg, thresh, adjust, process_alias) { 
+moduleEnrichment <- function(ig, levels, lmods, go2eg, thresh, adjust, process_alias) { 
   
   #number of y nodes 
-  ny <- sum(V(ig)$levels == "y")
+  ng <- sum(V(ig)$levels %in% levels)
   library(foreach)
   modgo <- foreach(i = seq_along(lmods)) %:%
     foreach(j = seq_along(go2eg), .combine = 'rbind') %do% { 
@@ -610,7 +720,7 @@ moduleEnrichment <- function(ig, lmods, go2eg, thresh, adjust, process_alias) {
       #minus -1 because of the upper tail
       pval <- phyper(q = ov - 1L, 
                      m = length(gt), 
-                     n = ny - length(gt), 
+                     n = ng - length(gt), 
                      k = length(mod),lower.tail = FALSE)
       data.frame(process_id = names(go2eg)[j], pvalue = pval, ov = ov,
                  representation = paste(ov, length(gt), sep = "/"),

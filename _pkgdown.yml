@@ -28,14 +28,19 @@ reference:
     - bootVote
   - title: Network Analysis Toolkit
     contents:
-    - neta
-  - title: Simulation 
+    - adj2igraph
+    - rankHub
+    - cisTrans
+    - reportHubs
+    - xHubEnrich
+    - modAnalysis
+  - title: Data
     contents:
     - sim1
     
 navbar:
   left: 
-  - text: Install
+  - text: Installation
     href: https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta
   - text: Docs
     href: reference/index.html
@@ -48,7 +53,7 @@ navbar:
       - text: "Ensemble Network"
         href: articles/ensemble.html
       - text: "Network Analysis Toolkit"
-        href: https://topherconley.github.io/neta-bcpls/neta/neta-bcpls.html
+        href: articles/neta.html
   
   - text: Application
     href: https://topherconley.github.io/neta-bcpls/

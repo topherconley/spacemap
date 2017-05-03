@@ -74,6 +74,7 @@ A list containing
 Selects and returns best-tuned model under CV.Vote.
 }
 \examples{
+library(spacemap)
 data(sim1)
 ##########################
 #DEFINE TRAINING/TEST SETS

@@ -261,6 +261,7 @@ minScoreIndex <- function(cvScoresAvg) {
 #'  inspecting the CV score curve and model size as a function of the tuning penalties.
 #' }
 #' @examples 
+#'library(spacemap)
 #'data(sim1)
 #'##########################
 #'#DEFINE TRAINING/TEST SETS

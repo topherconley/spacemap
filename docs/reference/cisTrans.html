@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>BIC for space under likelihood setting. — bicLike â€¢ spacemap</title>
+<title>Identify x-y cis and trans edges. — cisTrans â€¢ spacemap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -103,35 +103,56 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>BIC for space under likelihood setting.</h1>
+    <h1>Identify x-y cis and trans edges.</h1>
     </div>
 
     
-    <p>Calculate the BIC.</p>
+    <p>Label igraph object with cis/trans 
+status for x-y edges.</p>
     
 
-    <pre><span class='fu'>bicLike</span>(<span class='no'>fit</span>, <span class='no'>tol</span>, <span class='no'>dat</span>)</pre>
+    <pre><span class='fu'>cisTrans</span>(<span class='no'>ig</span>, <span class='kw'>level</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"x-y"</span>), <span class='kw'>cw</span> <span class='kw'>=</span> <span class='fl'>2e+06</span>, <span class='kw'>ignoreStrand</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>fit</th>
-      <td><p>The returned object from spacemap::space.</p></td>
+      <th>ig</th>
+      <td><p>An igraph network object output from <code><a href='rankHub.html'>rankHub</a></code></p></td>
     </tr>
     <tr>
-      <th>tol</th>
-      <td><p>A numeric lower bound on non-zero parameter values.</p></td>
+      <th>level</th>
+      <td><p>Character vector currently only supporting 'x-y' edge 
+labeling of cis/trans status.</p></td>
     </tr>
     <tr>
-      <th>NN</th>
-      <td><p>An integer, the sample size.</p></td>
+      <th>cw</th>
+      <td><p>Numeric value denoting the half length of the genomic interval 
+used for calling a response node (i.e. of levels y) as cis regulated by a predictor 
+node (i.e. of levels x). Defaults to 2Mb.</p></td>
+    </tr>
+    <tr>
+      <th>ignoreStrand</th>
+      <td><p>Logical defaults to TRUE specifying that strand specificity 
+is not required to call cis/trans edges.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>the Bayesian Information Criterion (BIC).</p>
+    <p>The igraph object <code>ig</code> with x-y edges 
+updated with attribute 'cis_trans' indicating cis/trans status.</p>
+<p>Also x node vertices are updated with attributes 
+'ntrans' reporting the number of trans regulations by a node
+ (similarly for attribute 'ncis') and 'regulates_in_cis'
+ lists specific y nodes regulated in cis by x nodes.</p>
+    
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>This function requires the Genomic Ranges package. The <code>ig</code> 
+network parameter requires vertex attributes for genome coordinates 
+specified as <code>chr,start,end</code> 
+(see details section of <code><a href='adj2igraph.html'>adj2igraph</a></code>).</p>
     
 
   </div>
@@ -141,6 +162,8 @@
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
+
+      <li><a href="#details">Details</a></li>
           </ul>
 
   </div>

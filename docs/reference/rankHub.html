@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>BIC for space under likelihood setting. — bicLike â€¢ spacemap</title>
+<title>Prioritize networks hubs with consistently high degree. — rankHub â€¢ spacemap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -103,35 +103,56 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>BIC for space under likelihood setting.</h1>
+    <h1>Prioritize networks hubs with consistently high degree.</h1>
     </div>
 
     
-    <p>Calculate the BIC.</p>
+    <p>Rank hubs by degree either with the final network or 
+according to how consistently the degree is high across bootstrap replicates.</p>
     
 
-    <pre><span class='fu'>bicLike</span>(<span class='no'>fit</span>, <span class='no'>tol</span>, <span class='no'>dat</span>)</pre>
+    <pre><span class='fu'>rankHub</span>(<span class='no'>ig</span>, <span class='kw'>bdeg</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>level</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"x"</span>, <span class='st'>"y"</span>))</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>fit</th>
-      <td><p>The returned object from spacemap::space.</p></td>
+      <th>ig</th>
+      <td><p>An igraph network object output from <code><a href='adj2igraph.html'>adj2igraph</a></code></p></td>
     </tr>
     <tr>
-      <th>tol</th>
-      <td><p>A numeric lower bound on non-zero parameter values.</p></td>
+      <th>bdeg</th>
+      <td><p>If NULL, the ranking of hubs nodes is done by their 
+highest degree in the <code>ig</code> network within their respective node 
+<code>level = "y"</code> or <code>level = "x"</code>.</p>
+<p>If non-null, List output from list element of <code><a href='bootVote.html'>bootVote</a></code>. 
+Element <code>bdeg$yy[b,]</code> is an integer vector representing 
+the degree distribution for the \(b\)th bootstrap replicate 
+across the y nodes.  
+Similarly, element <code>bdeg$xy[b,]</code> is an integer vector 
+representing the degree distribution for the \(b\)th bootstrap 
+replicate across the x nodes. 
+If `bdeg` is available, the hubs will be prioritized according to 
+their mean rank of degree across the \(B\) bootstrap replicates. 
+Highly ranked hubs consistently have a larger degree than other 
+nodes across the bootstrap replicates.</p></td>
     </tr>
     <tr>
-      <th>NN</th>
-      <td><p>An integer, the sample size.</p></td>
+      <th>level</th>
+      <td><p>Character value either 'y' or 'x' (defaults to 'x') 
+specifying to rank hubs that are x or y nodes. Ranking levels 
+x and y together is not supported.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>the Bayesian Information Criterion (BIC).</p>
+    <p>The igraph object <code>ig</code> updated with a 
+'rank_hub' attribute containing each nodes' respective rank. 
+If <code>bdeg</code> is non-null the mean degree rank across
+bootstrap replicates is labeled with attribute 'mean_rank_hub',
+and its corresponding standard deviation is labeled
+as attribute 'sd_rank_hub'.</p>
     
 
   </div>
