@@ -2,7 +2,7 @@
 % Please edit documentation in R/networkAnalysis.R
 \name{rankHub}
 \alias{rankHub}
-\title{Prioritize networks hubs with consistently high degree.}
+\title{Prioritize networks hubs by degree.}
 \usage{
 rankHub(ig, bdeg = NULL, level = c("x", "y"))
 }
@@ -40,4 +40,8 @@ as attribute 'sd_rank_hub'.
 \description{
 Rank hubs by degree either with the final network or 
 according to how consistently the degree is high across bootstrap replicates.
+}
+\seealso{
+\code{\link{adj2igraph}}, \code{\link{cisTrans}}, 
+\code{\link{reportHubs}}, \code{\link{xHubEnrich}},
 }

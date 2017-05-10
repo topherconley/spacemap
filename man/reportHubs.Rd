@@ -16,7 +16,7 @@ reportHubs(ig, top = 10, level = c("x", "y"), unit = "Mb",
 \item{level}{Character specifying nodes of level x or y, but not both. 
 Defaults to x.}
 
-\item{unit}{If gene coordinates for x hubs exist, then this will 
+\item{unit}{If gene coordinates for x-hubs exist, then this will 
 label the chosen genome location scale in the table. Defaults to mega-base (Mb).}
 
 \item{unit_base}{Numeric divisor of the genome coordinates and should 
@@ -30,4 +30,8 @@ relevant to report. See vignette on network analysis for examples.
 }
 \description{
 Organize x and y hub analysis into a publish-ready format.
+}
+\seealso{
+\code{\link{rankHub}}, \code{\link{cisTrans}}, 
+\code{\link{adj2igraph}}, \code{\link{xHubEnrich}}, \code{\link{modEnrich}}
 }

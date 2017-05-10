@@ -1,4 +1,4 @@
-#' Identify scale of tuning penalties
+#' Identify scale of tuning parameters.
 #' 
 #' When initially choosing tuning penalties, it can be 
 #' challenging to find the appropriate scale. This function fits either 
@@ -19,10 +19,12 @@
 #'  
 #'  If \code{method=="space"} and \code{X==NULL}, return a vector 
 #'  of the number of \eqn{y-y} edges. 
+#' @importFrom foreach foreach %dopar%
+#' @export
 #' @seealso \code{\link{cvVote}}
 initFit <- function(Y, X = NULL, tuneGrid, method = c("spacemap", "space"), iscale = TRUE, aszero  = 1e-6, ...) {
   #additional arguments
-  library(foreach)
+  requireNamespace("foreach")
   
   opt <- variTrainParam(...)
   
@@ -53,7 +55,8 @@ initFit <- function(Y, X = NULL, tuneGrid, method = c("spacemap", "space"), isca
   }
   
   if (method == "spacemap") {
-
+    #for R CMD check NOTE passing
+    l <- NULL;
     nedges <- foreach(l = seq_len(nrow(tuneGrid)), .combine = 'rbind') %dopar% {
       fit <- spacemap(Y = Y, X = X, 
                       lam1 = tuneGrid$lam1[l], 
@@ -79,6 +82,8 @@ initFit <- function(Y, X = NULL, tuneGrid, method = c("spacemap", "space"), isca
   } else if (method == "space") {
     
     combf <- ifelse(givenX, 'rbind', 'c')
+    #for R CMD check NOTE passing
+    l <- NULL
     nedges <- foreach(l = seq_len(nrow(tuneGrid)), .combine = combf) %dopar% {
       
       fit <- spacemap::space(Y = XY, lam1 = tuneGrid$lam1[l], sridge = opt$sridge, 

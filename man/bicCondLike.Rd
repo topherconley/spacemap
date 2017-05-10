@@ -16,7 +16,11 @@ bicCondLike(fit, tol, Y, X, model = c("spacemap", "space", "scggm"),
 
 \item{X}{A numeric matrix of N X P predictors.}
 
-\item{NN}{An integer, the sample size.}
+\item{model}{Character vector specifying which model type is being evaluated.}
+
+\item{Yindex}{Indices of Y nodes for \code{model == "space"}}
+
+\item{Xindex}{Indices of X nodes for \code{model== "space"}}
 }
 \value{
 the Bayesian Information Criterion (BIC) under conditional chain graph likelihood formulation.

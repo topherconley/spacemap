@@ -23,7 +23,7 @@ trainModel <- function(train, method, tuneGrid, refit = TRUE, fold_id, tune_id, 
   
   #feedback on ols refit assumption of model sparsity
   sparseFit <- TRUE
-  library(Matrix)
+  requireNamespace("Matrix")
   if (method == "spacemap") {
     fit <- spacemap(Y = train$Y, X = train$X, 
                     lam1 = tuneGrid$lam1, sridge = opt$sridge, 
@@ -52,7 +52,7 @@ trainModel <- function(train, method, tuneGrid, refit = TRUE, fold_id, tune_id, 
     saveRDS(out, file = outfile)
     
   } else if (method == "space") {
-    fit <- space(Y = train$XY, lam1 = tuneGrid, sridge = opt$sridge, iter = opt$iter, 
+    fit <- spacemap::space(Y = train$XY, lam1 = tuneGrid, sridge = opt$sridge, iter = opt$iter, 
                        cdmax = opt$cdmax, tol = opt$tol, iscale = FALSE,
                        sig = opt$sig, rho = opt$rho)
     #zero out those below tolerance. 
@@ -164,7 +164,9 @@ dataPart <- function(f, trainIds, testIds, data,
 structureScores <- function(cvScores, fold, method) { 
 
   metrics <- c("rss", "df", "dfParCor", "dfGamma", "deltaMax")
-  library(foreach)
+  requireNamespace("foreach")
+  #for R CMD check NOTE passing
+  m <- NULL; f <- NULL;
   metricScores <- foreach(m = seq_along(metrics)) %do% {
     metricMatrix <- foreach(f = seq_len(fold), .combine = 'cbind') %do% {
       cvScores[[f]][,m]
@@ -182,6 +184,7 @@ averageScores <- function(metricScores, testIds) {
   foldconvmat <- !is.na(metricScores$rss)
   nfoldconv <- rowSums(foldconvmat)
   ntestconv <- apply(X = foldconvmat, MARGIN  = 1, FUN = function(not_na) sum(testSetLen[not_na]))
+  i <- 0L #for R CMD check 
   metricScoresAvg <- foreach(i = seq_along(metricScores), .combine = 'cbind') %do% {
     score <- metricScores[[i]]
     stype <- names(metricScores)[[i]]
@@ -202,7 +205,7 @@ averageScores <- function(metricScores, testIds) {
 }
 
 ############################
-#' Find the min score index
+# Find the min score index
 minScoreIndex <- function(cvScoresAvg) {
   #if there are multiple equally good scores, take the most sparse model.
   minRssIds <- which(cvScoresAvg[,"rss"] == min(cvScoresAvg[,"rss"]))
@@ -240,26 +243,33 @@ minScoreIndex <- function(cvScoresAvg) {
 #' defaults to a  ridge regression with small penalty of 0.01 to 
 #' encourage numerical stability. The user can change the ridge
 #' penalty by adding an additional parameter \code{refitRidge}. 
-#' @param thresh 
+#' @param thresh Numerical threshold between 0 and 1 (defaults to 0.5 or majority vote) 
+#' indicating the minimum proportion of times () a given edge must be represented 
+#' in the trained models to be reported in the final CV.Vote model. For example, 
+#' If 0.5 is specified, and there are 10 training splits, then an edge in the final 
+#' model must be reported in 6 of the 10 traiing models. 
 #' @param aszero Positive numeric value (defaults to 1e-6) indicating at what point to consider extremely 
 #' small parameter estimates of \eqn{\Gamma} and \eqn{\rho} as zero. 
 #' @param ... Additional arguments for \code{\link{spacemap}} or \code{\link{space}}
 #' to change their default settings (e.g. setting \code{tol = 1e-4}). 
 #'
-#' @return A list containing  
-#' \itemize {  
-#'  \item \code{cvVote} A list containing
-#'  \enumerate{
-#'  \item \code{xy} Adjacency matrix where \eqn{xy(p,q)} element
-#'   is 1 for an edge between \eqn{x_p} and \eqn{y_q} and 0 otherwise. 
+#' @return  A list containing  
+#'  \itemize{  
+#'  \item A list called \code{cvVote} with two elements: 
+#'  \itemize{
+#'   \item \code{xy}, an adjacency matrix where \eqn{xy(p,q)} element
+#'   is 1 for an edge between \eqn{x_p} and \eqn{y_q} and 0 otherwise; and
 #'   \item \code{yy} Adjacency matrix where \eqn{yy(q,l)} element
 #'   is 1 for an edge between \eqn{y_q} and \eqn{y_l} and 0 otherwise. 
-#'  }
+#'   }
 #'  \item \code{minTune} List containing the optimal tuning penalty set. 
 #'  \item \code{minIndex} Integer specifying the index of \code{minTune} in \code{tuneGrid}. 
 #'  \item \code{metricScores} Data.frame for input to \code{\link{tuneVis}} for
 #'  inspecting the CV score curve and model size as a function of the tuning penalties.
 #' }
+#' @import RcppArmadillo
+#' @import Rcpp
+#' @export
 #' @examples 
 #'library(spacemap)
 #'data(sim1)
@@ -330,9 +340,11 @@ cvVote <- function(Y, X = NULL, trainIds, testIds,
   }
   
   ## compute cross-validated metric scores for each fold and for each tune set
-  library(foreach)
+  requireNamespace("foreach")
   message("Computing CV scores over the grid...")
   iscale <- FALSE
+  #for R CMD check NOTE passing
+  f <- NULL; l <- NULL;
   foldScores <- foreach(f = seq_len(fold)) %:% 
     foreach(l = seq_len(nrow(tuneGrid)), .combine = 'rbind', .packages = "spacemap") %dopar% {
       parts <- dataPart(f = f, trainIds = trainIds, testIds = testIds, 
@@ -422,8 +434,10 @@ cvPerf <- function(cvOut, trueParCor, method, givenX = FALSE, Xindex=NULL, Yinde
 #                 resPath = resPath, ...)
 doCV <- function(data, fold, trainIds, testIds,
                  method = c("spacemap", "space"), tuneGrid, refit = TRUE, resPath, ...) {
-  library(foreach)
+  requireNamespace("foreach")
   message("Computing CV scores over the grid...")
+  #for R CMD check NOTE passing
+  f <- NULL; l <- NULL;
   cvScores <- foreach(f = seq_len(fold)) %:%
     foreach(l = seq_len(nrow(tuneGrid)), .combine = 'rbind') %dopar% {
       parts <- dataPart(f = f, trainIds = trainIds, testIds = testIds, 

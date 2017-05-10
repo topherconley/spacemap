@@ -1,4 +1,12 @@
+README.Rmd
+_config.yml
+_pkgdown.yml
+^data-raw/
+^docs/
+^tests/
+^exp/
 ^preppkg/
 ^vignettes/
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^\.git/

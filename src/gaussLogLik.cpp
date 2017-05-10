@@ -11,7 +11,7 @@ double gaussLogLik(const arma::mat & Theta, const arma::mat & Y) {
   //Convert to concentration matrix
   //arma::mat Theta = parcor2conc(R,d);
   //sample size
-  double n = (double)Y.n_rows;
+  //double n = (double)Y.n_rows;
   
   //log determinant of concentration matrix
   double logDetTheta;

@@ -28,15 +28,21 @@ Our interest is to use the spaceMap model to find major impacts of DNA copy numb
 Before conducting the network analysis, you should have completed the model fitting step such that you have a network ensemble or one final network to analyze (e.g. output from [bootVote](https://topherconley.github.io/spacemap/reference/bootVote.html)). 
 To fully realize the capability of the toolkit,  you also should have node annotations mapped onto the network. 
 
-Now we load the `bcpls` data object and outline the required input for the toolkit. 
+Load the `bcpls` list, which contains the example input arguments for the toolkit. 
 
 ```{r}
 library(spacemap)
 data("bcpls")
-#convert list to global environment
-.GlobalEnv <- list2env(x= bcpls, envir = globalenv())
-ls()
+#Attach "bcpls" data objects to the R Global Environment
+attach(bcpls)
 ```
+
+Next we list the contents of `bcpls` and outline each input argument to the toolkit.
+
+```{r}
+names(bcpls)
+```
+
 
 The `net` object is a list of two adjacency matrices that is output from [bootVote](https://topherconley.github.io/spacemap/reference/bootVote.html). The protein--protein edges are encoded with 1's in `net$yy`. Likewise, the CNA--protein edges are encoded with 1's in `net$xy`.  
 
@@ -46,14 +52,23 @@ Let us look at the contents of `yinfo`: The first column, `id`,  is always requi
 The second column, `alias`, is optional and may be used for more human-readable labels. For example, two protein isoforms must have different ID's but may have the same gene symbol alias. 
 If genome coordinates are supplied for cis/trans identification, then we need three additional columns: `chr` a character for the chromosome number, `start` an integer for the beginning of the chromsome location, and `end` for the end of the chromsome location. The users can also add other (optional) columns such as `strand` (for DNA strand),  `description` for additional annotations, etc., which will be exported to visulization software such cytoscrape.  Finally, missing information should be denoted by 'NA'. 
 
-```{r}
-kable(yinfo[1:5,], row.names = FALSE)
+```{r,eval=FALSE}
+head(yinfo,5)
+```
+
+```{r, echo=FALSE}
+knitr::kable(yinfo[1:5,], row.names = FALSE)
 ```
 
 The same column and row rules are applicable for `xinfo`. Here, `id` contains precise genomic coordinates, while the `alias` contains cytoband information. 
 
-```{r}
-kable(xinfo[1:5,], row.names = FALSE)
+
+```{r,eval=FALSE}
+head(xinfo,5)
+```
+
+```{r, echo=FALSE}
+knitr::kable(xinfo[1:5,], row.names = FALSE)
 ```
 
 The mapping between the proteins and their biological process term in the Gene Ontology (GO) is  specified in the list `go2eg`, which has named each element with a GO ID; and each element is a character vector specifying all the proteins that map to this GO ID. Proteins can map to multiple GO IDs. The mapping `go2eg` will be used for conducting functional enrichment analysis of CNA-hubs and network modules, but is otherwise optional. 
@@ -162,17 +177,17 @@ kable(hgp, row.names = FALSE)
 
 # Module Analysis
 
-There are many criteria to define modules of a network. This toolkit does not require a specific algorithm for finding modules and allows users to import the module membership information (see `mods` argument in [modAnalysis](https://topherconley.github.io/spacemap/reference/modAnalysis.html)).  In the spaceMap publication, we use the edge-betweenness algorithm in *igraph*.
+There are many criteria to define modules of a network. This toolkit does not require a specific algorithm for finding modules and allows users to import the module membership information (see `mods` argument in [modEnrich](https://topherconley.github.io/spacemap/reference/modEnrich.html)).  In the spaceMap publication, we use the edge-betweenness algorithm in *igraph*.
 
 ```{r}
 mods <- cluster_edge_betweenness(ig)
 ```
 
 The main goal of module analysis is identifying modules that are functionally enriched. 
-The `modAnalysis` function will test for significantly over-represented GO-terms (or any other valid functional grouping) in a module using hyper-geometric tests.  In  this application, only the protein nodes have a functional mapping and we specify this through the `levels = "y"` argument. If both predictors and responses have a functional mapping in the `go2eg` argument, then we can specify `levels = c("y","x")`.  Other arguments are available to control the enrichment testing; see the docs of [modAnalysis](https://topherconley.github.io/spacemap/reference/modAnalysis.html) for more details. 
+The `modEnrich` function will test for significantly over-represented GO-terms (or any other valid functional grouping) in a module using hyper-geometric tests.  In  this application, only the protein nodes have a functional mapping and we specify this through the `levels = "y"` argument. If both predictors and responses have a functional mapping in the `go2eg` argument, then we can specify `levels = c("y","x")`.  Other arguments are available to control the enrichment testing; see the docs of [modEnrich](https://topherconley.github.io/spacemap/reference/modEnrich.html) for more details. 
 
 ```{r}
-outmod <- modAnalysis(ig = ig, mods = mods, levels = "y", go2eg = go2eg, process_alias = process_alias)
+outmod <- modEnrich(ig = ig, mods = mods, levels = "y", go2eg = go2eg, process_alias = process_alias)
 ```
 
 The output of the module analysis is a list of 3 objects.
@@ -186,14 +201,24 @@ useful for visualizing which nodes are enriched for a specific biological functi
 
 + `etab` is the polished module enrichment table to report significant GO terms, the representation of the GO term in the module relative to the size of the GO term, and which CNA hubs  belong to the module. The top ten hits appear as follows as in Table S.5 of the spaceMap publication's supplementary materials. 
 
-```{r}
-kable(outmod$etab[1:10,], row.names = FALSE)
+
+```{r, eval = FALSE}
+outmod$etab[1:10,]
+```
+
+
+```{r, echo=FALSE}
+knitr::kable(outmod$etab[1:10,], row.names = FALSE)
 ```
 
 + `eraw` contains details for each (module, GO-term) pair that was subjected to the hyper-geometric test. This output gives the user more control by reporting all tests, the relative over-representation of a GO-term in that module, the raw P-value, and the adjusted P-value. 
 
-```{r}
-kable(outmod$eraw[1:5,], row.names = FALSE)
+```{r, eval = FALSE}
+outmod$eraw[1:5,]
+```
+
+```{r, echo=FALSE}
+knitr::kable(outmod$eraw[1:5,], row.names = FALSE)
 ```
 
 # Export for Network Visualization

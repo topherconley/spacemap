@@ -2,7 +2,7 @@
 % Please edit documentation in R/reportPerformance.R
 \name{algoPower}
 \alias{algoPower}
-\title{Statistical Power of an Algorithm}
+\title{Power function}
 \usage{
 algoPower(tp, fn)
 }
@@ -10,4 +10,7 @@ algoPower(tp, fn)
 \item{tp}{The number of true positive classifications.}
 
 \item{fn}{The number of false negative classifications.}
+}
+\description{
+Compute the power given true positives and false negatives.
 }

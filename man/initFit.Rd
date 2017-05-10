@@ -2,7 +2,7 @@
 % Please edit documentation in R/initFit.R
 \name{initFit}
 \alias{initFit}
-\title{Identify scale of tuning penalties}
+\title{Identify scale of tuning parameters.}
 \usage{
 initFit(Y, X = NULL, tuneGrid, method = c("spacemap", "space"),
   iscale = TRUE, aszero = 1e-06, ...)
@@ -25,7 +25,7 @@ non-null and \code{method = "space"}, then \code{space} will
 infer (x--x, x--y, y--y) edges but only report (x--y, y--y) edges.}
 
 \item{iscale}{Logical indicating to standardize the whole input data. Defaults to TRUE. 
-See \code{\link{base::scale(x, center = TRUE, scale = TRUE)}} for details of standardization.}
+See \code{base::scale(x, center = TRUE, scale = TRUE)} for details of standardization.}
 
 \item{aszero}{Positive numeric value (defaults to 1e-6) indicating at what point to consider extremely 
 small parameter estimates of \eqn{\Gamma} and \eqn{\rho} as zero.}

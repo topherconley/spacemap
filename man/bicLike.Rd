@@ -11,7 +11,7 @@ bicLike(fit, tol, dat)
 
 \item{tol}{A numeric lower bound on non-zero parameter values.}
 
-\item{NN}{An integer, the sample size.}
+\item{dat}{the data matrix.}
 }
 \value{
 the Bayesian Information Criterion (BIC).

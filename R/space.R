@@ -6,17 +6,17 @@ space.nested <- function(Y, seq_lam1, sridge=0, sig=NULL, weight=NULL,iter=2, to
                            verbose = FALSE) { 
   #sequence of penalty parameters should be decreasing.
   vlam1 <- sort(seq_lam1, decreasing = TRUE)
-  library(foreach)
+  requireNamespace("foreach")
   
   res <- vector("list", length(vlam1))
-  res[[1]] <- space(Y = Y, lam1 = vlam1[1], sridge = sridge, sig=sig, weight = weight,
-                          iter = iter, tol = tol, cdmax = cdmax,
-                          verbose = verbose, rho  = NULL)
+  res[[1]] <- spacemap::space(Y = Y, lam1 = vlam1[1], sridge = sridge, sig=sig, weight = weight,
+                              iter = iter, tol = tol, cdmax = cdmax,
+                              verbose = verbose, rho  = NULL)
   
   for(i in 2:length(vlam1)) { 
-    res[[i]] <- space(Y = Y, lam1 = vlam1[i], sridge = sridge, sig = res[[i-1]]$sig.fit, weight = weight,
-                            iter = iter, tol = tol, cdmax = cdmax,
-                            verbose = verbose, rho = res[[i-1]]$ParCor)
+    res[[i]] <- spacemap::space(Y = Y, lam1 = vlam1[i], sridge = sridge, sig = res[[i-1]]$sig.fit, weight = weight,
+                                iter = iter, tol = tol, cdmax = cdmax,
+                                verbose = verbose, rho = res[[i-1]]$ParCor)
   }
   res
 }
@@ -53,10 +53,14 @@ space.nested <- function(Y, seq_lam1, sridge=0, sig=NULL, weight=NULL,iter=2, to
 #'   If \code{spacemap} does not converge, \code{deltaMax} provides some measure of how far away it was from converging
 #'   when compared to \code{tol}. 
 #' }
+#' @importFrom Rcpp evalCpp
+# #' @import RcppArmadillo
+#' @useDynLib spacemap
+#' @export
 #' @seealso \code{\link{spacemap}}, \code{\link{cvVote}}, \code{\link{bootEnsemble}}, \code{\link{bootVote}}
 #' @examples
 #' data(sim1)
-#' net <- space(Y = sim1$Y, lam1 = 70)
+#' net <- spacemap::space(Y = sim1$Y, lam1 = 70)
 #' #adjacency matrix of y-y edges. 
 #' adjnet <- adjacency(net)
 space <-function(Y, lam1, sridge=0, sig=NULL, weight=NULL,iter=3, tol = 1e-6, cdmax = 1e7L,
@@ -360,7 +364,7 @@ GenPar<-function(net.adj,umin,umax,flip=TRUE,factor=2){
   result<-matrix(0,p,p)
   for(i in 2:p){
     for(j in 1:(i-1)){
-      cur<-runif(1,umin,umax)
+      cur<- stats::runif(1,umin,umax)
       sign<-1 
       if(flip) sign<-sample(c(-1,1),1)   
       cur<-cur*sign    

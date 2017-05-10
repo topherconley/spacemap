@@ -1,6 +1,6 @@
 Package: spacemap
-Title: Network inference for integrative genomics through conditional models
-Version: 0.51.0
+Title: A novel conditional graphical model for integrative genomics
+Version: 0.52.0
 Authors@R: c(person("Christopher Conley", role = c("aut", "cre"),
     email = "conley.christopher@gmail.com"),
     person("Pei Wang", role = c("aut")),
@@ -9,22 +9,34 @@ Authors@R: c(person("Christopher Conley", role = c("aut", "cre"),
     )
 Author: Christopher J. Conley and Jie Peng and Pei Wang
 Maintainer: Christopher J. Conley <conley.christopher@gmail.com>
-Description: A unified framework of space and remMap models for learning
-    undirected graphical models with application to genetic regulatory networks.
-Imports:
-    Matrix,
-    igraph,
-    doRNG,
-    foreach
+Description: The spaceMap R package constructs de novo networks from 
+    heterogeneous data types in a high-dimensional context by applying a
+    novel conditional graphical model. The underlying statistical model 
+    is motivated by applications in integrative genomics, where two (or more) 
+    -omic data profiles are modeled jointly to discover their interactions. 
+    spaceMap is particularly effective in learning networks in diverse 
+    applications that exhibit hub topology. In an application to breast
+    cancer tumor data, spaceMap learned regulatory networks which generated 
+    novel hypotheses of cancer drivers and confirmed known risk factors. 
+    In addition to learning network structure, an accompanying network 
+    analysis toolkit is provided. The toolkit has been developed with 
+    genomics in mind---but can be adapted for other applications---and 
+    maps scientic domain knowledge onto networks. 
 Depends:
-    R (>= 3.0.2),
+    R (>= 3.0.2), igraph
+Imports:
     Rcpp (>= 0.11.3),
-    RcppArmadillo (>= 0.4.650.1.1)
-Suggests:
+    RcppArmadillo (>= 0.4.650.1.1),
+    foreach,
+    Matrix,
+    rngtools,
+    GenomicRanges,
+    S4Vectors,
     ggplot2,
-    reshape2,
-    GenomicRanges
-License: See LICENSE file
+    reshape2
+Suggests:
+    caret
+License: LICENSE
 LazyData: true
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 6.0.1

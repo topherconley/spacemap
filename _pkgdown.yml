@@ -15,7 +15,7 @@ reference:
     desc: The functions of the spaceMap R package are perhaps best conceptualized in three categories. The model fitting category concerns functions that learn a network from input data. The model selection category encompasses functions that select the optimal tuning parameters and build robust networks through aggregation. The  network analysis category contains tools to annotate and interpret inferred networks. 
     contents:
   - title: Model fitting
-    desc: Details on how to fit spaceMap and space (a special case of spaceMap) with selected tuning parameters. 
+    desc: Details on how to fit spaceMap and space (a special case of spaceMap) with pre-specified tuning parameters. 
     contents:
     - spacemap
     - space
@@ -41,7 +41,7 @@ reference:
 navbar:
   left: 
   - text: Installation
-    href: https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta
+    href: installation.html
   - text: Docs
     href: reference/index.html
   - text: Vignettes
@@ -58,4 +58,4 @@ navbar:
   - text: Application
     href: https://topherconley.github.io/neta-bcpls/
   - text: Contact
-    href: https://github.com/topherconley/spacemap/issues
+    href: contact.html

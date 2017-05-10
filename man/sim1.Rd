@@ -3,7 +3,7 @@
 \docType{data}
 \name{sim1}
 \alias{sim1}
-\title{Simulation 1}
+\title{Toy Hub Network Simulation}
 \format{A list of data elements Y,X,truth.}
 \usage{
 data(sim1)

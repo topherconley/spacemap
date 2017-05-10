@@ -41,10 +41,12 @@ between iterations. \code{tol} defaults to 1e-6, but may be lowered (e.g. 1e-4) 
 up network learning.}
 
 \item{iscale}{Logical indicating to standardize the whole input data. Defaults to TRUE. 
-See \code{\link{base::scale(x, center = TRUE, scale = TRUE)}} for details of standardization.}
+See \code{base::scale(x, center = TRUE, scale = TRUE)} for details of standardization.}
 
 \item{cdmax}{Positive integer specifiying the maximum number of parameter updates allowed before reporting the algorithm
 as having failed to converge. Default may need to be increased for inferring very large-scale networks (i.e. \eqn{p,q > 1000}).}
+
+\item{...}{Additional experimental arguments for \code{\link{spacemap}}. Advanced users only.}
 }
 \value{
 A list containing 

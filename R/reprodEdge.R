@@ -6,6 +6,8 @@
 #' @param tune List with names being the tuning penalties
 #' \code{lam1, lam2, lam3} and each element being a single numeric value that is input to \code{spacemap}. One might  
 #' consider the output from \code{\link{cvVote}} (i.e. list \code{minTune}) as input for this parameter. 
+#' @param method Character value specifying to use \code{\link{spacemap}} or 
+#' \code{\link{space}} in fitting ensemble network. 
 #' @param boot Logical. Default is \code{boot=TRUE} and implies sampling with replacement (i.e. boostrap). 
 #' \code{boot=FALSE} will resample without replacement. 
 #' @param B Positive integer denoting the number of model fits making up the ensemble. Default is 1000, but can 
@@ -15,11 +17,15 @@
 #' @param seed Positive integer allowing user to set the random seed for reproducing the network ensemble. 
 #' @param p0 Positive numeric not exceeding the default of 1, which represents the proportion of the original 
 #' samples that will be down-sampled for each model fitting iteration of the ensemble. 
+#' @param ... Additional arguments for \code{\link{spacemap}} or  \code{\link{space}}.
 #' @return A list up to length \code{B} of convergent and sparse model fits from 
 #' either \code{\link{spacemap}} or \code{\link{space}}. The list object should typically
 #' not be modified by the user, but passed on to the  \code{\link{bootVote}} function.
 #' Model fits that are not convergent or produce networks that are not sparse are not reported. 
-#' 
+#' @importFrom rngtools RNGseq setRNG
+#' @importFrom Matrix Matrix
+#' @import RcppArmadillo
+#' @export 
 #' @examples 
 #' 
 #' #Load simulation
@@ -30,7 +36,6 @@
 #' tune <- data.frame(lam1 = 70, lam2 = 28, lam3 = 17.5)
 #' ens <- bootEnsemble(Y = sim1$Y, X = sim1$X, tune = tune, 
 #'                     method = "spacemap", B = 10)
-#' @export
 #' @seealso \code{\link{bootVote}}, \code{\link{cvVote}}
 #' 
 #' 
@@ -40,10 +45,10 @@ bootEnsemble <- function(Y, X = NULL, tune, method = c("spacemap", "space"),
                          p0 = 1.0, ...) {
   
   method <- match.arg(method)
-  library(doRNG)
-  library(spacemap)
-  library(foreach)
-  library(Matrix)
+  requireNamespace("rngtools")
+  requireNamespace("spacemap")
+  requireNamespace("foreach")
+  requireNamespace("Matrix")
   rng <- RNGseq(B, seed)
   N <- nrow(Y)
   P <- ncol(X)
@@ -80,7 +85,7 @@ bootEnsemble <- function(Y, X = NULL, tune, method = c("spacemap", "space"),
   }
   
   if (method == "spacemap") { 
-    ens <- foreach(j = seq_len(B),  r = rng[seq_len(B)], .packages = c("Matrix")) %dopar% {
+    ens <- foreach(j = seq_len(B),  r = rng[seq_len(B)], .packages = c("Matrix", "rngtools")) %dopar% {
       rngtools::setRNG(r)
       sidx <- sample.int(n = N, size = rN, replace = boot)
       fit <- spacemap::spacemap(Y = Y[sidx,], X = X[sidx,], 
@@ -109,7 +114,7 @@ bootEnsemble <- function(Y, X = NULL, tune, method = c("spacemap", "space"),
       fit[c("xy", "yy", "convergence", "sparse")]
     }
   } else if (method == "space") { 
-    ens <- foreach(j = seq_len(B),  r = rng[seq_len(B)], .packages = c("Matrix")) %dopar% {
+    ens <- foreach(j = seq_len(B),  r = rng[seq_len(B)], .packages = c("Matrix", "rngtools")) %dopar% {
       rngtools::setRNG(r)
       sidx <- sample.int(n = N, size = rN, replace = boot)
       fit <- spacemap::space(Y = XY[sidx,], lam1 = tune$lam1[1], 
@@ -209,13 +214,12 @@ sparseAdjMat <- function(x) {
 #' #Boostrap Ensemble (B = 10) for illustration only
 #' tune <- data.frame(lam1 = 70, lam2 = 28, lam3 = 17.5)
 #' 
-#' suppressPackageStartupMessages(library(foreach))
-#' suppressPackageStartupMessages(library(doRNG))
 #' #suppress warnings because parallel backend not set up. 
 #' ens <- suppressWarnings(bootEnsemble(Y = sim1$Y, X = sim1$X, tune = tune, 
 #'                     method = "spacemap", B = 10))
 #'                     
-#' bv <- suppressWarnings(bootVote(ens))                    
+#' bv <- suppressWarnings(bootVote(ens))         
+#' @importFrom foreach %dopar%
 #' @export
 bootVote <- function(bfits, thresh = 0.5, givenX = FALSE) {
   
@@ -225,11 +229,11 @@ bootVote <- function(bfits, thresh = 0.5, givenX = FALSE) {
 
   method <- attr(bfits, "method")
   
-  library(spacemap)
-  library(foreach)
+  #requireNamespace("spacemap")
+  requireNamespace("foreach")
   
   if (method == "spacemap" | (method == "space" & givenX)) { 
-    bout <- foreach(bfit = bfits, .combine = spacemap::addmods) %dopar% { 
+    bout <- foreach(bfit = bfits, .combine = spacemap::addmods, .packages = c("spacemap")) %dopar% { 
       bxy <- as.matrix(bfit$xy)
       byy <- as.matrix(bfit$yy)
       list(xy = bxy, yy = byy, 
@@ -255,7 +259,7 @@ bootVote <- function(bfits, thresh = 0.5, givenX = FALSE) {
                 bdeg = bdeg,
                 bc = bout[!(names(bout) %in% "ngood")]))
   } else if (method == "space" & !givenX) { 
-    bout <- foreach(bfit = bfits, .combine = spacemap::addmodsyy) %dopar% { 
+    bout <- foreach(bfit = bfits, .combine = spacemap::addmodsyy, .packages = c("spacemap")) %dopar% { 
       byy <- as.matrix(bfit$yy)
       list(yy = byy, 
            dfyy = nonZeroUpper(byy, 0), ngood = bfit$convergence)
@@ -280,13 +284,14 @@ bootVote <- function(bfits, thresh = 0.5, givenX = FALSE) {
   }
 }
 
-#combining reps
+#'@export
 addmods <- function(m1, m2) { 
   list(xy = m1$xy + m2$xy, yy = m1$yy + m2$yy, 
        dfxy = c(m1$dfxy, m2$dfxy), dfyy = c(m1$dfyy, m2$dfyy),
        ngood = c(m1$ngood, m2$ngood))
 }
 
+#'@export
 addmodsyy <- function(m1, m2) { 
   list(yy = m1$yy + m2$yy, 
        dfyy = c(m1$dfyy, m2$dfyy),
@@ -297,88 +302,88 @@ addmodsyy <- function(m1, m2) {
 #OLD code
 ######################################################
 
-sampIndPairs <- function(reps = 10) { 
-  pool <- combn(x = reps, 2)
-  begin <- match(1:(reps - 1),pool[1,])
-  last <- c(begin[2:length(begin)] - 1,tail(begin,1))
-  blocks <- lapply(seq_along(begin), function(i) begin[i]:last[i])
-  blocks <- blocks[sample.int(n = length(blocks))]
-  indpairs <- matrix(NA, nrow = 2, ncol = reps/2)
-  pairmembers <- c()
-  paircounter <- 1
-  for(bl in blocks) { 
-    if(any(pool[1,bl[1]] %in% pairmembers)) next;
-    candidx <- sample(x = bl, size = 1)
-    candpair <- pool[,candidx]
-    go_next <- FALSE
-    while (any(candpair %in% pairmembers)) {
-      bl <- setdiff(bl, candidx)
-      if(length(bl) == 0) { 
-        go_next <- TRUE
-        break;
-      } 
-      candidx <- sample(x = bl, size = 1)
-      candpair <- pool[,candidx]
-    }
-    if(go_next) next; 
-    pairmembers <- c(pairmembers, candpair)
-    indpairs[,paircounter] <- candpair
-    paircounter <- paircounter + 1
-  }
-  indpairs
-}
-
-commonPairwiseBoot <- function(boots, P, tol, mat, pwi = NULL) { 
-  
-  if(is.null(pwi)) {
-    pwi <- combn(seq_along(boots), 2)
-  }
-  bpw <- vector(mode = "numeric", length = P)
-  prev1 <- 1
-  bspmap1 <- boots[[prev1]]
-  b1 <- bspmap1[[mat]] > tol + 0
-  check1 <- all(bspmap1 == "Not Sparse") | all(bspmap1 == "No Convergence")
-  cur1 <- 1
-  prev2 <- 2
-  bspmap2 <- boots[[prev2]]
-  b2 <- bspmap2[[mat]] > tol + 0
-  check2 <- all(bspmap2 == "Not Sparse") | all(bspmap2 == "No Convergence")
-  cur2 <- 2
-  nna <- 0
-  
-  pb <- txtProgressBar(min = 1, max = ncol(pwi), style = 3)
-  bpw <- matrix(nrow = ncol(pwi), ncol = P)
-  for(j in 1:ncol(pwi)) {
-    
-    cur1 <- pwi[1,j]
-    if(cur1 != prev1) { 
-      prev1 <- cur1
-      bspmap1 <- boots[[cur1]]
-      check1 <- !(all(bspmap1 == "Not Sparse") | all(bspmap1 == "No Convergence"))
-      if(check1) { 
-        b1 <- bspmap1[[mat]] > tol + 0
-      } else { 
-        nna <- nna + 1
-        next;
-      }
-      
-    }
-    
-    cur2 <- pwi[2,j]
-    if(cur2 != prev2) { 
-      prev2 <- cur2
-      bspmap2 <- boots[[cur2]]
-      check2 <- !(all(bspmap2 == "Not Sparse") | all(bspmap2 == "No Convergence"))
-      if(check2) { 
-        b2 <- bspmap2[[mat]] > tol + 0
-      } else { 
-        nna <- nna + 1
-        next;
-      }
-    } 
-    bpw[j,] <- rowSums(as.matrix(b1*b2))
-    setTxtProgressBar(pb, j)
-  }  
-  close(pb)
-  list(bootpw = bpw, nna = nna)
-}
+# sampIndPairs <- function(reps = 10) { 
+#   pool <- combn(x = reps, 2)
+#   begin <- match(1:(reps - 1),pool[1,])
+#   last <- c(begin[2:length(begin)] - 1,tail(begin,1))
+#   blocks <- lapply(seq_along(begin), function(i) begin[i]:last[i])
+#   blocks <- blocks[sample.int(n = length(blocks))]
+#   indpairs <- matrix(NA, nrow = 2, ncol = reps/2)
+#   pairmembers <- c()
+#   paircounter <- 1
+#   for(bl in blocks) { 
+#     if(any(pool[1,bl[1]] %in% pairmembers)) next;
+#     candidx <- sample(x = bl, size = 1)
+#     candpair <- pool[,candidx]
+#     go_next <- FALSE
+#     while (any(candpair %in% pairmembers)) {
+#       bl <- setdiff(bl, candidx)
+#       if(length(bl) == 0) { 
+#         go_next <- TRUE
+#         break;
+#       } 
+#       candidx <- sample(x = bl, size = 1)
+#       candpair <- pool[,candidx]
+#     }
+#     if(go_next) next; 
+#     pairmembers <- c(pairmembers, candpair)
+#     indpairs[,paircounter] <- candpair
+#     paircounter <- paircounter + 1
+#   }
+#   indpairs
+# }
+# 
+# commonPairwiseBoot <- function(boots, P, tol, mat, pwi = NULL) { 
+#   
+#   if(is.null(pwi)) {
+#     pwi <- combn(seq_along(boots), 2)
+#   }
+#   bpw <- vector(mode = "numeric", length = P)
+#   prev1 <- 1
+#   bspmap1 <- boots[[prev1]]
+#   b1 <- bspmap1[[mat]] > tol + 0
+#   check1 <- all(bspmap1 == "Not Sparse") | all(bspmap1 == "No Convergence")
+#   cur1 <- 1
+#   prev2 <- 2
+#   bspmap2 <- boots[[prev2]]
+#   b2 <- bspmap2[[mat]] > tol + 0
+#   check2 <- all(bspmap2 == "Not Sparse") | all(bspmap2 == "No Convergence")
+#   cur2 <- 2
+#   nna <- 0
+#   
+#   pb <- txtProgressBar(min = 1, max = ncol(pwi), style = 3)
+#   bpw <- matrix(nrow = ncol(pwi), ncol = P)
+#   for(j in 1:ncol(pwi)) {
+#     
+#     cur1 <- pwi[1,j]
+#     if(cur1 != prev1) { 
+#       prev1 <- cur1
+#       bspmap1 <- boots[[cur1]]
+#       check1 <- !(all(bspmap1 == "Not Sparse") | all(bspmap1 == "No Convergence"))
+#       if(check1) { 
+#         b1 <- bspmap1[[mat]] > tol + 0
+#       } else { 
+#         nna <- nna + 1
+#         next;
+#       }
+#       
+#     }
+#     
+#     cur2 <- pwi[2,j]
+#     if(cur2 != prev2) { 
+#       prev2 <- cur2
+#       bspmap2 <- boots[[cur2]]
+#       check2 <- !(all(bspmap2 == "Not Sparse") | all(bspmap2 == "No Convergence"))
+#       if(check2) { 
+#         b2 <- bspmap2[[mat]] > tol + 0
+#       } else { 
+#         nna <- nna + 1
+#         next;
+#       }
+#     } 
+#     bpw[j,] <- rowSums(as.matrix(b1*b2))
+#     setTxtProgressBar(pb, j)
+#   }  
+#   close(pb)
+#   list(bootpw = bpw, nna = nna)
+# }

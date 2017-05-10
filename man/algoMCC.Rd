@@ -2,7 +2,7 @@
 % Please edit documentation in R/reportPerformance.R
 \name{algoMCC}
 \alias{algoMCC}
-\title{Mathew's Correlation Coefficient of Classifier}
+\title{Matthew's Correlation Coefficient (MCC)}
 \usage{
 algoMCC(tp, fn, fp, tn)
 }
@@ -14,4 +14,7 @@ algoMCC(tp, fn, fp, tn)
 \item{fp}{The number of false positive classifications.}
 
 \item{tn}{The number of true negative classifications.}
+}
+\description{
+Compute the MCC given the confusion matrix.
 }

@@ -1,10 +1,12 @@
 #'@title BIC for space under conditional chain graph likelihood setting.
 #'@description Calculate the BIC under the conditional chain graph likelihood.
 #'@param fit The fitted model object returned from spacemap::[spacemap, space]. 
-#'@param NN An integer, the sample size. 
 #'@param tol A numeric lower bound on non-zero parameter values.  
 #'@param Y A numeric matrix of N X Q responses.
 #'@param X A numeric matrix of N X P predictors.
+#'@param model Character vector specifying which model type is being evaluated.
+#'@param Yindex Indices of Y nodes for \code{model == "space"}
+#'@param Xindex Indices of X nodes for \code{model== "space"}
 #'@return the Bayesian Information Criterion (BIC) under conditional chain graph likelihood formulation.
 #'@references  Zhang L, Kim S (2014) Learning Gene Networks under SNP Perturbations Using eQTL Datasets. 
 #'PLoS Comput Biol 10(2): e1003420. doi: 10.1371/journal.pcbi.1003420 
@@ -56,8 +58,8 @@ bicRSS <- function(model, fit, NN, df = NULL, tol = NULL) {
 #'@title BIC for space under likelihood setting.
 #'@description Calculate the BIC.
 #'@param fit The returned object from spacemap::space. 
-#'@param NN An integer, the sample size. 
 #'@param tol A numeric lower bound on non-zero parameter values.  
+#'@param dat the data matrix.
 #'@return the Bayesian Information Criterion (BIC).
 bicLike <- function(fit, tol, dat) {
   ThetaYY <- calcThetaYY(fit$ParCor, fit$sig.fit)

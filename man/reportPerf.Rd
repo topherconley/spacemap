@@ -2,45 +2,43 @@
 % Please edit documentation in R/reportPerformance.R
 \name{reportPerf}
 \alias{reportPerf}
-\title{Report Model Performance}
+\title{Report performance of x-y or y-y edge detection}
 \usage{
-reportPerf(fitParCor, trueParCor, YY = TRUE, tol = 1e-06, verbose = TRUE)
+reportPerf(fit, truth, YY = TRUE, aszero = 1e-06, verbose = TRUE)
 }
 \arguments{
-\item{fitParCor}{A numeric matrix encoding the fitted model parameter estimates.}
+\item{fit}{A numeric matrix encoding the fitted model parameter estimates.}
 
-\item{trueParCor}{A numeric matrix encoding the true model parameters.}
+\item{truth}{A numeric matrix encoding the true model parameters.}
 
-\item{YY}{A logical value indicating that \code{fitParCor} estimates
-have the same structure as the \emph{Space} model. If \code{YY=TRUE}, then 
-the fitted and the truth inputs must be symmetric matrices.}
+\item{YY}{A logical defaulting to TRUE indicating that 
+\code{fit} and \code{truth} are  symmetric matrices 
+corresponding to estimated and true partial correlations for y-y edges. 
+Otherwise, assume \code{fit} and \code{truth} corresponds to the estimated and true
+\eqn{\Gamma} regression coefficient matrix for x-y edges.}
 
-\item{tol}{A numeric value specifying a lower bound on the tolerance of a non-zero 
-parameter.}
+\item{aszero}{A numeric value specifying the point at which a parameter estimate should 
+be effectively considered of zero value.}
 
 \item{verbose}{A logical value indicating whether to report the performance to the console.}
 }
 \value{
-A numeric, named vector where: (X,Y) is the joint edge performance of X-Y and Y-Y edges. 
+A numeric, named vector containing
 \itemize{
-\item{power}{Joint power on (X,Y)}
-\item{fdr}{Joint false discovery rate (FDR) on (X,Y)}
-\item{powerXY}{Power of X-Y edges}
-\item{fdrXY}{FDR of X-Y edges}
-\item{powerYY}{Power of Y-Y edges}
-\item{fdrYY}{FDR of Y-Y edges}
-\item{tp}{True positives of (X,Y)}
-\item{fn}{False negatives of (X,Y)}
-\item{fp}{False positives of (X,Y)}
-\item{tpXY}{True positives of X-Y}
-\item{fnXY}{False negatives of X-Y}
-\item{fpXY}{False positives of X-Y}
-\item{tpYY}{True positives of Y-Y}
-\item{fnYY}{False negatives of Y-Y}
-\item{fpYY}{False positives of Y-Y}
+\item power or sensitivity
+\item fdr or false discovery rate
+\item mcc or Matthew's Correlation Coefficient
+\item tp  or true positive
+\item fn or false negative
+\item fp or false positive
+\item tn or true negative
 }
 }
 \description{
-Assesses the performance of space, remMap, and spacemap models 
-against a known truth by reporting power and false discovery rate.
+Assesses the performance of space and spaceMap
+against a known truth by reporting power and false discovery rate
+for either x-y OR y-y edge detection.
+}
+\seealso{
+reportJointPerf
 }

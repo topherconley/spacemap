@@ -2,7 +2,7 @@
 % Please edit documentation in R/reportPerformance.R
 \name{algoFDR}
 \alias{algoFDR}
-\title{False Discovery Rate of an Algorithm}
+\title{False discovery rate}
 \usage{
 algoFDR(tp, fp)
 }
@@ -10,4 +10,7 @@ algoFDR(tp, fp)
 \item{tp}{The number of true positive classifications.}
 
 \item{fp}{The number of false positive classificationsm.}
+}
+\description{
+Compute the FDR given true positives and false positives.
 }

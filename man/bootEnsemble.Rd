@@ -17,6 +17,9 @@ bootEnsemble(Y, X = NULL, tune, method = c("spacemap", "space"),
 \code{lam1, lam2, lam3} and each element being a single numeric value that is input to \code{spacemap}. One might  
 consider the output from \code{\link{cvVote}} (i.e. list \code{minTune}) as input for this parameter.}
 
+\item{method}{Character value specifying to use \code{\link{spacemap}} or 
+\code{\link{space}} in fitting ensemble network.}
+
 \item{boot}{Logical. Default is \code{boot=TRUE} and implies sampling with replacement (i.e. boostrap). 
 \code{boot=FALSE} will resample without replacement.}
 
@@ -24,7 +27,7 @@ consider the output from \code{\link{cvVote}} (i.e. list \code{minTune}) as inpu
 be lowered to save time.}
 
 \item{iscale}{Logical indicating to standardize the whole input data. Defaults to TRUE. 
-See \code{\link{base::scale(x, center = TRUE, scale = TRUE)}} for details of standardization.}
+See \code{base::scale(x, center = TRUE, scale = TRUE)} for details of standardization.}
 
 \item{aszero}{Positive numeric value (defaults to 1e-6) indicating at what point to consider extremely 
 small parameter estimates of \eqn{\Gamma} and \eqn{\rho} as zero.}
@@ -33,6 +36,8 @@ small parameter estimates of \eqn{\Gamma} and \eqn{\rho} as zero.}
 
 \item{p0}{Positive numeric not exceeding the default of 1, which represents the proportion of the original 
 samples that will be down-sampled for each model fitting iteration of the ensemble.}
+
+\item{...}{Additional arguments for \code{\link{spacemap}} or  \code{\link{space}}.}
 }
 \value{
 A list up to length \code{B} of convergent and sparse model fits from 

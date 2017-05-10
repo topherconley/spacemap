@@ -2,7 +2,7 @@
 % Please edit documentation in R/networkAnalysis.R
 \name{adj2igraph}
 \alias{adj2igraph}
-\title{Adjacency to igraph with annotations.}
+\title{Convert adjacency matrix to igraph with annotations.}
 \usage{
 adj2igraph(yy, xy = NULL, yinfo = NULL, xinfo = NULL, weighted = NULL)
 }
@@ -62,14 +62,18 @@ The annotation parameters \code{xinfo} and \code{yinfo}
 #Load BCPLS CNA-protein network output
 library(spacemap)
 data("bcpls")
-#convert list to global environment
-.GlobalEnv <- list2env(x= bcpls, envir = globalenv())
+#Attach "bcpls" data objects to the R Global Environment
+attach(bcpls)
 
-library(igraph)
+suppressPackageStartupMessages(library(igraph))
 #Label y and x nodes with attributes
 ig <- spacemap::adj2igraph(yy = net$yy, xy = net$xy, 
                            yinfo = yinfo, xinfo = xinfo)
 #Label y with attributes
 igy <- spacemap::adj2igraph(yy = net$yy, 
                            yinfo = yinfo)
+}
+\seealso{
+\code{\link{rankHub}}, \code{\link{cisTrans}}, 
+\code{\link{reportHubs}}, \code{\link{xHubEnrich}}, \code{\link{modEnrich}}
 }

@@ -43,10 +43,14 @@ defaults to a  ridge regression with small penalty of 0.01 to
 encourage numerical stability. The user can change the ridge
 penalty by adding an additional parameter \code{refitRidge}.}
 
-\item{thresh}{}
+\item{thresh}{Numerical threshold between 0 and 1 (defaults to 0.5 or majority vote) 
+indicating the minimum proportion of times () a given edge must be represented 
+in the trained models to be reported in the final CV.Vote model. For example, 
+If 0.5 is specified, and there are 10 training splits, then an edge in the final 
+model must be reported in 6 of the 10 traiing models.}
 
 \item{iscale}{Logical indicating to standardize the whole input data. Defaults to TRUE. 
-See \code{\link{base::scale(x, center = TRUE, scale = TRUE)}} for details of standardization.}
+See \code{base::scale(x, center = TRUE, scale = TRUE)} for details of standardization.}
 
 \item{aszero}{Positive numeric value (defaults to 1e-6) indicating at what point to consider extremely 
 small parameter estimates of \eqn{\Gamma} and \eqn{\rho} as zero.}
@@ -56,14 +60,14 @@ to change their default settings (e.g. setting \code{tol = 1e-4}).}
 }
 \value{
 A list containing  
-\itemize {  
- \item \code{cvVote} A list containing
- \enumerate{
- \item \code{xy} Adjacency matrix where \eqn{xy(p,q)} element
-  is 1 for an edge between \eqn{x_p} and \eqn{y_q} and 0 otherwise. 
+ \itemize{  
+ \item A list called \code{cvVote} with two elements: 
+ \itemize{
+  \item \code{xy}, an adjacency matrix where \eqn{xy(p,q)} element
+  is 1 for an edge between \eqn{x_p} and \eqn{y_q} and 0 otherwise; and
   \item \code{yy} Adjacency matrix where \eqn{yy(q,l)} element
   is 1 for an edge between \eqn{y_q} and \eqn{y_l} and 0 otherwise. 
- }
+  }
  \item \code{minTune} List containing the optimal tuning penalty set. 
  \item \code{minIndex} Integer specifying the index of \code{minTune} in \code{tuneGrid}. 
  \item \code{metricScores} Data.frame for input to \code{\link{tuneVis}} for

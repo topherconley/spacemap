@@ -33,8 +33,13 @@ Label igraph object with cis/trans
 status for x-y edges.
 }
 \details{
-This function requires the Genomic Ranges package. The \code{ig} 
+This function requires the GenomicRanges package, 
+specifically 'findOverlaps' and 'countOverlaps'. The \code{ig} 
 network parameter requires vertex attributes for genome coordinates 
 specified as \code{chr,start,end} 
 (see details section of \code{\link{adj2igraph}}).
+}
+\seealso{
+\code{\link{rankHub}}, \code{\link{adj2igraph}}, 
+\code{\link{reportHubs}}, \code{\link{xHubEnrich}}
 }

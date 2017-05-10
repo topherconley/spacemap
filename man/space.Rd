@@ -51,7 +51,7 @@ as having failed to converge. Default may need to be increased for inferring ver
 It defaults to NULL and and will be estimated \code{iter} times during the model fitting.}
 
 \item{iscale}{Logical indicating to standardize the whole input data. Defaults to TRUE. 
-See \code{\link{base::scale(x, center = TRUE, scale = TRUE)}} for details of standardization.}
+See \code{base::scale(x, center = TRUE, scale = TRUE)} for details of standardization.}
 }
 \value{
 A list containing 
@@ -73,7 +73,7 @@ Estimate partial correlations according to SPACE model.
 }
 \examples{
 data(sim1)
-net <- space(Y = sim1$Y, lam1 = 70)
+net <- spacemap::space(Y = sim1$Y, lam1 = 70)
 #adjacency matrix of y-y edges. 
 adjnet <- adjacency(net)
 }

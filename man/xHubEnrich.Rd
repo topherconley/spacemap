@@ -2,7 +2,7 @@
 % Please edit documentation in R/networkAnalysis.R
 \name{xHubEnrich}
 \alias{xHubEnrich}
-\title{Functional enrichment of x neighborhood.}
+\title{Functional enrichment of x-hub neighborhood.}
 \usage{
 xHubEnrich(ig, go2eg)
 }
@@ -17,22 +17,26 @@ belonging to the biological process.
 The list ought to be non-redundant in names.}
 }
 \value{
-Data.frame with each x hub, out-degree, and the 
+Data.frame with each x-hub, out-degree, and the 
 neighborhood percentage.
 }
 \description{
 A means to assess functional 
-impact of x hub perturbations
+impact of x-hub perturbations
 }
 \details{
-A x hub is defined to be any x node with at least one edge to a y node. 
-A x neighborhood comprises all y nodes that are directly connected to a x hub by an edge. 
+A x-hub is defined to be any x node with at least one edge to a y node. 
+A x neighborhood comprises all y nodes that are directly connected to a x-hub by an edge. 
 x neighborhoods are of interest because they represent direct perturbations to y nodes.
 To quantitatively assess how much those perturbations are functionally meaningful,
 we compute a score called the GO-neighbor percentage. Two y nodes are called GO-neighbors 
 if they share a common Gene Ontology (GO) term in the same x neighborhood. We postulate 
 that a high percentage of GO-neighbors within an x neighborhood associates 
-the x hub with more functional meaning. These scores, 
+the x-hub with more functional meaning. These scores, 
 as presented in figure 5 of the spaceMap publication, 
 can be generated with a GO mapping
+}
+\seealso{
+\code{\link{rankHub}}, \code{\link{cisTrans}}, 
+\code{\link{reportHubs}}, \code{\link{adj2igraph}}
 }

@@ -71,9 +71,10 @@ varySpaceMapParam <- function(...) {
 #' between iterations. \code{tol} defaults to 1e-6, but may be lowered (e.g. 1e-4) to speed
 #' up network learning. 
 #' @param iscale Logical indicating to standardize the whole input data. Defaults to TRUE. 
-#' See \code{\link{base::scale(x, center = TRUE, scale = TRUE)}} for details of standardization. 
+#' See \code{base::scale(x, center = TRUE, scale = TRUE)} for details of standardization. 
 #' @param cdmax Positive integer specifiying the maximum number of parameter updates allowed before reporting the algorithm
 #' as having failed to converge. Default may need to be increased for inferring very large-scale networks (i.e. \eqn{p,q > 1000}).
+#' @param ... Additional experimental arguments for \code{\link{spacemap}}. Advanced users only.
 #' @return A list containing 
 #'\enumerate{
 #'   \item \code{ParCor} The estimated partial correlation matrix (\eqn{P \times P}), 
@@ -89,13 +90,14 @@ varySpaceMapParam <- function(...) {
 #'   If \code{spacemap} does not converge, \code{deltaMax} provides some measure of how far away it was from converging
 #'   when compared to \code{tol}. 
 #' }
+#' @import Rcpp
+#' @export
 #' @seealso  \code{\link{cvVote}}, \code{\link{bootEnsemble}}, \code{\link{bootVote}}
 #' @examples
 #' data(sim1)
 #' net <- spacemap(Y = sim1$Y, X = sim1$X, lam1 = 70, lam2 = 28.8, lam3 = 12.38)
 #' #adjacency matrix of y-y and x-y edges. 
 #' adjnet <- adjacency(net)
-#' @export
 spacemap <- function(Y, X, lam1, lam2, lam3, sig=NULL, rho = NULL,
                      iter=3, tol = 1e-6, iscale = TRUE, cdmax = 1e7L, ...) {
   

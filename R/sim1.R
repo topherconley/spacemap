@@ -1,4 +1,4 @@
-#' Simulation 1
+#' Toy Hub Network Simulation 
 #'
 #'
 #'  A simulation of a hub network in the high-dimension and

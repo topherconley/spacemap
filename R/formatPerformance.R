@@ -1,4 +1,4 @@
-formatPerf <- function(fit, truth, method = "spacemap", tol = 1e-6) { 
+formatPerf <- function(fit, truth, method = "spacemap", aszero = 1e-6) { 
   comparison <- factor(c("(yy,xy)", "yy", "xy"), levels = c( "(yy,xy)", "yy", "xy"))
   #performance names to index
   pn <- list(power = c("power", "powerYY", "powerXY"),
@@ -8,7 +8,7 @@ formatPerf <- function(fit, truth, method = "spacemap", tol = 1e-6) {
              fn = c("fn", "fnYY", "fnXY"),
              fp = c("fp", "fpYY", "fpXY"))
   library(spacemap)
-  perf <- reportJointPerf(fit, truth, tol = tol, verbose = FALSE)
+  perf <- reportJointPerf(fit, truth, aszero = aszero, verbose = FALSE)
   data.frame(method = method,
              power = perf[pn$power], fdr =  perf[pn$fdr], mcc = perf[pn$mcc],
              tp = perf[pn$tp], fn = perf[pn$fn], fp = perf[pn$fp],

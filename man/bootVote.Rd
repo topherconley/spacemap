@@ -61,13 +61,11 @@ data(sim1)
 #Boostrap Ensemble (B = 10) for illustration only
 tune <- data.frame(lam1 = 70, lam2 = 28, lam3 = 17.5)
 
-suppressPackageStartupMessages(library(foreach))
-suppressPackageStartupMessages(library(doRNG))
 #suppress warnings because parallel backend not set up. 
 ens <- suppressWarnings(bootEnsemble(Y = sim1$Y, X = sim1$X, tune = tune, 
                     method = "spacemap", B = 10))
                     
-bv <- suppressWarnings(bootVote(ens))                    
+bv <- suppressWarnings(bootVote(ens))         
 }
 \seealso{
 \code{\link{bootEnsemble}}

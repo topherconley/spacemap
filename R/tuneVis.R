@@ -26,17 +26,24 @@
 #' If \code{tuneParam2 != NULL}
 #' Returns a heatmap (see \code{ggplot2::geom_tile}) where 
 #' CV scores are colored intensities on a 2-D grid of \code{tuneParam1,tuneParam2}.
+#' @importFrom ggplot2 qplot ggplot aes geom_tile theme_bw xlab ylab
+#' @importFrom reshape2 melt
+#' @importFrom foreach %do%
+#' @export
 #' @seealso \code{\link{cvVote}}
 tuneVis <- function(cvOut, testSetLen,
                     tuneParam1, tuneParam1Name = c("lam1", "lam2", "lam3"),
                     tuneParam2 = NULL) {
   
+  requireNamespace("ggplot2")
   tuneParam1Name <- match.arg(tuneParam1Name)
   total <- sum(testSetLen)
   foldconvmat <- !is.na(cvOut$metricScores[["rss"]])
   nfoldconv <- rowSums(foldconvmat)
   ntestconv <- apply(X = foldconvmat, MARGIN  = 1, FUN = function(not_na) sum(testSetLen[not_na]))
-  library(foreach)
+  requireNamespace("foreach")
+  #for R CMD check NOTE passing
+  i <- NULL;
   avgScores <- foreach(i = seq_along(cvOut$metricScores), .combine = 'cbind') %do% {
     score <- cvOut$metricScores[[i]]
     stype <- names(cvOut$metricScores)[[i]]
@@ -57,7 +64,6 @@ tuneVis <- function(cvOut, testSetLen,
   colnames(avgScores) <- names(cvOut$metricScores)
   
   if (is.null(tuneParam2)) {
-    library(ggplot2)
     dat <- as.data.frame(avgScores)
     g1 <- qplot(data = dat, x = tuneParam1, y = log(rss), geom = "point") + 
       ylab("log (CV Score)") + xlab(tuneParam1Name) + theme_bw()
@@ -67,21 +73,21 @@ tuneVis <- function(cvOut, testSetLen,
       ylab("Avg. # of Edges (Y -- Y)") + xlab(tuneParam1Name) + theme_bw()
     g4 <- qplot(data = dat, x = tuneParam1, y = dfGamma, geom = "point") + 
       ylab("Avg. # of Edges (X -> Y)") + xlab(tuneParam1Name) + theme_bw()
-    library(gridExtra)
+    #requireNamespace("gridExtra")
     #gg1 <- grid.arrange(g1,g2,g3,g4, ncol = 2)
     gg1 <- list(g1,g2,g3,g4)
 #     diagnose <- as.data.frame(cbind(tuneName = tuneParam1, avgScores))
-#     library(reshape2)
+#     requireNamespace("reshape2")
 #     ggdiagnose <- melt(diagnose, id.vars = "tuneName", 
 #                        measure.vars = colnames(avgScores), value.name = "avg_score",
 #                        variable.name  = "score_type")
 #     
-#     library(ggplot2)
+#     requireNamespace("ggplot2")
 #     gg1 <- ggplot(data = ggdiagnose, aes(x = tuneName, y = avg_score, colour = score_type)) + geom_point()  + facet_grid(. ~ score_type)
 #     #gg2 <- qplot(tuneParam, rowMeans(cvOut$metricScores$df))
   } else {
     diagnose <- as.data.frame(cbind(tuneName1 = tuneParam1, tuneName2 = tuneParam2, rss = avgScores[,"rss"]))
-    library(reshape2)
+    requireNamespace("reshape2")
     ggdiagnose <- melt(diagnose, id.vars = c("tuneName1", "tuneName2"), 
                        measure.vars = "rss", value.name = "rss")
     gg1 <- ggplot(data = ggdiagnose, aes(x = tuneName1, y = tuneName2, fill = rss)) + geom_tile()

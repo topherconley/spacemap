@@ -1,8 +1,7 @@
 
 
-setwd("~/repos/bioc_spacemap/")
+setwd("~/repos/spacemap/")
 library(devtools)
-
 devtools::check()
 devtools::clean_dll()
 devtools::install()
