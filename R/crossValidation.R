@@ -208,8 +208,8 @@ averageScores <- function(metricScores, testIds) {
 # Find the min score index
 minScoreIndex <- function(cvScoresAvg) {
   #if there are multiple equally good scores, take the most sparse model.
-  minRssIds <- which(cvScoresAvg[,"rss"] == min(cvScoresAvg[,"rss"]))
-  minRssModelIds <- which.min(cvScoresAvg[minRssIds,"df"])
+  minRssIds <- base::which(cvScoresAvg[,"rss"] == min(cvScoresAvg[,"rss"]))
+  minRssModelIds <- base::which.min(cvScoresAvg[minRssIds,"df"])
   c(rss = minRssIds[minRssModelIds])
 } 
 
@@ -409,13 +409,16 @@ cvVote <- function(Y, X = NULL, trainIds, testIds,
 #' NULL, but must be non-null when \code{method == "space" & givenX = TRUE}. 
 #' @param Yindex Integer vector of indices of Y variables in partial correlation  matrix. Defaults to 
 #' NULL, but must be non-null when \code{method == "space" & givenX = TRUE}. 
+#' @param aszero  A numeric value specifying the point at which a parameter estimate should 
+#' be effectively considered of zero value.
 #' @seealso \code{\link{reportJointPerf}}, \code{\link{reportPerf}}
 #' @export
-cvPerf <- function(cvOut, truth, method, givenX = FALSE, Xindex=NULL, Yindex=NULL) {
+cvPerf <- function(cvOut, truth, method, givenX = FALSE, 
+                   Xindex=NULL, Yindex=NULL, aszero = 1e-6) {
   if (method == "spacemap") {
     perf <- spacemap::reportJointPerf(fit = list(xy = cvOut$cvVote$xy, 
                                                        yy = cvOut$cvVote$yy),
-                                      truth = truth, tol = 1e-6, 
+                                      truth = truth, aszero = aszero, 
                                       verbose = FALSE)  
   } else if (method == "space") {
     if (givenX) { 
@@ -424,11 +427,11 @@ cvPerf <- function(cvOut, truth, method, givenX = FALSE, Xindex=NULL, Yindex=NUL
       }
       perf <- spacemap::reportJointPerf(fit = list(xy = cvOut$cvVote$yy[Xindex,Yindex], 
                                                          yy = cvOut$cvVote$yy[Yindex,Yindex]),
-                                        truth = truth, tol = 1e-6, 
+                                        truth = truth,  aszero = aszero, 
                                         verbose = FALSE)
     } else { 
       perf <- spacemap::reportPerf(cvOut$cvVote$yy,
-                                   truth$yy, YY = TRUE, tol = 1e-6, 
+                                   truth$yy, YY = TRUE,  aszero = aszero, 
                                    verbose = FALSE)
     }
   }

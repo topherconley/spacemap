@@ -1,4 +1,4 @@
-git atemplate:
+template:
   params:
     bootswatch: flatly 
 
@@ -12,7 +12,7 @@ authors:
 
 reference:
   - title: R package overview
-    desc: The functions of the spaceMap R package are perhaps best conceptualized in three categories. The model fitting category concerns functions that learn a network from input data. The model selection category encompasses functions that select the optimal tuning parameters and build robust networks through aggregation. The  network analysis category contains tools to annotate and interpret inferred networks. 
+    desc: The functions of the spaceMap R package are perhaps best conceptualized in four categories. The model fitting category concerns functions that learn a network from input data. The model selection category encompasses functions that select the optimal tuning parameters and build robust networks through aggregation. The  network analysis category contains tools to annotate and interpret inferred networks. The Utils category provides convenient functions such as evaluating simulation performance.  
     contents:
   - title: Model fitting
     desc: Details on how to fit spaceMap and space (a special case of spaceMap) with pre-specified tuning parameters. 
@@ -33,12 +33,22 @@ reference:
     - cisTrans
     - reportHubs
     - xHubEnrich
-    - modAnalysis
+    - modEnrich
   - title: Data
     contents:
     - sim1
     - bcpls
-    
+  - title: Utils
+    contents:
+    - adjacency
+    - reportPerf
+    - reportJointPerf
+    - cvPerf
+    - algoFDR
+    - algoMCC
+    - algoPower
+    - nonZeroUpper
+    - nonZeroWhole
 navbar:
   left: 
   - text: Installation

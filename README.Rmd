@@ -6,6 +6,8 @@ output:
 
 ## Description
 
+[![Travis-CI Build Status](https://travis-ci.org/topherconley/spacemap.svg?branch=master)](https://travis-ci.org/topherconley/spacemap)
+
 The spaceMap R package constructs _de novo_ networks from heterogeneous data types in a high-dimensional context by applying a novel conditional graphical model. The underlying statistical model is motivated by applications in integrative genomics, where two (or more) -omic data profiles are modeled jointly to discover their interactions. spaceMap is particularly effective in learning networks in diverse applications that exhibit hub topology. In an application to breast cancer tumor data, spaceMap learned regulatory networks which generated novel hypotheses of cancer drivers and confirmed known risk factors. In addition to learning network structure, an accompanying network analysis toolkit is provided. The toolkit has been developed with genomics in mind---but can be adapted for other applications ---and maps scientic domain knowledge onto networks. The image below provides an overview of how to fit spaceMap, perform network analysis in an integrative genomic context, and visualize important network signatures. 
 
 ```{r setup, include=FALSE}

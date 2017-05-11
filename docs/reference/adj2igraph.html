@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Adjacency to igraph with annotations. — adj2igraph â€¢ spacemap</title>
+<title>Convert adjacency matrix to igraph with annotations. — adj2igraph â€¢ spacemap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -51,7 +51,7 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta">Installation</a>
+  <a href="../installation.html">Installation</a>
 </li>
 <li>
   <a href="../reference/index.html">Docs</a>
@@ -81,7 +81,7 @@
   <a href="https://topherconley.github.io/neta-bcpls/">Application</a>
 </li>
 <li>
-  <a href="https://github.com/topherconley/spacemap/issues">Contact</a>
+  <a href="../contact.html">Contact</a>
 </li>
       </ul>
       
@@ -103,7 +103,7 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Adjacency to igraph with annotations.</h1>
+    <h1>Convert adjacency matrix to igraph with annotations.</h1>
     </div>
 
     
@@ -176,21 +176,27 @@ Defaults to NULL.</p></td>
  can be added as node attributes. Note that if any vertex
  is missing some or all annotations, an `NA` should be used in its place.</p>
     
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <p><code><a href='rankHub.html'>rankHub</a></code>, <code><a href='cisTrans.html'>cisTrans</a></code>, 
+<code><a href='reportHubs.html'>reportHubs</a></code>, <code><a href='xHubEnrich.html'>xHubEnrich</a></code>, <code><a href='modEnrich.html'>modEnrich</a></code></p>
+    
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
 <span class='co'>#Load BCPLS CNA-protein network output</span>
 <span class='fu'>library</span>(<span class='no'>spacemap</span>)
 <span class='fu'>data</span>(<span class='st'>"bcpls"</span>)
-<span class='co'>#convert list to global environment</span>
-<span class='no'>.GlobalEnv</span> <span class='kw'>&lt;-</span> <span class='fu'>list2env</span>(<span class='kw'>x</span><span class='kw'>=</span> <span class='no'>bcpls</span>, <span class='kw'>envir</span> <span class='kw'>=</span> <span class='fu'>globalenv</span>())
-
-<span class='fu'>library</span>(<span class='no'>igraph</span>)</div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>Attaching package: ‘igraph’</span></div><div class='output co'>#&gt; <span class='message'>The following objects are masked from ‘package:stats’:</span>
+<span class='co'>#Attach "bcpls" data objects to the R Global Environment</span>
+<span class='fu'>attach</span>(<span class='no'>bcpls</span>)</div><div class='output co'>#&gt; <span class='message'>The following objects are masked from bcpls (pos = 4):</span>
 #&gt; <span class='message'></span>
-#&gt; <span class='message'>    decompose, spectrum</span></div><div class='output co'>#&gt; <span class='message'>The following object is masked from ‘package:base’:</span>
+#&gt; <span class='message'>    bdeg, go2eg, net, xinfo, yinfo</span></div><div class='output co'>#&gt; <span class='message'>The following objects are masked from bcpls (pos = 5):</span>
 #&gt; <span class='message'></span>
-#&gt; <span class='message'>    union</span></div><div class='input'><span class='co'>#Label y and x nodes with attributes</span>
+#&gt; <span class='message'>    bdeg, go2eg, net, xinfo, yinfo</span></div><div class='output co'>#&gt; <span class='message'>The following objects are masked from bcpls (pos = 15):</span>
+#&gt; <span class='message'></span>
+#&gt; <span class='message'>    bdeg, go2eg, net, xinfo, yinfo</span></div><div class='input'>
+<span class='fu'>suppressPackageStartupMessages</span>(<span class='fu'>library</span>(<span class='no'>igraph</span>))
+<span class='co'>#Label y and x nodes with attributes</span>
 <span class='no'>ig</span> <span class='kw'>&lt;-</span> <span class='kw'>spacemap</span><span class='kw'>::</span><span class='fu'>adj2igraph</span>(<span class='kw'>yy</span> <span class='kw'>=</span> <span class='no'>net</span>$<span class='no'>yy</span>, <span class='kw'>xy</span> <span class='kw'>=</span> <span class='no'>net</span>$<span class='no'>xy</span>,
                            <span class='kw'>yinfo</span> <span class='kw'>=</span> <span class='no'>yinfo</span>, <span class='kw'>xinfo</span> <span class='kw'>=</span> <span class='no'>xinfo</span>)
 <span class='co'>#Label y with attributes</span>
@@ -205,6 +211,8 @@ Defaults to NULL.</p></td>
       <li><a href="#value">Value</a></li>
 
       <li><a href="#details">Details</a></li>
+
+      <li><a href="#see-also">See also</a></li>
       
       <li><a href="#examples">Examples</a></li>
     </ul>
@@ -214,7 +222,7 @@ Defaults to NULL.</p></td>
 
       <footer>
       <div class="copyright">
-  <p>Developed by <a href='https://github.com/topherconley/'>Christopher Conley</a>, <a href='http://www.stat.ucdavis.edu/~jie/'>Jie Peng</a>, <a href='http://research.mssm.edu/wanglab/index.htm'>Pei Wang</a>, UC Davis.</p>
+  <p>Developed by <a href='https://github.com/topherconley/'>Christopher Conley</a>, <a href='http://research.mssm.edu/wanglab/index.htm'>Pei Wang</a>, <a href='http://www.stat.ucdavis.edu/~jie/'>Jie Peng</a>, UC Davis.</p>
 </div>
 
 <div class="pkgdown">

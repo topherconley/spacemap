@@ -29,7 +29,7 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
-  <a href="https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta">Installation</a>
+  <a href="../installation.html">Installation</a>
 </li>
 <li>
   <a href="../reference/index.html">Docs</a>
@@ -59,7 +59,7 @@
   <a href="https://topherconley.github.io/neta-bcpls/">Application</a>
 </li>
 <li>
-  <a href="https://github.com/topherconley/spacemap/issues">Contact</a>
+  <a href="../contact.html">Contact</a>
 </li>
       </ul>
 <ul class="nav navbar-nav navbar-right">
@@ -84,7 +84,7 @@
       <h1>Network analysis toolkit</h1>
                         <h4 class="author">Christopher Conley, Pei Wang, Jie Peng</h4>
             
-            <h4 class="date">2017-05-08</h4>
+            <h4 class="date">2017-05-10</h4>
           </div>
 
     
@@ -100,16 +100,17 @@ Our interest is to use the spaceMap model to find major impacts of DNA copy numb
 <a href="#input" class="anchor"></a>Input</h1>
 <!--We take a moment to review  the required (and optional) input data to the network analysis toolkit.  -->
 <p>Before conducting the network analysis, you should have completed the model fitting step such that you have a network ensemble or one final network to analyze (e.g. output from <a href="https://topherconley.github.io/spacemap/reference/bootVote.html">bootVote</a>). To fully realize the capability of the toolkit, you also should have node annotations mapped onto the network.</p>
-<p>Now we load the <code>bcpls</code> data object and outline the required input for the toolkit.</p>
+<p>Load the <code>bcpls</code> list, which contains the example input arguments for the toolkit.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(spacemap)
 <span class="kw">data</span>(<span class="st">"bcpls"</span>)
-<span class="co">#convert list to global environment</span>
-.GlobalEnv &lt;-<span class="st"> </span><span class="kw">list2env</span>(<span class="dt">x=</span> bcpls, <span class="dt">envir =</span> <span class="kw">globalenv</span>())
-<span class="kw">ls</span>()</code></pre></div>
-<pre><code>## character(0)</code></pre>
+<span class="co">#Attach "bcpls" data objects to the R Global Environment</span>
+<span class="kw">attach</span>(bcpls)</code></pre></div>
+<p>Next we list the contents of <code>bcpls</code> and outline each input argument to the toolkit.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(bcpls)</code></pre></div>
+<pre><code>## [1] "net"   "yinfo" "xinfo" "bdeg"  "go2eg"</code></pre>
 <p>The <code>net</code> object is a list of two adjacency matrices that is output from <a href="https://topherconley.github.io/spacemap/reference/bootVote.html">bootVote</a>. The protein–protein edges are encoded with 1’s in <code>net$yy</code>. Likewise, the CNA–protein edges are encoded with 1’s in <code>net$xy</code>.</p>
 <p>The annotation objects <code>xinfo</code> and <code>yinfo</code> are of type <code>data.frame</code>, whose rows should correspond to the rows of <code>net$xy</code> and <code>net$yy</code>, respectively. <!--If no annotation exists for the nodes $\bf x$ or $\bf y$, then the bare minimum expected is a character vector 'id' for labeling the nodes. --> Let us look at the contents of <code>yinfo</code>: The first column, <code>id</code>, is always required and must be unique for each node; The second column, <code>alias</code>, is optional and may be used for more human-readable labels. For example, two protein isoforms must have different ID’s but may have the same gene symbol alias. If genome coordinates are supplied for cis/trans identification, then we need three additional columns: <code>chr</code> a character for the chromosome number, <code>start</code> an integer for the beginning of the chromsome location, and <code>end</code> for the end of the chromsome location. The users can also add other (optional) columns such as <code>strand</code> (for DNA strand), <code>description</code> for additional annotations, etc., which will be exported to visulization software such cytoscrape. Finally, missing information should be denoted by ‘NA’.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">kable</span>(yinfo[<span class="dv">1</span>:<span class="dv">5</span>,], <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(yinfo,<span class="dv">5</span>)</code></pre></div>
 <table class="table">
 <thead><tr class="header">
 <th align="left">id</th>
@@ -169,7 +170,7 @@ Our interest is to use the spaceMap model to find major impacts of DNA copy numb
 </tbody>
 </table>
 <p>The same column and row rules are applicable for <code>xinfo</code>. Here, <code>id</code> contains precise genomic coordinates, while the <code>alias</code> contains cytoband information.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">kable</span>(xinfo[<span class="dv">1</span>:<span class="dv">5</span>,], <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(xinfo,<span class="dv">5</span>)</code></pre></div>
 <table class="table">
 <thead><tr class="header">
 <th align="left">id</th>
@@ -277,9 +278,13 @@ ig &lt;-<span class="st"> </span>spacemap::<span class="kw"><a href="../referenc
 <div id="identify-cis-and-trans" class="section level2">
 <h2 class="hasAnchor">
 <a href="#identify-cis-and-trans" class="anchor"></a>Identify cis and trans</h2>
-<p>Next label <span class="math inline">\(x-y\)</span> edges as being regulated in cis or in trans. The <em>GenomicRanges</em> package and the genomic coordinates <code>chr,start,end</code> columns of <code>xinfo</code> and <code>yinfo</code> are required for this step.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(GenomicRanges)
-ig &lt;-<span class="st"> </span><span class="kw"><a href="../reference/cisTrans.html">cisTrans</a></span>(<span class="dt">ig =</span> ig, <span class="dt">level =</span> <span class="st">"x-y"</span>)</code></pre></div>
+<p>Next label <span class="math inline">\(x-y\)</span> edges as being regulated in cis or in trans. The <em>GenomicRanges</em> package and the genomic coordinates <code>chr,start,end</code> columns of <code>xinfo</code> and <code>yinfo</code> are required for this step. If you don’t have the package <a href="http://bioconductor.org/packages/release/bioc/html/GenomicRanges.html">GenomicRanges</a> installed yet, try:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## try http:// if https:// URLs are not supported
+<span class="kw">source</span>(<span class="st">"https://bioconductor.org/biocLite.R"</span>)
+<span class="kw">biocLite</span>(<span class="st">"GenomicRanges"</span>)
+<span class="kw">library</span>(GenomicRanges)</code></pre></div>
+<p>Now we can label the <span class="math inline">\(x-y\)</span> edges with either “cis” or “trans” in the <code>cis_trans</code> edge attribute of <code>ig</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ig &lt;-<span class="st"> </span><span class="kw"><a href="../reference/cisTrans.html">cisTrans</a></span>(<span class="dt">ig =</span> ig, <span class="dt">level =</span> <span class="st">"x-y"</span>)</code></pre></div>
 </div>
 <div id="report" class="section level2">
 <h2 class="hasAnchor">
@@ -483,10 +488,10 @@ ig &lt;-<span class="st"> </span><span class="kw"><a href="../reference/cisTrans
 <div id="module-analysis" class="section level1">
 <h1 class="hasAnchor">
 <a href="#module-analysis" class="anchor"></a>Module Analysis</h1>
-<p>There are many criteria to define modules of a network. This toolkit does not require a specific algorithm for finding modules and allows users to import the module membership information (see <code>mods</code> argument in <a href="https://topherconley.github.io/spacemap/reference/modAnalysis.html">modAnalysis</a>). In the spaceMap publication, we use the edge-betweenness algorithm in <em>igraph</em>.</p>
+<p>There are many criteria to define modules of a network. This toolkit does not require a specific algorithm for finding modules and allows users to import the module membership information (see <code>mods</code> argument in <a href="https://topherconley.github.io/spacemap/reference/modEnrich.html">modEnrich</a>). In the spaceMap publication, we use the edge-betweenness algorithm in <em>igraph</em>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mods &lt;-<span class="st"> </span><span class="kw">cluster_edge_betweenness</span>(ig)</code></pre></div>
-<p>The main goal of module analysis is identifying modules that are functionally enriched. The <code>modAnalysis</code> function will test for significantly over-represented GO-terms (or any other valid functional grouping) in a module using hyper-geometric tests. In this application, only the protein nodes have a functional mapping and we specify this through the <code>levels = "y"</code> argument. If both predictors and responses have a functional mapping in the <code>go2eg</code> argument, then we can specify <code>levels = c("y","x")</code>. Other arguments are available to control the enrichment testing; see the docs of <a href="https://topherconley.github.io/spacemap/reference/modAnalysis.html">modAnalysis</a> for more details.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">outmod &lt;-<span class="st"> </span><span class="kw"><a href="../reference/modAnalysis.html">modAnalysis</a></span>(<span class="dt">ig =</span> ig, <span class="dt">mods =</span> mods, <span class="dt">levels =</span> <span class="st">"y"</span>, <span class="dt">go2eg =</span> go2eg, <span class="dt">process_alias =</span> process_alias)</code></pre></div>
+<p>The main goal of module analysis is identifying modules that are functionally enriched. The <code>modEnrich</code> function will test for significantly over-represented GO-terms (or any other valid functional grouping) in a module using hyper-geometric tests. In this application, only the protein nodes have a functional mapping and we specify this through the <code>levels = "y"</code> argument. If both predictors and responses have a functional mapping in the <code>go2eg</code> argument, then we can specify <code>levels = c("y","x")</code>. Other arguments are available to control the enrichment testing; see the docs of <a href="https://topherconley.github.io/spacemap/reference/modEnrich.html">modEnrich</a> for more details.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">outmod &lt;-<span class="st"> </span><span class="kw"><a href="../reference/modEnrich.html">modEnrich</a></span>(<span class="dt">ig =</span> ig, <span class="dt">mods =</span> mods, <span class="dt">levels =</span> <span class="st">"y"</span>, <span class="dt">go2eg =</span> go2eg, <span class="dt">process_alias =</span> process_alias)</code></pre></div>
 <p>The output of the module analysis is a list of 3 objects.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(outmod)</code></pre></div>
 <pre><code>## [1] "ig"   "etab" "eraw"</code></pre>
@@ -494,13 +499,13 @@ ig &lt;-<span class="st"> </span><span class="kw"><a href="../reference/cisTrans
 <li><p><code>ig</code> is the input igraph network object updated with a “process_id” attribute for nodes affiliated with a significant GO-term. The “process_id” and “module” attributes together are useful for visualizing which nodes are enriched for a specific biological function.</p></li>
 <li><p><code>etab</code> is the polished module enrichment table to report significant GO terms, the representation of the GO term in the module relative to the size of the GO term, and which CNA hubs belong to the module. The top ten hits appear as follows as in Table S.5 of the spaceMap publication’s supplementary materials.</p></li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">kable</span>(outmod$etab[<span class="dv">1</span>:<span class="dv">10</span>,], <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">outmod$etab[<span class="dv">1</span>:<span class="dv">10</span>,]</code></pre></div>
 <table class="table">
 <thead><tr class="header">
 <th align="left">Module (size)</th>
 <th align="left">GO Category</th>
 <th align="left">GO Obs./ Total</th>
-<th align="left">X hubs (hits)</th>
+<th align="left">X-hubs (hits)</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
@@ -569,7 +574,7 @@ ig &lt;-<span class="st"> </span><span class="kw"><a href="../reference/cisTrans
 <li>
 <code>eraw</code> contains details for each (module, GO-term) pair that was subjected to the hyper-geometric test. This output gives the user more control by reporting all tests, the relative over-representation of a GO-term in that module, the raw P-value, and the adjusted P-value.</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">kable</span>(outmod$eraw[<span class="dv">1</span>:<span class="dv">5</span>,], <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">outmod$eraw[<span class="dv">1</span>:<span class="dv">5</span>,]</code></pre></div>
 <table class="table">
 <thead><tr class="header">
 <th align="left">Module</th>

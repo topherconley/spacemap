@@ -19,7 +19,9 @@ devtools::check()
 #install_github(repo = "hadley/pkgdown", force = T)
 library(pkgdown)
 library(spacemap)
+ptm <- proc.time()
 build_site(preview = T)
+proc.time() - ptm
 build_home()
 build_reference()
 build_articles()
@@ -53,7 +55,7 @@ cranpkgs <- c("Rcpp","RcppArmadillo",
 install.packages(pkgs = cranpkgs)
 
 ## try http:// if https:// URLs are not supported
-source("https://bioconductor.org/biocLite.R")
+source("http://bioconductor.org/biocLite.R")
 biocpkgs <- c("GenomicRanges")
 biocLite(biocpkgs)
 

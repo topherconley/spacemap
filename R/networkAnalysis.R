@@ -231,7 +231,7 @@ splitEdgeVector <- function(evec, ig) {
   
   #no nodes of levels x should be in the right column, 
   #flip to the left column so that it is always (x, y) or (y, y)
-  rev_idx <- which(tab$right %in% as_ids(V(ig)[levels %in% "x"]))
+  rev_idx <- base::which(tab$right %in% as_ids(V(ig)[levels %in% "x"]))
   if(length(rev_idx) > 0) { 
     tab_rev <- tab[rev_idx,]
     tab[rev_idx,] <- tab[rev_idx,c("right", "left")]
@@ -419,7 +419,7 @@ reportHubs <- function(ig, top = 10, level = c("x", "y"),
   requireNamespace("igraph")
 
   level <- match.arg(level)
-  hubidx <- which(degree(ig) != 0 & V(ig)$levels == level)
+  hubidx <- base::which(degree(ig) != 0 & V(ig)$levels == level)
   rawtab <- as_data_frame(x = ig, what = "vertices")[hubidx,]
   #remove those columns that are all NA's
   rawtab <- rawtab[, colSums(is.na(rawtab)) != nrow(rawtab)]
@@ -533,8 +533,8 @@ xHubEnrich <- function(ig, go2eg) {
 #   
 #   requireNamespace("igraph")
 #   
-#   nz_xy <- which(rowSums(xy) > 0)
-#   nz_yy <- which(rowSums(yy) > 0)
+#   nz_xy <- base::which(rowSums(xy) > 0)
+#   nz_yy <- base::which(rowSums(yy) > 0)
 #   rxy <- xy
 #   Q <- ncol(xy)
 #   rxy[nz_xy,] <- t(sapply(nz_xy, function(i) sample(x = xy[i,], size = Q, replace = F)))

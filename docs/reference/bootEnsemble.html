@@ -51,7 +51,7 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta">Installation</a>
+  <a href="../installation.html">Installation</a>
 </li>
 <li>
   <a href="../reference/index.html">Docs</a>
@@ -81,7 +81,7 @@
   <a href="https://topherconley.github.io/neta-bcpls/">Application</a>
 </li>
 <li>
-  <a href="https://github.com/topherconley/spacemap/issues">Contact</a>
+  <a href="../contact.html">Contact</a>
 </li>
       </ul>
       
@@ -132,6 +132,11 @@
 consider the output from <code><a href='cvVote.html'>cvVote</a></code> (i.e. list <code>minTune</code>) as input for this parameter.</p></td>
     </tr>
     <tr>
+      <th>method</th>
+      <td><p>Character value specifying to use <code><a href='spacemap.html'>spacemap</a></code> or 
+<code><a href='space.html'>space</a></code> in fitting ensemble network.</p></td>
+    </tr>
+    <tr>
       <th>boot</th>
       <td><p>Logical. Default is <code>boot=TRUE</code> and implies sampling with replacement (i.e. boostrap). 
 <code>boot=FALSE</code> will resample without replacement.</p></td>
@@ -160,6 +165,10 @@ small parameter estimates of \(\Gamma\) and \(\rho\) as zero.</p></td>
       <td><p>Positive numeric not exceeding the default of 1, which represents the proportion of the original 
 samples that will be down-sampled for each model fitting iteration of the ensemble.</p></td>
     </tr>
+    <tr>
+      <th>...</th>
+      <td><p>Additional arguments for <code><a href='spacemap.html'>spacemap</a></code> or  <code><a href='space.html'>space</a></code>.</p></td>
+    </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
@@ -183,12 +192,7 @@ Model fits that are not convergent or produce networks that are not sparse are n
 <span class='co'>#Boostrap Ensemble (B = 10) for illustration only</span>
 <span class='no'>tune</span> <span class='kw'>&lt;-</span> <span class='fu'>data.frame</span>(<span class='kw'>lam1</span> <span class='kw'>=</span> <span class='fl'>70</span>, <span class='kw'>lam2</span> <span class='kw'>=</span> <span class='fl'>28</span>, <span class='kw'>lam3</span> <span class='kw'>=</span> <span class='fl'>17.5</span>)
 <span class='no'>ens</span> <span class='kw'>&lt;-</span> <span class='fu'>bootEnsemble</span>(<span class='kw'>Y</span> <span class='kw'>=</span> <span class='no'>sim1</span>$<span class='no'>Y</span>, <span class='kw'>X</span> <span class='kw'>=</span> <span class='no'>sim1</span>$<span class='no'>X</span>, <span class='kw'>tune</span> <span class='kw'>=</span> <span class='no'>tune</span>,
-                    <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"spacemap"</span>, <span class='kw'>B</span> <span class='kw'>=</span> <span class='fl'>10</span>)</div><div class='output co'>#&gt; <span class='message'>Loading required package: foreach</span></div><div class='output co'>#&gt; <span class='message'>foreach: simple, scalable parallel programming from Revolution Analytics</span>
-#&gt; <span class='message'>Use Revolution R for scalability, fault tolerance and more.</span>
-#&gt; <span class='message'>http://www.revolutionanalytics.com</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: rngtools</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: pkgmaker</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: registry</span></div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>Attaching package: ‘pkgmaker’</span></div><div class='output co'>#&gt; <span class='message'>The following object is masked from ‘package:base’:</span>
-#&gt; <span class='message'></span>
-#&gt; <span class='message'>    isNamespaceLoaded</span></div><div class='output co'>#&gt; <span class='warning'>Warning: executing %dopar% sequentially: no parallel backend registered</span></div></pre>
+                    <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"spacemap"</span>, <span class='kw'>B</span> <span class='kw'>=</span> <span class='fl'>10</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -207,7 +211,7 @@ Model fits that are not convergent or produce networks that are not sparse are n
 
       <footer>
       <div class="copyright">
-  <p>Developed by <a href='https://github.com/topherconley/'>Christopher Conley</a>, <a href='http://www.stat.ucdavis.edu/~jie/'>Jie Peng</a>, <a href='http://research.mssm.edu/wanglab/index.htm'>Pei Wang</a>, UC Davis.</p>
+  <p>Developed by <a href='https://github.com/topherconley/'>Christopher Conley</a>, <a href='http://research.mssm.edu/wanglab/index.htm'>Pei Wang</a>, <a href='http://www.stat.ucdavis.edu/~jie/'>Jie Peng</a>, UC Davis.</p>
 </div>
 
 <div class="pkgdown">

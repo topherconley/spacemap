@@ -147,7 +147,7 @@ bootEnsemble <- function(Y, X = NULL, tune, method = c("spacemap", "space"),
     }
   }
   
-  goodIndex <- which(sapply(ens, function(x) x$convergence & x$sparse))
+  goodIndex <- base::which(sapply(ens, function(x) x$convergence & x$sparse))
   ngi <- length(goodIndex)
   if (ngi < B) { 
     message(paste("Out of ", B, "replicate fits, ", ngi, "converged and were sufficiently sparse."))

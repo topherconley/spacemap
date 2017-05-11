@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>BIC for space under conditional chain graph likelihood setting. — bicCondLike â€¢ spacemap</title>
+<title>CV.Vote Model Performance — cvPerf â€¢ spacemap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -103,57 +103,59 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>BIC for space under conditional chain graph likelihood setting.</h1>
+    <h1>CV.Vote Model Performance</h1>
     </div>
 
     
-    <p>Calculate the BIC under the conditional chain graph likelihood.</p>
+    <p>Convenience function for evaluating edge detection performance of 
+CV.Vote model fits.</p>
     
 
-    <pre><span class='fu'>bicCondLike</span>(<span class='no'>fit</span>, <span class='no'>tol</span>, <span class='no'>Y</span>, <span class='no'>X</span>, <span class='kw'>model</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"spacemap"</span>, <span class='st'>"space"</span>, <span class='st'>"scggm"</span>),
-  <span class='kw'>Yindex</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>Xindex</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+    <pre><span class='fu'>cvPerf</span>(<span class='no'>cvOut</span>, <span class='no'>truth</span>, <span class='no'>method</span>, <span class='kw'>givenX</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>Xindex</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>Yindex</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>aszero</span> <span class='kw'>=</span> <span class='fl'>1e-06</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>fit</th>
-      <td><p>The fitted model object returned from spacemap::[spacemap, space].</p></td>
+      <th>cvOut</th>
+      <td><p>Output from <code><a href='cvVote.html'>cvVote</a></code>.</p></td>
     </tr>
     <tr>
-      <th>tol</th>
-      <td><p>A numeric lower bound on non-zero parameter values.</p></td>
+      <th>truth</th>
+      <td><p>A list of numeric matrices named 'xy' and 'yy' 
+encoding the true model parameters (or an adjacency matrix).</p></td>
     </tr>
     <tr>
-      <th>Y</th>
-      <td><p>A numeric matrix of N X Q responses.</p></td>
+      <th>method</th>
+      <td><p>Character vector indicates <code>cvOut</code> came from
+spaceMap or SPACE model. See parameter <code>method</code> in <code><a href='cvVote.html'>cvVote</a></code>.</p></td>
     </tr>
     <tr>
-      <th>X</th>
-      <td><p>A numeric matrix of N X P predictors.</p></td>
-    </tr>
-    <tr>
-      <th>model</th>
-      <td><p>Character vector specifying which model type is being evaluated.</p></td>
-    </tr>
-    <tr>
-      <th>Yindex</th>
-      <td><p>Indices of Y nodes for <code>model == "space"</code></p></td>
+      <th>givenX</th>
+      <td><p>Logical (defaults to FALSE). Set to TRUE for <code>method == "space"</code>
+when <code>cvOut</code> had non-null <code>X</code> input to <code><a href='cvVote.html'>cvVote</a></code>.</p></td>
     </tr>
     <tr>
       <th>Xindex</th>
-      <td><p>Indices of X nodes for <code>model== "space"</code></p></td>
+      <td><p>Integer vector of indices of X variables in partial correlation matrix. Defaults to 
+NULL, but must be non-null when <code>method == "space" &amp; givenX = TRUE</code>.</p></td>
+    </tr>
+    <tr>
+      <th>Yindex</th>
+      <td><p>Integer vector of indices of Y variables in partial correlation  matrix. Defaults to 
+NULL, but must be non-null when <code>method == "space" &amp; givenX = TRUE</code>.</p></td>
+    </tr>
+    <tr>
+      <th>aszero</th>
+      <td><p>A numeric value specifying the point at which a parameter estimate should 
+be effectively considered of zero value.</p></td>
     </tr>
     </table>
     
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <p>the Bayesian Information Criterion (BIC) under conditional chain graph likelihood formulation.</p>
-    
-    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
-
-    <p>Zhang L, Kim S (2014) Learning Gene Networks under SNP Perturbations Using eQTL Datasets. 
-PLoS Comput Biol 10(2): e1003420. doi: 10.1371/journal.pcbi.1003420</p>
+    <p><code><a href='reportJointPerf.html'>reportJointPerf</a></code>, <code><a href='reportPerf.html'>reportPerf</a></code></p>
     
 
   </div>
@@ -162,9 +164,7 @@ PLoS Comput Biol 10(2): e1003420. doi: 10.1371/journal.pcbi.1003420</p>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
       
-      <li><a href="#value">Value</a></li>
-
-      <li><a href="#references">References</a></li>
+      <li><a href="#see-also">See also</a></li>
           </ul>
 
   </div>

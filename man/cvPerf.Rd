@@ -4,7 +4,8 @@
 \alias{cvPerf}
 \title{CV.Vote Model Performance}
 \usage{
-cvPerf(cvOut, truth, method, givenX = FALSE, Xindex = NULL, Yindex = NULL)
+cvPerf(cvOut, truth, method, givenX = FALSE, Xindex = NULL, Yindex = NULL,
+  aszero = 1e-06)
 }
 \arguments{
 \item{cvOut}{Output from \code{\link{cvVote}}.}
@@ -23,6 +24,9 @@ NULL, but must be non-null when \code{method == "space" & givenX = TRUE}.}
 
 \item{Yindex}{Integer vector of indices of Y variables in partial correlation  matrix. Defaults to 
 NULL, but must be non-null when \code{method == "space" & givenX = TRUE}.}
+
+\item{aszero}{A numeric value specifying the point at which a parameter estimate should 
+be effectively considered of zero value.}
 }
 \description{
 Convenience function for evaluating edge detection performance of 

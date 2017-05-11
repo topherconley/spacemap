@@ -51,7 +51,7 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta">Installation</a>
+  <a href="../installation.html">Installation</a>
 </li>
 <li>
   <a href="../reference/index.html">Docs</a>
@@ -81,7 +81,7 @@
   <a href="https://topherconley.github.io/neta-bcpls/">Application</a>
 </li>
 <li>
-  <a href="https://github.com/topherconley/spacemap/issues">Contact</a>
+  <a href="../contact.html">Contact</a>
 </li>
       </ul>
       
@@ -149,10 +149,18 @@ updated with attribute 'cis_trans' indicating cis/trans status.</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>This function requires the Genomic Ranges package. The <code>ig</code> 
-network parameter requires vertex attributes for genome coordinates 
+    <p>This function requires the GenomicRanges package from Bioconductor. 
+See <a href = 'http://bioconductor.org/packages/release/bioc/html/GenomicRanges.html'>http://bioconductor.org/packages/release/bioc/html/GenomicRanges.html</a>
+for installation details. 
+The specific functions from GenomicRanges are 'findOverlaps' and 'countOverlaps'. 
+The <code>ig</code> network parameter requires vertex attributes for genome coordinates 
 specified as <code>chr,start,end</code> 
 (see details section of <code><a href='adj2igraph.html'>adj2igraph</a></code>).</p>
+    
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <p><code><a href='rankHub.html'>rankHub</a></code>, <code><a href='adj2igraph.html'>adj2igraph</a></code>, 
+<code><a href='reportHubs.html'>reportHubs</a></code>, <code><a href='xHubEnrich.html'>xHubEnrich</a></code></p>
     
 
   </div>
@@ -164,6 +172,8 @@ specified as <code>chr,start,end</code>
       <li><a href="#value">Value</a></li>
 
       <li><a href="#details">Details</a></li>
+
+      <li><a href="#see-also">See also</a></li>
           </ul>
 
   </div>
@@ -171,7 +181,7 @@ specified as <code>chr,start,end</code>
 
       <footer>
       <div class="copyright">
-  <p>Developed by <a href='https://github.com/topherconley/'>Christopher Conley</a>, <a href='http://www.stat.ucdavis.edu/~jie/'>Jie Peng</a>, <a href='http://research.mssm.edu/wanglab/index.htm'>Pei Wang</a>, UC Davis.</p>
+  <p>Developed by <a href='https://github.com/topherconley/'>Christopher Conley</a>, <a href='http://research.mssm.edu/wanglab/index.htm'>Pei Wang</a>, <a href='http://www.stat.ucdavis.edu/~jie/'>Jie Peng</a>, UC Davis.</p>
 </div>
 
 <div class="pkgdown">

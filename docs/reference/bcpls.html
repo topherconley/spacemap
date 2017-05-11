@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>BIC for space under conditional chain graph likelihood setting. — bicCondLike â€¢ spacemap</title>
+<title>Network toolkit example input data — bcpls â€¢ spacemap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -103,68 +103,42 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>BIC for space under conditional chain graph likelihood setting.</h1>
+    <h1>Network toolkit example input data</h1>
     </div>
 
     
-    <p>Calculate the BIC under the conditional chain graph likelihood.</p>
+    <p>Input for illustrating how to apply spaceMap's 
+network toolkit to data from the 
+Breast Cancer Proteogenomics Landscape Study (BCPLS)
+by Mertins et. al., (2016, Nature).</p>
     
 
-    <pre><span class='fu'>bicCondLike</span>(<span class='no'>fit</span>, <span class='no'>tol</span>, <span class='no'>Y</span>, <span class='no'>X</span>, <span class='kw'>model</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"spacemap"</span>, <span class='st'>"space"</span>, <span class='st'>"scggm"</span>),
-  <span class='kw'>Yindex</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>Xindex</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
-    
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>fit</th>
-      <td><p>The fitted model object returned from spacemap::[spacemap, space].</p></td>
-    </tr>
-    <tr>
-      <th>tol</th>
-      <td><p>A numeric lower bound on non-zero parameter values.</p></td>
-    </tr>
-    <tr>
-      <th>Y</th>
-      <td><p>A numeric matrix of N X Q responses.</p></td>
-    </tr>
-    <tr>
-      <th>X</th>
-      <td><p>A numeric matrix of N X P predictors.</p></td>
-    </tr>
-    <tr>
-      <th>model</th>
-      <td><p>Character vector specifying which model type is being evaluated.</p></td>
-    </tr>
-    <tr>
-      <th>Yindex</th>
-      <td><p>Indices of Y nodes for <code>model == "space"</code></p></td>
-    </tr>
-    <tr>
-      <th>Xindex</th>
-      <td><p>Indices of X nodes for <code>model== "space"</code></p></td>
-    </tr>
-    </table>
-    
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+    <pre><span class='fu'>data</span>(<span class='no'>bcpls</span>)</pre>
+        
+    <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
-    <p>the Bayesian Information Criterion (BIC) under conditional chain graph likelihood formulation.</p>
+    <p>A list containing objects:</p><ul>
+<li><p><code>net</code> spaceMap's Boot.Vote ensemble network for the BCPLS data.</p></li>
+<li><p><code>yinfo</code> Annotations for proteins (response variables).</p></li>
+<li><p><code>xinfo</code> Annotations for genomic copy number alterations (predictor variables).</p></li>
+<li><p><code>bdeg</code> Degree distributions of bootstrap ensemble replicates.</p></li>
+<li><p><code>go2eg</code> Mapping from Gene Ontology (GO) to proteins.</p></li>
+</ul>
     
-    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>Zhang L, Kim S (2014) Learning Gene Networks under SNP Perturbations Using eQTL Datasets. 
-PLoS Comput Biol 10(2): e1003420. doi: 10.1371/journal.pcbi.1003420</p>
+    <p>The list <code>bcpls</code> is described in detail at
+ <a href = 'https://topherconley.github.io/spacemap/articles/neta.html#input'>https://topherconley.github.io/spacemap/articles/neta.html#input</a>.</p>
     
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
       
-      <li><a href="#value">Value</a></li>
+      <li><a href="#format">Format</a></li>
 
-      <li><a href="#references">References</a></li>
+      <li><a href="#details">Details</a></li>
           </ul>
 
   </div>

@@ -51,7 +51,7 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta">Installation</a>
+  <a href="../installation.html">Installation</a>
 </li>
 <li>
   <a href="../reference/index.html">Docs</a>
@@ -81,7 +81,7 @@
   <a href="https://topherconley.github.io/neta-bcpls/">Application</a>
 </li>
 <li>
-  <a href="https://github.com/topherconley/spacemap/issues">Contact</a>
+  <a href="../contact.html">Contact</a>
 </li>
       </ul>
       
@@ -104,7 +104,7 @@
   <div class="col-md-9">
     <div class="page-header">
       <h1>Function reference</h1>
-      <h4>version&nbsp;0.51.0</h4>
+      <h4>version&nbsp;0.52.0</h4>
     </div>
 
     <div class="contents">
@@ -119,7 +119,7 @@
         <tr>
           <th colspan="2">
             <h2 id="section-r-package-overview" class="hasAnchor"><a href="#section-r-package-overview" class="anchor"></a>R package overview</h2>
-            <p class="section-desc"><p>The functions of the spaceMap R package are perhaps best conceptualized in three categories. The model fitting category concerns functions that learn a network from input data. The model selection category encompasses functions that select the optimal tuning parameters and build robust networks through aggregation. The network analysis category contains tools to annotate and interpret inferred networks.</p></p>
+            <p class="section-desc"><p>The functions of the spaceMap R package are perhaps best conceptualized in four categories. The model fitting category concerns functions that learn a network from input data. The model selection category encompasses functions that select the optimal tuning parameters and build robust networks through aggregation. The network analysis category contains tools to annotate and interpret inferred networks. The Utils category provides convenient functions such as evaluating simulation performance.</p></p>
           </th>
         </tr>
         
@@ -127,7 +127,7 @@
         <tr>
           <th colspan="2">
             <h2 id="section-model-fitting" class="hasAnchor"><a href="#section-model-fitting" class="anchor"></a>Model fitting</h2>
-            <p class="section-desc"><p>Details on how to fit spaceMap and space (a special case of spaceMap) with selected tuning parameters.</p></p>
+            <p class="section-desc"><p>Details on how to fit spaceMap and space (a special case of spaceMap) with pre-specified tuning parameters.</p></p>
           </th>
         </tr>
         <tr>
@@ -167,7 +167,7 @@
           <td>
             <p><code><a href="initFit.html">initFit</a></code> </p>
           </td>
-          <td><p>Identify scale of tuning penalties</p></td>
+          <td><p>Identify scale of tuning parameters.</p></td>
         </tr><tr>
           <!--  -->
           <td>
@@ -193,13 +193,13 @@
           <td>
             <p><code><a href="adj2igraph.html">adj2igraph</a></code> </p>
           </td>
-          <td><p>Adjacency to igraph with annotations.</p></td>
+          <td><p>Convert adjacency matrix to igraph with annotations.</p></td>
         </tr><tr>
           <!--  -->
           <td>
             <p><code><a href="rankHub.html">rankHub</a></code> </p>
           </td>
-          <td><p>Prioritize networks hubs with consistently high degree.</p></td>
+          <td><p>Prioritize networks hubs by degree.</p></td>
         </tr><tr>
           <!--  -->
           <td>
@@ -217,13 +217,13 @@
           <td>
             <p><code><a href="xHubEnrich.html">xHubEnrich</a></code> </p>
           </td>
-          <td><p>Functional enrichment of x neighborhood.</p></td>
+          <td><p>Functional enrichment of x-hub neighborhood.</p></td>
         </tr><tr>
           <!--  -->
           <td>
-            <p><code><a href="modAnalysis.html">modAnalysis</a></code> </p>
+            <p><code><a href="modEnrich.html">modEnrich</a></code> </p>
           </td>
-          <td><p>Module enrichment analysis</p></td>
+          <td><p>Module enrichment analysis.</p></td>
         </tr>
       </tbody><tbody>
         <tr>
@@ -237,7 +237,75 @@
           <td>
             <p><code><a href="sim1.html">sim1</a></code> </p>
           </td>
-          <td><p>Simulation 1</p></td>
+          <td><p>Toy Hub Network Simulation</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="bcpls.html">bcpls</a></code> </p>
+          </td>
+          <td><p>Network toolkit example input data</p></td>
+        </tr>
+      </tbody><tbody>
+        <tr>
+          <th colspan="2">
+            <h2 id="section-utils" class="hasAnchor"><a href="#section-utils" class="anchor"></a>Utils</h2>
+            <p class="section-desc"></p>
+          </th>
+        </tr>
+        <tr>
+          <!--  -->
+          <td>
+            <p><code><a href="adjacency.html">adjacency</a></code> </p>
+          </td>
+          <td><p>Adjacency matrix from spacemap and spacemap models</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="reportPerf.html">reportPerf</a></code> </p>
+          </td>
+          <td><p>Report performance of x-y or y-y edge detection</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="reportJointPerf.html">reportJointPerf</a></code> </p>
+          </td>
+          <td><p>Report joint performance of (x-y,y-y) edge detection</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="cvPerf.html">cvPerf</a></code> </p>
+          </td>
+          <td><p>CV.Vote Model Performance</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="algoFDR.html">algoFDR</a></code> </p>
+          </td>
+          <td><p>False discovery rate</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="algoMCC.html">algoMCC</a></code> </p>
+          </td>
+          <td><p>Matthew's Correlation Coefficient (MCC)</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="algoPower.html">algoPower</a></code> </p>
+          </td>
+          <td><p>Power function</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="nonZeroUpper.html">nonZeroUpper</a></code> </p>
+          </td>
+          <td><p>Count the number of y-y edges</p></td>
+        </tr><tr>
+          <!--  -->
+          <td>
+            <p><code><a href="nonZeroWhole.html">nonZeroWhole</a></code> </p>
+          </td>
+          <td><p>Count the number of x-y edges</p></td>
         </tr>
       </tbody>
       </table>
@@ -252,13 +320,14 @@
       <li><a href="#section-model-selection">Model selection</a></li>
       <li><a href="#section-network-analysis-toolkit">Network Analysis Toolkit</a></li>
       <li><a href="#section-data">Data</a></li>
+      <li><a href="#section-utils">Utils</a></li>
     </ul>
   </div>
 </div>
 
       <footer>
       <div class="copyright">
-  <p>Developed by <a href='https://github.com/topherconley/'>Christopher Conley</a>, <a href='http://www.stat.ucdavis.edu/~jie/'>Jie Peng</a>, <a href='http://research.mssm.edu/wanglab/index.htm'>Pei Wang</a>, UC Davis.</p>
+  <p>Developed by <a href='https://github.com/topherconley/'>Christopher Conley</a>, <a href='http://research.mssm.edu/wanglab/index.htm'>Pei Wang</a>, <a href='http://www.stat.ucdavis.edu/~jie/'>Jie Peng</a>, UC Davis.</p>
 </div>
 
 <div class="pkgdown">

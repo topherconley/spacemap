@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>BIC for space under conditional chain graph likelihood setting. — bicCondLike â€¢ spacemap</title>
+<title>Report joint performance of (x-y,y-y) edge detection — reportJointPerf â€¢ spacemap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -103,57 +103,64 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>BIC for space under conditional chain graph likelihood setting.</h1>
+    <h1>Report joint performance of (x-y,y-y) edge detection</h1>
     </div>
 
     
-    <p>Calculate the BIC under the conditional chain graph likelihood.</p>
+    <p>Assesses the network learning performance of spaceMap (or space)
+against a known truth by reporting power and false discovery rate.</p>
     
 
-    <pre><span class='fu'>bicCondLike</span>(<span class='no'>fit</span>, <span class='no'>tol</span>, <span class='no'>Y</span>, <span class='no'>X</span>, <span class='kw'>model</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"spacemap"</span>, <span class='st'>"space"</span>, <span class='st'>"scggm"</span>),
-  <span class='kw'>Yindex</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>Xindex</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+    <pre><span class='fu'>reportJointPerf</span>(<span class='no'>fit</span>, <span class='no'>truth</span>, <span class='kw'>aszero</span> <span class='kw'>=</span> <span class='fl'>1e-06</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>fit</th>
-      <td><p>The fitted model object returned from spacemap::[spacemap, space].</p></td>
+      <td><p>A list of numeric matrices named 'xy' and 'yy' 
+encoding the fitted model parameter estimates (or the true adjacency matrices).</p></td>
     </tr>
     <tr>
-      <th>tol</th>
-      <td><p>A numeric lower bound on non-zero parameter values.</p></td>
+      <th>truth</th>
+      <td><p>A list of numeric matrices named 'xy' and 'yy' 
+encoding the true model parameters (or an adjacency matrix).</p></td>
     </tr>
     <tr>
-      <th>Y</th>
-      <td><p>A numeric matrix of N X Q responses.</p></td>
+      <th>aszero</th>
+      <td><p>A numeric value specifying the point at which a parameter estimate should 
+be effectively considered of zero value.</p></td>
     </tr>
     <tr>
-      <th>X</th>
-      <td><p>A numeric matrix of N X P predictors.</p></td>
-    </tr>
-    <tr>
-      <th>model</th>
-      <td><p>Character vector specifying which model type is being evaluated.</p></td>
-    </tr>
-    <tr>
-      <th>Yindex</th>
-      <td><p>Indices of Y nodes for <code>model == "space"</code></p></td>
-    </tr>
-    <tr>
-      <th>Xindex</th>
-      <td><p>Indices of X nodes for <code>model== "space"</code></p></td>
+      <th>verbose</th>
+      <td><p>A logical value indicating whether to report the performance to the console.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>the Bayesian Information Criterion (BIC) under conditional chain graph likelihood formulation.</p>
-    
-    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+    <p>A numeric, named vector</p><ul>
+<li><p>power Joint power on (x-y,y-y)</p></li>
+<li><p>fdr Joint false discovery rate (FDR) on (x-y,y-y)</p></li>
+<li><p>powerXY Power of x-y edges</p></li>
+<li><p>fdrXY FDR of x-y edges</p></li>
+<li><p>powerYY Power of y-y edges</p></li>
+<li><p>fdrYY FDR of y-y edges</p></li>
+<li><p>tp True positives of (x-y,y-y)</p></li>
+<li><p>fn False negatives of (x-y,y-y)</p></li>
+<li><p>fp False positives of (x-y,y-y)</p></li>
+<li><p>tpXY True positives of x-y</p></li>
+<li><p>fnXY False negatives of x-y</p></li>
+<li><p>fpXY False positives of x-y</p></li>
+<li><p>tpYY True positives of y-y</p></li>
+<li><p>fnYY False negatives of y-y</p></li>
+<li><p>fpYY False positives of y-y</p></li>
+</ul>
 
-    <p>Zhang L, Kim S (2014) Learning Gene Networks under SNP Perturbations Using eQTL Datasets. 
-PLoS Comput Biol 10(2): e1003420. doi: 10.1371/journal.pcbi.1003420</p>
+    
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <p>reportPerf</p>
     
 
   </div>
@@ -164,7 +171,7 @@ PLoS Comput Biol 10(2): e1003420. doi: 10.1371/journal.pcbi.1003420</p>
       
       <li><a href="#value">Value</a></li>
 
-      <li><a href="#references">References</a></li>
+      <li><a href="#see-also">See also</a></li>
           </ul>
 
   </div>

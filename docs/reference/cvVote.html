@@ -51,7 +51,7 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta">Installation</a>
+  <a href="../installation.html">Installation</a>
 </li>
 <li>
   <a href="../reference/index.html">Docs</a>
@@ -81,7 +81,7 @@
   <a href="https://topherconley.github.io/neta-bcpls/">Application</a>
 </li>
 <li>
-  <a href="https://github.com/topherconley/spacemap/issues">Contact</a>
+  <a href="../contact.html">Contact</a>
 </li>
       </ul>
       
@@ -169,7 +169,11 @@ penalty by adding an additional parameter <code>refitRidge</code>.</p></td>
     </tr>
     <tr>
       <th>thresh</th>
-      <td></td>
+      <td><p>Numerical threshold between 0 and 1 (defaults to 0.5 or majority vote) 
+indicating the minimum proportion of times () a given edge must be represented 
+in the trained models to be reported in the final CV.Vote model. For example, 
+If 0.5 is specified, and there are 10 training splits, then an edge in the final 
+model must be reported in 6 of the 10 traiing models.</p></td>
     </tr>
     <tr>
       <th>iscale</th>
@@ -190,19 +194,19 @@ to change their default settings (e.g. setting <code>tol = 1e-4</code>).</p></td
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A list containing  
-   
-  <code>cvVote</code> A list containing
- <ol>
-<li><p><code>xy</code> Adjacency matrix where \(xy(p,q)\) element
-  is 1 for an edge between \(x_p\) and \(y_q\) and 0 otherwise.</p></li>
+    <p>A list containing</p><ul>
+<li><p>A list called <code>cvVote</code> with two elements:</p><ul>
+<li><p><code>xy</code>, an adjacency matrix where \(xy(p,q)\) element
+  is 1 for an edge between \(x_p\) and \(y_q\) and 0 otherwise; and</p></li>
 <li><p><code>yy</code> Adjacency matrix where \(yy(q,l)\) element
   is 1 for an edge between \(y_q\) and \(y_l\) and 0 otherwise.</p></li>
-</ol>
-  <code>minTune</code> List containing the optimal tuning penalty set. 
-  <code>minIndex</code> Integer specifying the index of <code>minTune</code> in <code>tuneGrid</code>. 
-  <code>metricScores</code> Data.frame for input to <code><a href='tuneVis.html'>tuneVis</a></code> for
- inspecting the CV score curve and model size as a function of the tuning penalties.</p>
+</ul></li>
+<li><p><code>minTune</code> List containing the optimal tuning penalty set.</p></li>
+<li><p><code>minIndex</code> Integer specifying the index of <code>minTune</code> in <code>tuneGrid</code>.</p></li>
+<li><p><code>metricScores</code> Data.frame for input to <code><a href='tuneVis.html'>tuneVis</a></code> for
+ inspecting the CV score curve and model size as a function of the tuning penalties.</p></li>
+</ul>
+
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
@@ -210,7 +214,8 @@ to change their default settings (e.g. setting <code>tol = 1e-4</code>).</p></td
 <span class='fu'>data</span>(<span class='no'>sim1</span>)
 <span class='co'>##########################</span>
 <span class='co'>#DEFINE TRAINING/TEST SETS</span>
-<span class='fu'>library</span>(<span class='no'>caret</span>)</div><div class='output co'>#&gt; <span class='message'>Loading required package: lattice</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: ggplot2</span></div><div class='input'><span class='co'>#sample size</span>
+<span class='fu'>library</span>(<span class='no'>caret</span>)
+<span class='co'>#sample size</span>
 <span class='no'>N</span> <span class='kw'>&lt;-</span> <span class='fu'>nrow</span>(<span class='no'>sim1</span>$<span class='no'>X</span>)
 <span class='co'>#number of folds</span>
 <span class='no'>K</span> <span class='kw'>&lt;-</span> <span class='fl'>5L</span>
@@ -249,7 +254,7 @@ to change their default settings (e.g. setting <code>tol = 1e-4</code>).</p></td
 
       <footer>
       <div class="copyright">
-  <p>Developed by <a href='https://github.com/topherconley/'>Christopher Conley</a>, <a href='http://www.stat.ucdavis.edu/~jie/'>Jie Peng</a>, <a href='http://research.mssm.edu/wanglab/index.htm'>Pei Wang</a>, UC Davis.</p>
+  <p>Developed by <a href='https://github.com/topherconley/'>Christopher Conley</a>, <a href='http://research.mssm.edu/wanglab/index.htm'>Pei Wang</a>, <a href='http://www.stat.ucdavis.edu/~jie/'>Jie Peng</a>, UC Davis.</p>
 </div>
 
 <div class="pkgdown">

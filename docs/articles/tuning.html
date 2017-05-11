@@ -28,6 +28,12 @@
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
+<li>
+  <a href="../installation.html">Installation</a>
+</li>
+<li>
+  <a href="../reference/index.html">Docs</a>
+</li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
     Vignettes
@@ -36,7 +42,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/basics.html">Basics</a>
+      <a href="../articles/basics.html">Model Fitting Basics</a>
     </li>
     <li>
       <a href="../articles/tuning.html">Model Tuning</a>
@@ -44,22 +50,16 @@
     <li>
       <a href="../articles/ensemble.html">Ensemble Network</a>
     </li>
+    <li>
+      <a href="../articles/neta.html">Network Analysis Toolkit</a>
+    </li>
   </ul>
 </li>
 <li>
-  <a href="../reference/index.html">R Documentation</a>
+  <a href="https://topherconley.github.io/neta-bcpls/">Application</a>
 </li>
 <li>
-  <a href="https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta">Installation</a>
-</li>
-<li>
-  <a href="https://topherconley.github.io/neta-bcpls/">Network Toolkit</a>
-</li>
-<li>
-  <a href="../news/index.html">News</a>
-</li>
-<li>
-  <a href="https://github.com/topherconley/spacemap/issues">Contact Us</a>
+  <a href="../contact.html">Contact</a>
 </li>
       </ul>
 <ul class="nav navbar-nav navbar-right">
@@ -84,7 +84,7 @@
       <h1>Model Tuning</h1>
                         <h4 class="author">Christopher Conley, Pei Wang, Jie Peng</h4>
             
-            <h4 class="date">2017-04-18</h4>
+            <h4 class="date">2017-05-10</h4>
           </div>
 
     
@@ -189,7 +189,7 @@ trainSets &lt;-<span class="st"> </span><span class="kw">lapply</span>(testSets,
 minLam1</code></pre></div>
 <pre><code>## [1] 65.40245</code></pre>
 <p>The <span class="math inline">\(y-y\)</span> edges are stored in the adjacency matrix <code>cvspace$cvVote$yy</code>. The number of <span class="math inline">\(y-y\)</span> edges is reported as:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nyy &lt;-<span class="st"> </span><span class="kw">nonZeroUpper</span>(cvspace$cvVote$yy,<span class="dv">0</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nyy &lt;-<span class="st"> </span><span class="kw"><a href="../reference/nonZeroUpper.html">nonZeroUpper</a></span>(cvspace$cvVote$yy,<span class="dv">0</span>)
 nyy</code></pre></div>
 <pre><code>## [1] 162</code></pre>
 <p>The <a href="https://topherconley.github.io/spacemap/reference/tuneVis.html">tuneVis</a> function generates several diagnostic plots for tuning the models, which are stored in a list.</p>
@@ -213,7 +213,7 @@ cvVis &lt;-<span class="st"> </span><span class="kw"><a href="../reference/tuneV
              , <span class="dt">ncol =</span> <span class="dv">2</span>)</code></pre></div>
 <p><img src="tuning_files/figure-html/unnamed-chunk-15-1.png" width="672"></p>
 <p>Since the true network is known, we can evaluate the learned SPACE network against the truth.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">spacePerf &lt;-<span class="st"> </span><span class="kw">cvPerf</span>(<span class="dt">cvOut =</span> cvspace, <span class="dt">trueParCor =</span> truth, <span class="dt">method =</span> <span class="st">"space"</span>)[<span class="dv">1</span>:<span class="dv">3</span>]
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">spacePerf &lt;-<span class="st"> </span><span class="kw"><a href="../reference/cvPerf.html">cvPerf</a></span>(<span class="dt">cvOut =</span> cvspace, <span class="dt">truth =</span> truth, <span class="dt">method =</span> <span class="st">"space"</span>)[<span class="dv">1</span>:<span class="dv">3</span>]
 spacePerf</code></pre></div>
 <pre><code>##     power       fdr       mcc 
 ## 0.7820513 0.2469136 0.7648620</code></pre>
@@ -235,7 +235,7 @@ tmap1 &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span cl
       <span class="dt">ylab =</span> <span class="st">"No. of X-&gt;Y edges"</span>, <span class="dt">xlab =</span> <span class="st">"lam2"</span>) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">theme_bw</span>()</code></pre></div>
 <p><img src="tuning_files/figure-html/unnamed-chunk-18-1.png" width="672"></p>
-<p>It is evident that restricting our attention to <span class="math inline">\(20\leq \lambda_2 \leq 35\)</span> is the best course of action to limit the number of <span class="math inline">\(x-y\)</span> edges to the range we are targeting. Now that we have reasonable ranges for <span class="math inline">\(\lambda_1,\lambda_2\)</span>, we also need to define a range for <span class="math inline">\(\lambda_3\)</span>, which is helpful for encouraging <span class="math inline">\(x\)</span>-hub selection. We could use the <a href="https://topherconley.github.io/spacemap/reference/initFit.html">initFit</a> function to guide this process; however, we expect  <span class="math inline">\(x\)</span>-hubs are likely to exist in the network such that the lower bound for <span class="math inline">\(\lambda_3\)</span> should be sufficiently far from 0. Now define the 3-D tuning grid:</p>
+<p>It is evident that restricting our attention to <span class="math inline">\(20\leq \lambda_2 \leq 35\)</span> is the best course of action to limit the number of <span class="math inline">\(x-y\)</span> edges to the range we are targeting. Now that we have reasonable ranges for <span class="math inline">\(\lambda_1,\lambda_2\)</span>, we also need to define a range for <span class="math inline">\(\lambda_3\)</span>, which is helpful for encouraging <span class="math inline">\(x\)</span>-hub selection. We could use the <a href="https://topherconley.github.io/spacemap/reference/initFit.html">initFit</a> function to guide this process; however, we expect <span class="math inline">\(x\)</span>-hubs are likely to exist in the network such that the lower bound for <span class="math inline">\(\lambda_3\)</span> should be sufficiently far from 0. Now define the 3-D tuning grid:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tmap2 &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">lam1 =</span> <span class="kw">seq</span>(<span class="dv">65</span>, <span class="dv">75</span>, <span class="dt">length =</span> <span class="dv">5</span>), 
                     <span class="dt">lam2 =</span> <span class="kw">seq</span>(<span class="dv">21</span>, <span class="dv">35</span>, <span class="dt">length =</span> <span class="dv">5</span>), 
                     <span class="dt">lam3 =</span> <span class="kw">seq</span>(<span class="dv">10</span>, <span class="dv">40</span>, <span class="dt">length =</span> <span class="dv">5</span>))</code></pre></div>
@@ -264,8 +264,8 @@ cvVis3 &lt;-<span class="st"> </span>spacemap::<span class="kw"><a href="../refe
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(gridExtra)
 <span class="kw">grid.arrange</span>(cvVis1[[<span class="dv">1</span>]], cvVis2[[<span class="dv">1</span>]],cvVis3[[<span class="dv">1</span>]], <span class="dt">ncol =</span> <span class="dv">2</span>)</code></pre></div>
 <p><img src="tuning_files/figure-html/unnamed-chunk-23-1.png" width="672"></p>
-<p>This whole tuning process took about 7 minutes. The network learning performance of <code>spacemap</code> is listed below</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">smapPerf &lt;-<span class="st"> </span><span class="kw">cvPerf</span>(<span class="dt">cvOut =</span> cvsmap, <span class="dt">trueParCor =</span> truth, <span class="dt">method =</span> <span class="st">"spacemap"</span>)[<span class="dv">1</span>:<span class="dv">8</span>]
+<p>This whole tuning process took about 6 minutes. The network learning performance of <code>spacemap</code> is listed below</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">smapPerf &lt;-<span class="st"> </span><span class="kw"><a href="../reference/cvPerf.html">cvPerf</a></span>(<span class="dt">cvOut =</span> cvsmap, <span class="dt">truth =</span> truth, <span class="dt">method =</span> <span class="st">"spacemap"</span>)[<span class="dv">1</span>:<span class="dv">8</span>]
 smapPerf</code></pre></div>
 <pre><code>##      power        fdr        mcc    powerXY      fdrXY    powerYY 
 ## 0.76666667 0.07471264 0.84049251 0.87037037 0.07843137 0.73076923 
@@ -313,7 +313,7 @@ smapPerf</code></pre></div>
 
 
       <footer><div class="copyright">
-  <p>Developed by <a href="https://github.com/topherconley/">Christopher Conley</a>, <a href="http://www.stat.ucdavis.edu/~jie/">Jie Peng</a>, <a href="http://research.mssm.edu/wanglab/index.htm">Pei Wang</a>, UC Davis.</p>
+  <p>Developed by <a href="https://github.com/topherconley/">Christopher Conley</a>, <a href="http://research.mssm.edu/wanglab/index.htm">Pei Wang</a>, <a href="http://www.stat.ucdavis.edu/~jie/">Jie Peng</a>, UC Davis.</p>
 </div>
 
 <div class="pkgdown">

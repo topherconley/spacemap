@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Functional enrichment of x neighborhood. — xHubEnrich â€¢ spacemap</title>
+<title>Functional enrichment of x-hub neighborhood. — xHubEnrich â€¢ spacemap</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -51,7 +51,7 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="https://github.com/topherconley/spacemap/releases/tag/v0.45.0-beta">Installation</a>
+  <a href="../installation.html">Installation</a>
 </li>
 <li>
   <a href="../reference/index.html">Docs</a>
@@ -81,7 +81,7 @@
   <a href="https://topherconley.github.io/neta-bcpls/">Application</a>
 </li>
 <li>
-  <a href="https://github.com/topherconley/spacemap/issues">Contact</a>
+  <a href="../contact.html">Contact</a>
 </li>
       </ul>
       
@@ -103,12 +103,12 @@
       <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Functional enrichment of x neighborhood.</h1>
+    <h1>Functional enrichment of x-hub neighborhood.</h1>
     </div>
 
     
     <p>A means to assess functional 
-impact of x hub perturbations</p>
+impact of x-hub perturbations</p>
     
 
     <pre><span class='fu'>xHubEnrich</span>(<span class='no'>ig</span>, <span class='no'>go2eg</span>)</pre>
@@ -133,21 +133,26 @@ The list ought to be non-redundant in names.</p></td>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Data.frame with each x hub, out-degree, and the 
+    <p>Data.frame with each x-hub, out-degree, and the 
 neighborhood percentage.</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>A x hub is defined to be any x node with at least one edge to a y node. 
-A x neighborhood comprises all y nodes that are directly connected to a x hub by an edge. 
+    <p>A x-hub is defined to be any x node with at least one edge to a y node. 
+A x neighborhood comprises all y nodes that are directly connected to a x-hub by an edge. 
 x neighborhoods are of interest because they represent direct perturbations to y nodes.
 To quantitatively assess how much those perturbations are functionally meaningful,
 we compute a score called the GO-neighbor percentage. Two y nodes are called GO-neighbors 
 if they share a common Gene Ontology (GO) term in the same x neighborhood. We postulate 
 that a high percentage of GO-neighbors within an x neighborhood associates 
-the x hub with more functional meaning. These scores, 
+the x-hub with more functional meaning. These scores, 
 as presented in figure 5 of the spaceMap publication, 
 can be generated with a GO mapping</p>
+    
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <p><code><a href='rankHub.html'>rankHub</a></code>, <code><a href='cisTrans.html'>cisTrans</a></code>, 
+<code><a href='reportHubs.html'>reportHubs</a></code>, <code><a href='adj2igraph.html'>adj2igraph</a></code></p>
     
 
   </div>
@@ -159,6 +164,8 @@ can be generated with a GO mapping</p>
       <li><a href="#value">Value</a></li>
 
       <li><a href="#details">Details</a></li>
+
+      <li><a href="#see-also">See also</a></li>
           </ul>
 
   </div>
@@ -166,7 +173,7 @@ can be generated with a GO mapping</p>
 
       <footer>
       <div class="copyright">
-  <p>Developed by <a href='https://github.com/topherconley/'>Christopher Conley</a>, <a href='http://www.stat.ucdavis.edu/~jie/'>Jie Peng</a>, <a href='http://research.mssm.edu/wanglab/index.htm'>Pei Wang</a>, UC Davis.</p>
+  <p>Developed by <a href='https://github.com/topherconley/'>Christopher Conley</a>, <a href='http://research.mssm.edu/wanglab/index.htm'>Pei Wang</a>, <a href='http://www.stat.ucdavis.edu/~jie/'>Jie Peng</a>, UC Davis.</p>
 </div>
 
 <div class="pkgdown">
