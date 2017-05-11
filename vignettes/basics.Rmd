@@ -16,7 +16,7 @@ opts_chunk$set(message=F, warning=F)
 
 ## Motivation 
 
-This vignette will help users become familiar with the implementation of the model parameters and the output associated with the [spacemap](https://topherconley.github.io/spacemap/reference/spacemap.html) function, which is the fundamental model fitting function of the R package. Familiarity with the mathematical expression of the spaceMap model will help the reader map the notation to R object variables (see the Methods section of the spacemap publication).  
+This vignette help users become familiar with the implementation of the model parameters and the output associated with the [spacemap](https://topherconley.github.io/spacemap/reference/spacemap.html) function, which is the fundamental model fitting function of the R package. Familiarity with the mathematical expression of the spaceMap model will help the reader map the notation to R object variables (see the Methods section of the spacemap publication).  
 
 ## Background 
 
