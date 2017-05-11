@@ -14,30 +14,40 @@ library(knitr)
 opts_chunk$set(message=F, warning=F)
 ```
 
-## Motivation 
+<!--## Motivation -->
 
-This vignette help users become familiar with the implementation of the model parameters and the output associated with the [spacemap](https://topherconley.github.io/spacemap/reference/spacemap.html) function, which is the fundamental model fitting function of the R package. Familiarity with the mathematical expression of the spaceMap model will help the reader map the notation to R object variables (see the Methods section of the spacemap publication).  
+This vignette helps users with the network fitting function  [spacemap](https://topherconley.github.io/spacemap/reference/spacemap.html) and its output. 
+<!--Familiarity with the mathematical expression of the spaceMap model will help the reader map the notation to R object variables (see the Methods section of the spacemap publication).  -->
 
 ## Background 
 
-The spaceMap model is a conditional graphical model suited for learning networks from high-dimensional data constrained by limited sample size. Two distinct data types are input to the model; one data type labeled as $X$'s are predictor variables that can be continuous, discrete, or categorical in nature; another data type is labeled as $Y$'s and are continuous response variables. When we fit the spaceMap model, we seek to learn the network comprised of node set $\textbf{V}= (X,Y)$ and edge set $\textbf{E}= \{ x_p - y_q : p \in \{1, \dots, P\}, q \in \{1, \dots, Q\} \} \cup \{ y_q - y_l : q \neq l \in \{1, \dots, Q\} \}$. The output of the model is the network containing the edges $x-y$ and $y-y$, but not $x-x$ edges. Motivated by integrative genomics applications, it has been applied to learn how genomic copy number alterations (i.e. $x$'s) regulate protein expression co-variation (i.e. $y$'s) in breast cancer. In this specific application, it learned $x-y$ edges to identify which genomic alterations disrupt which protein pathways, while simultaneously accounting for the $y-y$ interactions among the proteins in dysregulated cancer pathways. The model can be applied in a general sense to diverse high dimensional data types, not just those pertaining to integrative genomics. 
+The spaceMap model is a conditional graphical model  for learning networks with two-types of nodes. Two distinct data (node) types are input to the model: One labeled as $X$'s (predictor variables) that can be continuous, discrete, or categorical in nature; another  labeled as $Y$'s that are continuous response variables. <!--When we fit the spaceMap model, we seek to learn the network comprised of node set $\textbf{V}= (X,Y)$ and edge set $\textbf{E}= \{ x_p - y_q : p \in \{1, \dots, P\}, q \in \{1, \dots, Q\} \} \cup \{ y_q - y_l : q \neq l \in \{1, \dots, Q\} \}$. -->
+
+The output of the spaceMap model is a network containing  $x-y$ and $y-y$ edges, but not $x-x$ edges. 
+<!--Motivated by integrative genomics applications, it has been applied to learn how genomic copy number alterations (i.e. $x$'s) regulate protein expression co-variation (i.e. $y$'s) in breast cancer. -->
+It has been used to identify which genomic alterations ($x$) disrupt which protein ($y$) pathways, while simultaneously accounting for the  interactions among the proteins (https://topherconley.github.io/neta-bcpls/). The model may also be applied  to other high dimensional data types and to applications beyond integrative genomics. 
 
 ## Example 
 
-The simulation [sim1](https://topherconley.github.io/spacemap/reference/sim1.html) illustrates how to fit spaceMap. The simulation contains $N=150$ iid samples of $P=14$ predictor variables $X$ and $Q=171$ response variables $Y$ generated under a Gaussian Graphical Model; that is to say, $ (X,Y) \sim N_{P + Q}(0,\Theta^{-1})$, where the non-zero elements of the inverse covariance matrix $\Theta$ specify edges between $x-y$ and $y-y$ and (and $x-x$, although these are ignored in the conditional framework). Normality is not a required model assumption for either predictor or response, but is useful for simulations because edges are easily parameterized through $\Theta$. In this case, we parameterized the network to have 4 prominent $x$ hubs perturbing between 13 and 14 $y$ variables, and two prominent $Y$ hubs. More details of the simulation and how to access the data and true network topology can be found in the [sim1](https://topherconley.github.io/spacemap/reference/sim1.html) documentation. We load the `sim1` R object, containing the $N\times Q$ response matrix $\bf Y$, the $N\times P$ response matrix $\bf X$, and the the true edges of the network.  
+We use  simulation data [sim1](https://topherconley.github.io/spacemap/reference/sim1.html) to illustrate how to fit the  spaceMap model. [sim1] contains $N=150$ i.i.d. samples of $P=14$ predictor variables ($X$) and $Q=171$ response variables ($Y$) generated under a Gaussian Graphical Model. <!--that is to say, $ (X,Y) \sim N_{P + Q}(0,\Theta^{-1})$, where the non-zero elements of the inverse covariance matrix $\Theta$ specify edges between $x-y$ and $y-y$ and (and $x-x$, although these are ignored in the conditional framework). Normality is not a required model assumption for either predictor or response, but is useful for simulations because edges are easily parameterized through $\Theta$.--> The corresponding network has 4 prominent $x$-hubs perturbing ~13 $y$ variables, and two prominent $Y$-hubs. More details of this simulation can be found in the [sim1](https://topherconley.github.io/spacemap/reference/sim1.html) documentation. 
+
+
+We load the `sim1` R object, containing the $N\times Q$ response matrix $\bf Y$, the $N\times P$ response matrix $\bf X$, and  the true network.  
 
 ```{r}
 library(spacemap)
 data(sim1)
 ```
 
-The spaceMap model learns the structure of the network from data by estimating the edge set $\bf\hat E$. The following steps will discuss basic input parameters to learn the network. 
+<!--The spaceMap model learns the structure of the network from data by estimating the edge set $\bf\hat E$.--> The following steps will discuss input parameters to learn the network and the output.  
 
 ## Fitting `spacemap`
 
-### Tuning penalties
+### Tuning parameters
 
-Tuning penalties $\lambda_1, \lambda_2$ correspond to parameters `lam1` and `lam2`, where each determines the degree of overall sparsity of the $y-y$ and $x-y$ edges in the network, respectively. Tuning penalty $\lambda_3$ corresponds to parameter `lam3` and encourages selection of $x$ hubs--that is $x$'s that influence many $y$'s. The selection of appropriate penalty parameters is of primary importance when evaluating `spacemap::spacemap` to learn a network. In this simplified scenario we set the tuning parameters based on previous cross validation results. The task of selecting appropriate tuning parameters requires a robust model-selection routine and is discussed in more advanced vignettes. 
+Tuning parameters $\lambda_1, \lambda_2$ (corresponding to the arguments `lam1` and `lam2`) control the overall sparsity of the $y-y$ and $x-y$ edges in the network, respectively. Tuning penalty $\lambda_3$ (corresponding to argument `lam3`) encourages selection of $x$ hubs-- $x$ that influences many $y$'s. 
+
+The selection of tuning parameters through cross-validation is discussed in another [vignettes](https://topherconley.github.io/spacemap/articles/tuning.html). Here,  we set the tuning parameters based on previous cross validation results. 
 
 ```{r}
 lam1 <- 72
@@ -47,13 +57,13 @@ lam3 <- 18
 
 ### Output
 
-Fit the spacemap model to the data matrices $\bf X$ and $\bf Y$ with the selected tuning penalties. All other input parameters are left as defaults, but can be further customized as needed (see `help(spacemap::spacemap)`).  
+<!--Fit the spacemap model to the data matrices $\bf X$ and $\bf Y$ with the selected tuning penalties.--> All other input parameters are left as defaults, but can be further customized as needed (see `help(spacemap::spacemap)`).  
 
 ```{r}
 net <- spacemap(Y = sim1$Y, X = sim1$X, lam1 = lam1, lam2 = lam2, lam3 = lam3)
 ```
 
-Most users will be interested in the network topology, which is encoded in the adjacency matrices `yy` and `xy` output from the `adjacency` auxiliary function. 
+The network topology is encoded in the adjacency matrices `yy` and `xy` output from the `adjacency` auxiliary function. 
 
 ```{r}
 adjnet <- adjacency(net = net)
@@ -65,46 +75,48 @@ where
 + `adjnet$yy[q,l]` indicates an edge $y_q - y_l$ when equal to 1 and 0 otherwise. 
 + `adjnet$xy[p,q]` indicates an edge $x_p - y_q$ when equal to 1 and 0 otherwise. 
 
-The intermediate output of `spacemap` is a list of estimated parameters and model diagnostics. The estimated parameters are combined to infer the network. The model diagnostics help the user to decide whether the estimated parameters are valid.
-
-#### Estimated parameters:
-
-+ The estimated partial correlations $\bf \hat  \rho$ are reported as a symmetric matrix `ParCor` where the off-diagonal entries exceeding the convergence tolerance in absolute value encode $y-y$ edges. 
-+ The estimated diagonal of the inverse co-variation matrix for the $y$ variables is denoted as $\bf \hat \theta$ and is reported as the numeric vector `sig.fit`. 
-+ The estimated regression coefficients $\bf \hat \Gamma$ are reported in matrix form as `Gamma`, where  coefficients exceeding the convergence tolerance encode $x-y$ edges. 
-
-#### Model Diagnostics: 
-
-+ The residual sum of squares is reported as a numeric `rss`. 
-+ The logical variable `convergence` indicates whether the model converged subject to the specified tolerance and number of maximum iterations; 
-+ The numeric `deltaMax` reports the maximum $\Delta$ in parameter values in the last iteration. This helps diagnose how close 
-the algorithm is to converging if it does not converge. 
-
-The structure of the intermediate output is shown below. 
+The output of the `spacemap` function is a list of estimated parameters and model diagnostics.
+<!--The estimated parameters are combined to infer the network. The model diagnostics help the user to decide whether the estimated parameters are valid.-->
 
 ```{r}
 str(net)
 ```
 
-## Quick Visualization
+##### Estimated parameters:
 
-Network analysis is enhanced through visualizing the network topology. There are many external software libraries dedicated to visualization.  We recommend using Cytoscape (not part of R) for publication quality visualizations. However, such a tool may involve some manual curation and the sophisticated options makes for a steeper learning curve. If you simply need a quick way to visualize the network output, the following section illustrates how to do so within R. 
++ `ParCor`: The estimated $y-y$ partial correlation matrix (given $x$). 
++ `sig.fit`: The estimated diagonal of the $y-y$ submatrix of the inverse joint covariance matrix.
++ `Gamma`: The estimated coefficients for $x-y$ edges. 
 
-First, export the the spacemap output to an igraph object. 
+##### Model Diagnostics: 
+
++ `rss`: numerica,  the residual sum of squares. 
++ `convergence`: logical,  indicating whether the model converged subject to the specified tolerance and number of maximum iterations; 
++ `deltaMax`: numeric, the maximum change in parameter values in the last iteration. 
+
+
+## Visualization
+
+There are many software for network visualization, e.g.,  *Cytoscape* (http://cytoscape.org/index.html). <!--However, such a tool may involve some manual curation and the sophisticated options makes for a steeper learning curve.--> The following section illustrates how to visualize the network output using the `igraph' and  `networkD3` R packages. 
+
+First, export the the spacemap output to an igraph object which  has a sparse representation.
 
 ```{r}
 library(igraph)
 ig <- spacemap::adj2igraph(yy = adjnet$yy, xy = adjnet$xy)
 ```
 
-The igraph object `ig` has a very convenient sparse representation, with `ig` occupying `r round(object.size(adjnet) / object.size(ig),0)` times smaller memory than `adjnet`.  Many powerful network analysis tools are available in the igraph R package that enhance the visualization. For example, we identify modules or communities of the spaceMap network with igraph's edge-betweenness algorithm.
+<!--with `ig` occupying `r round(object.size(adjnet) / object.size(ig),0)` times smaller memory than `adjnet`.-->  
+
+We then identify network modules with igraph's edge-betweenness algorithm.
 
 ```{r}
 ceb <- igraph::cluster_edge_betweenness(graph = ig)
 members <- igraph::membership(ceb)
 ```
  
-Color the nodes according to their communities. Since the community detection method we used was hierarchical, we can further group higher-order structure of the communities with shaded polygons. Edges between communities are colored red and edges  within communities are colored in black. Nodes with higher degree are scaled to be larger. 
+<!--Color the nodes according to their communities. Since the community detection method we used was hierarchical, we can further group higher-order structure of the communities with shaded polygons. -->
+We then plot the network where edges between modules are colored red and edges  within modules are colored in black, and nodes with higher degree are scaled to be larger. 
 
 ```{r}
 dg <- degree(ig)*1.5
@@ -112,7 +124,7 @@ plot(ceb, ig, vertex.label= "", vertex.size = dg,
 edge.width = rep(2, ecount(ig)))
 ```
 
-For interactive visualization, we may make use of the `networkD3` package. The following snippet will visualize `spacemap`'s network where $X$ and $Y$ hub nodes are larger in size. Colors denote the 14 different modules of the network. Hover over a node with your mouse if you wish to see the node ID and its adjacent neighbors. 
+For interactive visualization, we could use the `networkD3` package. The following snippet will visualize the network where $X$ and $Y$ hub nodes are larger in size and different colors denote the 14 different modules. Hover over a node with mouse if you wish to see the node ID and its neighbors. 
 
  
 ```{r}
@@ -134,5 +146,5 @@ forceNetwork(Links = ig_d3$links, Nodes = ig_d3$nodes,
 
 ## Further Reading
 
-With this basic understanding of the `spacemap` model fitting, we recommend looking at the [next vignette](https://topherconley.github.io/spacemap/articles/tuning.html) which illustrates how to select tuning penalty parameters through an iterative grid-search with cross-validation criterion. 
+With this basic understanding of the `spacemap` model fitting, we recommend looking at the [next vignette](https://topherconley.github.io/spacemap/articles/tuning.html) which illustrates how to select tuning parameters through an iterative grid-search with cross-validation criterion. 
 
