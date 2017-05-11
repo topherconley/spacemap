@@ -23,37 +23,44 @@ Igor Stravinsky
 
 ## Motivation
 
-The spaceMap model learns networks in the high dimension and low sample size regime by imposing a sparsity assumption on the network topology. The sparsity assumption means that most nodes in the network have very few conditional dependencies among themselves relative to the potential number of edges. Penalty terms in the multivariate regression are the technical means to impose a sparse network, which were briefly introduced in the previous vignette [spacemap basics ](https://topherconley.github.io/spacemap/articles/basics#fitting-spacemap.html). Three penalty terms, sometimes called tuning penalties, are employed in spaceMap to more precisely control the amount of sparsity imposed on different interactions. These parameters ought to be tuned for each data set to find the appropriate amount of sparsity. Adding more specialized parameters increases the range of network topologies learned by spaceMap, just as increasing the number of strings on a musical instrument can enhance the range of the artist's expression. However, there exists a trade-off of model complexity versus computation time expended in parameter tuning that needs to be appropriately managed. This vignette illustrates a successful strategy that helps balances computation time with improving network learning performance. 
+The spaceMap model learns networks in the high-dimension-low-sample-size regime by imposing a sparsity assumption on the network topology. <!--The sparsity assumption means that most nodes in the network have very few conditional dependencies among themselves relative to the potential number of edges.--> 
+Three parameters are employed in spaceMap to  control the amount of sparsity on different types of interactions, which were briefly introduced in the previous vignette [Model Fitting Basics](https://topherconley.github.io/spacemap/articles/basics.html). 
+These parameters ought to be tuned to find the appropriate amount of sparsity  for each data set. 
 
-### Penalty parameters
+<!--Adding more parameters increases the range of network topologies learned by spaceMap, just as increasing the number of strings on a musical instrument can enhance the range of the artist's expression. More parameters add flexibility to the model. -->
+The computation effort spent on parameter tuning needs to be appropriately managed. This vignette illustrates a strategy that helps balance between computation time and network learning performance. 
 
-We begin by describing the special purpose of each penalty parameter that must be tuned. The first penalty parameter $\lambda_1$ controls the overall sparsity  among response variable interactions $y-y$. The second penalty parameter $\lambda_2$ limits the number of predictor-response interactions $x-y$. Lastly, increasing the penalty parameter $\lambda_3$ will result in networks with greater representation of hub predictor nodes---possessing many interactions with response nodes---rather than reporting many predictors with very few interactions with the responses. These penalty parameters are all non-negative, where larger values impose greater sparsity in the case of $\lambda_1, \lambda_2$, or encourage $x$-hub structure in the case of $\lambda_3$. 
+### Tuning parameters
+
+We begin with describing the  purpose of each tuning parameter. The first tuning parameter $\lambda_1$ controls the overall sparsity  among response variable interactions $y-y$ and the second tuning parameter $\lambda_2$ controls that among the predictor-response interactions $x-y$. Lastly, increasing the tuning parameter $\lambda_3$ will result in networks with greater representation of hub predictor nodes. <!-- possessing many interactions with response nodes---rather than reporting many predictors with very few interactions with the responses. These tuning parameters are all non-negative, where larger values impose greater sparsity in the case of $\lambda_1, \lambda_2$, or encourage $x$-hub structure in the case of $\lambda_3$.-->
 
 ## Tuning Strategy
 
-Exploring a large grid of penalty parameters can be very computationally demanding. In this tutorial we illustrate a strategy for finding a a good neighborhood of tuning penalties. The strategy finds suitable neighborhoods of each tuning penalty by:
+Exploring a large grid of tuning parameters can be computationally demanding. Here, we illustrate a strategy for finding a good grid of tuning parameters:
 
-1. Cross validation of SPACE model^[Peng, Wang, Zhou and Zhu (2009). Partial Correlation Estimation by Joint Sparse Regression Models, Journal of the American Statistical Association , Vol. 104, No. 486, 735-746], which is a special case of the spaceMap model when only $\bf Y$ input data is specified and $\lambda_2=\lambda_3=0$. Hence, tune the SPACE model across a one-dimensional grid of tuning penalty $\lambda_1$, parameterized as `lam1`. Identify best performing neighborhood of $\lambda_1$. 
-2. Cross validation of spaceMap model with input data $\bf X$ and $\bf Y$ across a three-dimensional grid of $\lambda_1, \lambda_2, \lambda_3$. The neighborhood of $\lambda_1$ is specified from step 1. Explore a broad range of values for $\lambda_2, \lambda_3$, which are parameterized as `lam2` and `lam3`.  
-3. Repeat step 2 if further refinement of the tuning penalties is needed. 
+1. Step 1: Cross validation of SPACE model^[Peng, Wang, Zhou and Zhu (2009). Partial Correlation Estimation by Joint Sparse Regression Models, Journal of the American Statistical Association , Vol. 104, No. 486, 735-746], which is a special case of the spaceMap model when only $\bf Y$ input data is specified and $\lambda_2=\lambda_3=0$. Hence, tune the SPACE model across a one-dimensional grid and  identify the best performing neighborhood for $\lambda_1$. 
+
+2. Step 2: Cross validation of spaceMap model with input data $\bf X$ and $\bf Y$ across a three-dimensional grid of $\lambda_1, \lambda_2, \lambda_3$. The neighborhood of $\lambda_1$ is specified from step 1. Explore a broad range of values for $\lambda_2, \lambda_3$ (arguments `lam2` and `lam3`).  
+
+3. Step 3: Repeat step 2 while zooming into a smaller neighborhood of the grid if further refinement of the tuning parameters is needed. 
 
 ## Tuning Example 
 
-We will illustrate the details of this strategy with an example from simulation [sim1](https://topherconley.github.io/spacemap/reference/sim1.html), which was described earlier in [spacemap basics ](https://topherconley.github.io/spacemap/articles/basics#example.html). The simulation has a known true network topology, which affords an evaluation of whether this tuning strategy leads to reasonably tuned parameter selection. 
-The data has been standardized (mean-centered with unit variance) for all variables. 
+We illustrate the above strategy with an example from simulation [sim1](https://topherconley.github.io/spacemap/reference/sim1.html). <!-- The simulation has a known true network topology, which affords an evaluation of whether this tuning strategy leads to reasonably tuned parameter selection. 
+The data has been standardized (mean-centered with unit variance) for all variables. -->
 
 ```{r}
 library(spacemap)
 data(sim1)
 ```
 
-Obtain the response data $\bf Y$, an $150 \times 171$ matrix..
+Obtain the response data $\bf Y$, a $150 \times 171$ matrix..
 
 ```{r}
 Y <- sim1$Y
 ```
 
-Obtain the predictor data $\bf X$, an $150 \times 14$ matrix.
+Obtain the predictor data $\bf X$, a $150 \times 14$ matrix.
 
 ```{r}
 X <- sim1$X
@@ -67,7 +74,7 @@ P <- ncol(X)
 Q <- ncol(Y)
 ```
 
-Extract the true network where edges $x-y$ are stored in the `truth$xy` adjacency matrix as  1's (and 0 otherwise) and $y-y$ edges are stored in the `truth$yy` adjacency matrix similarly. 
+Extract the true network where $x-y$ edges  are stored in the `truth$xy` adjacency matrix as  1's and $y-y$ edges are stored in the `truth$yy` adjacency matrix.  
 
 ```{r}
 truth <- sim1$truth
@@ -87,9 +94,9 @@ if (dopar) {
 }
 ```
 
-## Find a neighborhood for `lam1`
+### Step 1: find a neighborhood for `lam1`
 
-Tune the `lam1` parameter by fitting the the SPACE model^[Peng, Wang, Zhou and Zhu (2009). Partial Correlation Estimation by Joint Sparse Regression Models, Journal of the American Statistical Association , Vol. 104, No. 486, 735-746] to $Y$ over a one-dimensional tuning grid. In the current implementation, the tuning penalty scales with the sample size. Use a result from Meinshausen and Buhlmann (2006)^[Meinshausen, Nicolai; Bühlmann, Peter. High-dimensional graphs and variable selection with the Lasso. Ann. Statist. 34 (2006), no. 3, 1436--1462. doi:10.1214/009053606000000281] to initialize $\lambda_{1}$^[applies when $\bf Y$ has been standardized to have unit variance for all $Q$ variables]. 
+Tune `lam1`  by fitting the SPACE model^[Peng, Wang, Zhou and Zhu (2009). Partial Correlation Estimation by Joint Sparse Regression Models, Journal of the American Statistical Association , Vol. 104, No. 486, 735-746] to $Y$ over a one-dimensional tuning grid. <!--In the current implementation, the tuning parameter scales with the sample size--> We use a result from Meinshausen and Buhlmann (2006)^[Meinshausen, Nicolai; Bühlmann, Peter. High-dimensional graphs and variable selection with the Lasso. Ann. Statist. 34 (2006), no. 3, 1436--1462. doi:10.1214/009053606000000281] to initialize $\lambda_{1}$^[applies when $\bf Y$ has been standardized to have unit variance for all $Q$ variables]. 
 
 ```{r}
 #initialize lam1 according to Meinshausen and Buhlmann
@@ -115,7 +122,7 @@ tsp <- expand.grid(lam1 = seq(lam0*eps1, lam0*(1 + (1 - eps1)), length = ngrid))
 summary(tsp)
 ```
 
-In preparation of 10-K cross validation, we encourage the user to determine the split of the data since the data may have some special underlying population structure that needs to be balanced across the hold-out sets. Below we illustrate one means of splitting the data through the external `caret` R package. 
+In preparation of cross validation, we encourage the user to determine the split of the data by themselves since the data may have some special underlying population structure that needs to be balanced across the hold-out sets. Below we illustrate one way of splitting the data through the `caret` R package. 
 
 ```{r}
 #for generating cross-validation folds
@@ -128,7 +135,7 @@ testSets <- createFolds(y = sample(x = c("A", "B"), size = N, replace = TRUE), k
 trainSets <- lapply(testSets, function(s) setdiff(seq_len(N), s))
 ```
 
-Conduct the cross-validation of the SPACE model through the [cvVote](https://topherconley.github.io/spacemap/reference/cvVote.html) function by specifying `method = "space"`. Also input the data $\bf Y$, the lists of test and training sample splits, and a grid of tuning penalties. 
+Conduct the cross-validation through the [cvVote](https://topherconley.github.io/spacemap/reference/cvVote.html) function by specifying `method = "space"`. Also input the data $\bf Y$, the lists of test and training sample splits, and a grid for the  tuning parameter. 
 
 ```{r}
 cvspace <- cvVote(Y = Y, 
@@ -136,7 +143,7 @@ cvspace <- cvVote(Y = Y,
                   method = "space", tuneGrid = tsp) 
 ```
 
-The CV-selected $\lambda^*_1$ is reported as follows. 
+The CV-selected $\lambda^*_1$ is reported as follows: 
 
 ```{r}
 minLam1 <- cvspace$minTune$lam1
@@ -152,7 +159,7 @@ nyy
 ```
 
 
-The [tuneVis](https://topherconley.github.io/spacemap/reference/tuneVis.html) function generates several diagnostic plots for tuning the models, which are stored in a list.
+The [tuneVis](https://topherconley.github.io/spacemap/reference/tuneVis.html) function performs diagnostics stored as a list: 
 
 ```{r}
 #the size of each test set
@@ -165,7 +172,7 @@ cvVis <- tuneVis(cvOut = cvspace,
                  tuneParam1Name = "lam1")
 ```
 
-In this tuning step, we only need the first and third diagnostic plots. Below the plot on the left is the first diagnostic plot, which shows the log(CV score) curve across `lam1` where the vertical line denotes the minimizer. The CV score curve has an approximately convex shape with a little bit variability at the valley. On the right is the average number of $y-y$ edges across CV training splits and is shown  decreasing with increasing `lam1`. The intersecting lines indicate the optimal lambda produces a CV.vote SPACE model of `r nonZeroUpper(cvspace$cvVote$yy,0)` $y-y$ edges, which is about 15 edges lower than the average no. of edges due to the model stabilizing influence of the CV.vote procedure. 
+<!--In this tuning step, we only need the first and third  diagnostic plots.--> Below the plot on the left shows the log(CV score) versus `lam1` where the vertical line denotes the minimizer. <!--The CV score curve has an approximately convex shape with a little bit variability at the valley. --> On the right is the average number of $y-y$ edges across CV training splits which is  decreasing with increasing `lam1`. The intersecting lines indicate that the optimal lambda produces a CV.vote model of `r nonZeroUpper(cvspace$cvVote$yy,0)` $y-y$ edges, which is about 15 edges less than the average no. of edges due to the stabilizing effect of the CV.vote procedure. 
 
 ```{r}
 #for combining plots
@@ -186,11 +193,19 @@ spacePerf <- cvPerf(cvOut = cvspace, truth = truth, method = "space")[1:3]
 spacePerf
 ```
 
-The "mcc" refers to an average of the power and FDR. The power, or sensitivity, is reasonable, but the FDR is a little high. Let's see the effect of conditioning on $\bf X$ through the spaceMap model. 
+The "mcc" measure combines the power and FDR. In this case, the power (or sensitivity) is reasonable, but the FDR (or specificity) is a little high. Next, we will see the effect of conditioning on $\bf X$ through the spaceMap model. 
 
-## Find a neighborhood for `lam2` and `lam3`
+### Step 2: find a neighborhood for `lam2` and `lam3`
 
-Now shifting our attention to tuning all three tuning penalties, we can make use of the information from step 1 to reduce the grid search time. Input a neighborhood of $65 \leq \lambda_1 \leq 75$ into the 3-D grid search since we know that produces a reasonable output for the $y-y$ portion of the network. Choosing an initial neighborhood for $\lambda_2, \lambda_3$ is guided by practical considerations such as how many  $x-y$ edges one might expect to see at maximum. In our case, we know there are only 14 $x$ variables and so we do not expect there to be more than say, 200 $x-y$ edges, but no less than 50 $x-y$ edges in a sparse network. When $P \leq Q$ we have noticed in our experience that $\lambda^*_1$ from step 1 serves as a good upper bound for initializing $\lambda_2,\lambda_3$---although this may not always be applicable. Also, our experience suggests the network size is more sensitive to $\lambda_2$ than $\lambda_3$; therefore, finding an appropriate neighborhood for $\lambda_2$ is most rational. Take $15 \leq \lambda_2 \leq 60 < \lambda^*_1$ and since we anticipate the existence of $x$-hubs, fix $\lambda_3=15 > 0$. 
+Now shifting our attention to tuning all three parameters. 
+
+Here we  make use of the information from step 1 to reduce the grid search time. Input a neighborhood of $65 \leq \lambda_1 \leq 75$ into the 3-D grid since we know that produces a reasonable output for the $y-y$ part of the network from step 1.
+
+The initial neighborhood for $\lambda_2, \lambda_3$ is guided by practical considerations such as the maximum number of  $x-y$ edges one might expect. In this case, since there are only 14 $x$ variables, we do not expect there to be more than say, 200 $x-y$ edges, but no less than 50 $x-y$ edges in a sparse network.
+When $P \leq Q$ we have noticed in our experience that the optimal $\lambda^*_1$ from step 1 serves as a good upper bound for initializing $\lambda_2,\lambda_3$, although this may not always be the case. Also, our experience suggests that the network size is more sensitive to $\lambda_2$ than to $\lambda_3$; therefore, finding an appropriate neighborhood for $\lambda_2$ is more critical. 
+
+
+In the following, take $15 \leq \lambda_2 \leq 60 (< \lambda^*_1)$ and fix $\lambda_3=15 > 0$: 
 
 ```{r}
 #define grid
@@ -199,7 +214,7 @@ tmap1 <- expand.grid(lam1 = minLam1,
                      lam3 = 15)
 ```
 
-We can quickly obtain an approximate lower bound for $\lambda_2$ by applying the [initFit](https://topherconley.github.io/spacemap/reference/initFit.html) function to get a sense of the number of $x-y$ edges (or $y-y$) for specific tuning sets. This function does not do any cross-validation, but simply fits the model once for each tuning parameter set in the grid. 
+We can  obtain an approximate lower bound for $\lambda_2$ by applying the [initFit](https://topherconley.github.io/spacemap/reference/initFit.html) function to get a sense of the number of $x-y$ edges (or $y-y$ edges) for a specific tuning set. This function does not do any cross-validation, but simply fits the model once for each tuning parameter combination in the grid. 
 
 ```{r}
 ntmap1 <- initFit(Y = Y, X = X, method = "spacemap", tuneGrid = tmap1)
@@ -209,7 +224,12 @@ qplot(x = tmap1$lam2, y = ntmap1$nxy,
   theme_bw()
 ```
 
-It is evident that restricting our attention to $20\leq \lambda_2 \leq 35$ is the best course of action to limit the number of $x-y$ edges to the range we are targeting. Now that we have reasonable ranges for $\lambda_1,\lambda_2$, we also need to define a range for $\lambda_3$, which is helpful for encouraging $x$-hub selection. We could use the [initFit](https://topherconley.github.io/spacemap/reference/initFit.html) function to guide this process; however, we expect  $x$-hubs are likely to exist in the network such that the lower bound for $\lambda_3$ should be sufficiently far from 0. Now define the 3-D tuning grid: 
+The above plot suggests restricting our attention to $20\leq \lambda_2 \leq 35$ to limit the number of $x-y$ edges to the range that we are targeting. 
+
+Now that we have reasonable ranges for $\lambda_1,\lambda_2$, we also need to find an appropriate range for $\lambda_3$. We could use the [initFit](https://topherconley.github.io/spacemap/reference/initFit.html) function to guide this process; however, since we expect that $x$-hubs are likely to exist in the network, the lower bound for $\lambda_3$ should be sufficiently far away from 0. 
+
+
+Now define the 3-D tuning grid: 
 
 ```{r}
 tmap2 <- expand.grid(lam1 = seq(65, 75, length = 5), 
@@ -217,7 +237,7 @@ tmap2 <- expand.grid(lam1 = seq(65, 75, length = 5),
                     lam3 = seq(10, 40, length = 5))
 ```
 
-Apply cross validation with `method = "spacemap"` to learn the best network in the tuning grid. This will take about 4 minutes on a single processor. 
+Apply cross validation with `method = "spacemap"` to learn the optimal network in the tuning grid. For this data set, this will take about 4 minutes on a single processor. 
 
 ```{r}
 cvsmap <- cvVote(Y = Y, X = X, 
@@ -225,7 +245,7 @@ cvsmap <- cvVote(Y = Y, X = X,
                  method = "spacemap", tuneGrid = tmap2)
 ```
 
-The CV.vote spaceMap network is encoded into adjacency matrices `cvsmap$cvVote[c("xy", "yy")]`. The best penalties from the tuning grid are: 
+The CV.vote spaceMap network is encoded into adjacency matrices `cvsmap$cvVote[c("xy", "yy")]`. The optimal tuning parameters from the tuning grid are: 
 
 ```{r}
 cvsmap$minTune
@@ -242,25 +262,25 @@ cvVis3 <- spacemap::tuneVis(cvOut = cvsmap, testSetLen = nsplits,
                             tuneParam1 = tmap2$lam3, tuneParam1Name = "lam3")
 ```
 
-Visualizing the CV scores across the 3-D grid shows the selected tuning penalties are away from their respective boundaries, which suggests the grid is suitable. If the selected penalty was on or near the boundary, it may suggest to increase (decrease) the upper (lower) bound of the penalty in the grid. 
+Visualizing the CV scores across the 3-D grid shows that the selected tuning parameters are away from their respective boundaries, which suggests the grid is suitable. If a selected parameter is on or near the boundary, it suggests that we may  increase (or decrease) the upper (or lower) bound for that parameter on the grid. 
 
 ```{r}
 library(gridExtra)
 grid.arrange(cvVis1[[1]], cvVis2[[1]],cvVis3[[1]], ncol = 2)
 ```
 
-This whole tuning process took about `r round((proc.time() - ptm)[3]/60, 0)` minutes. The network learning performance of `spacemap` is listed below
+This whole tuning process took about `r round((proc.time() - ptm)[3]/60, 0)` minutes  on a single processor. The performance of the final network is listed below
 
 ```{r}
 smapPerf <- cvPerf(cvOut = cvsmap, truth = truth, method = "spacemap")[1:8]
 smapPerf
 ```
 
-The spaceMap model dramatically lowers the $y-y$ FDR when compared with the SPACE model in this example. The FDR is lowered from  over 25% to below 8%, while experiencing a small drop in $y-y$ power. This benefit is believed to be because spaceMap learns the $x-y$ edges that encode predictor variable perturbations to the response variables. With a relatively high $x-y$ power and limited overall FDR, spaceMap is a real improvement upon SPACE. 
+Note that, the spaceMap model dramatically lowers the $y-y$ FDR when compared with the SPACE model with only a small drop in power. <!--The FDR is lowered from  over 25% to below 8%, while experiencing a small drop in $y-y$ power. This benefit is believed to be because spaceMap learns the $x-y$ edges that encode predictor variable perturbations to the response variables.  With a relatively high $x-y$ power and low overall FDR, spaceMap is a real improvement upon SPACE.--> 
 
-### Refinement of Grid
+### Step 3 (optional): refinement of the grid
 
-If time allows, further refinement of the tuning grid could be explored by narrowing the neighborhood about the previously optimal tuning set. However, note that refining the grid may lead to a better CV score, but worse performance due to over-fitting. 
+Further refinement could be explored by narrowing the neighborhood around the previously found optimal tuning set and using a finer grid. <!--However, note that refining the grid may lead to a better CV score, but worse performance due to over-fitting.--> 
 
 
 ```{r, echo  = FALSE, eval = FALSE}
@@ -287,5 +307,5 @@ spacemap::cvPerf(cvOut = cvsmap2, truth = truth, method = "spacemap")[1:8]
 
 ## Further Reading 
 
-Completion of this vignette ought to have taught how to tune penalty parameters to near optimal settings for the `spacemap` model. We recommend looking at the [next vignette](https://topherconley.github.io/spacemap/articles/ensemble.html) which illustrates how to have more precise control of the FDR through an ensemble network. 
+This vignette discusses how to choose tuning parameters for the spaceMap model. We recommend looking at the [next vignette](https://topherconley.github.io/spacemap/articles/ensemble.html) which illustrates how to further control FDR through an ensemble of networks learned on bootstrap replicates of the data. 
 
