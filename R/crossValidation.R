@@ -393,107 +393,44 @@ cvVote <- function(Y, X = NULL, trainIds, testIds,
 ##################
 #PERFORMANCE
 ##################
-cvPerf <- function(cvOut, trueParCor, method, givenX = FALSE, Xindex=NULL, Yindex=NULL) {
+
+#' CV.Vote Model Performance
+#' 
+#' Convenience function for evaluating edge detection performance of 
+#' CV.Vote model fits. 
+#' 
+#' @inheritParams reportJointPerf
+#' @param cvOut Output from \code{\link{cvVote}}.
+#' @param method Character vector indicates \code{cvOut} came from
+#' spaceMap or SPACE model. See parameter \code{method} in \code{\link{cvVote}}.
+#' @param givenX Logical (defaults to FALSE). Set to TRUE for \code{method == "space"}
+#' when \code{cvOut} had non-null \code{X} input to \code{\link{cvVote}}.
+#' @param Xindex Integer vector of indices of X variables in partial correlation matrix. Defaults to 
+#' NULL, but must be non-null when \code{method == "space" & givenX = TRUE}. 
+#' @param Yindex Integer vector of indices of Y variables in partial correlation  matrix. Defaults to 
+#' NULL, but must be non-null when \code{method == "space" & givenX = TRUE}. 
+#' @seealso \code{\link{reportJointPerf}}, \code{\link{reportPerf}}
+#' @export
+cvPerf <- function(cvOut, truth, method, givenX = FALSE, Xindex=NULL, Yindex=NULL) {
   if (method == "spacemap") {
-    perf <- spacemap::reportJointPerf(fitParCor = list(xy = cvOut$cvVote$xy, 
+    perf <- spacemap::reportJointPerf(fit = list(xy = cvOut$cvVote$xy, 
                                                        yy = cvOut$cvVote$yy),
-                                      trueParCor = trueParCor, tol = 1e-6, 
+                                      truth = truth, tol = 1e-6, 
                                       verbose = FALSE)  
   } else if (method == "space") {
     if (givenX) { 
-      perf <- spacemap::reportJointPerf(fitParCor = list(xy = cvOut$cvVote$yy[Xindex,Yindex], 
+      if(is.null(Xindex) | is.null(Yindex)) { 
+        stop("Must specify Xindex and Yindex; cannot be NULL.")  
+      }
+      perf <- spacemap::reportJointPerf(fit = list(xy = cvOut$cvVote$yy[Xindex,Yindex], 
                                                          yy = cvOut$cvVote$yy[Yindex,Yindex]),
-                                        trueParCor = trueParCor, tol = 1e-6, 
+                                        truth = truth, tol = 1e-6, 
                                         verbose = FALSE)
     } else { 
       perf <- spacemap::reportPerf(cvOut$cvVote$yy,
-                                   trueParCor$yy, YY = TRUE, tol = 1e-6, 
+                                   truth$yy, YY = TRUE, tol = 1e-6, 
                                    verbose = FALSE)
     }
   }
-
-  #if (conditional) { 
-  #  perf[c(1:7, 20, 21)]
-  #} else { 
-  #  perf
-  #}
   perf
-}
-
-
-#############################################################
-#LEGACY FUNCTIONS
-#############################################################
-
-
-
-#######################
-#foldScores <- doCV(data = data, fold = fold, trainIds = trainIds, 
-#                 testIds = testIds, method = method, 
-#                 tuneGrid = tuneGrid, modelFit = FALSE, refit = refit, 
-#                 resPath = resPath, ...)
-doCV <- function(data, fold, trainIds, testIds,
-                 method = c("spacemap", "space"), tuneGrid, refit = TRUE, resPath, ...) {
-  requireNamespace("foreach")
-  message("Computing CV scores over the grid...")
-  #for R CMD check NOTE passing
-  f <- NULL; l <- NULL;
-  cvScores <- foreach(f = seq_len(fold)) %:%
-    foreach(l = seq_len(nrow(tuneGrid)), .combine = 'rbind') %dopar% {
-      parts <- dataPart(f = f, trainIds = trainIds, testIds = testIds, 
-                        data = data, method = method)
-      trained <- trainModel(train = parts$train, method = method, tuneGrid = tuneGrid[l,], refit = refit, 
-                            fold_id = f, tune_id = l, resPath = resPath, ...)
-      testModel(test = parts$test, fit = trained$fit, sparseFit = trained$sparseFit, method = method, refit = refit, ...) 
-    }
-  cvScores
-}
-
-cvVoteOld <- function(foldFits, method, majorThresh = 0.5, refit, ...) {
-  opt <- list(...)
-  
-  #all below-tolerance and still non-zero coefficients have been zeroed out in trainModel 
-  vtol <- 0.0 
-  #if (refit) { 
-  #  vtol <- 0.0
-  #} else {
-  #  if(is.null(opt$tol))  {
-  #    warning("Did not specify tolerance (tol) as additional argument Defaulting to 1e-6.")
-  #    opt$tol <- 1e-6
-  #  }
-  #  vtol <- opt$tol
-  #}
-  
-  q <- ncol(foldFits[[1]][[1]]$ParCor)
-  ParCorVote <- matrix(0, nrow = q, ncol = q)
-  if (method ==  "spacemap") {
-    p <- nrow(foldFits[[1]][[1]]$Gamma)
-    GammaVote <- matrix(0, nrow = p, ncol = q)
-  }
-  
-  for (i in seq_along(foldFits)) {
-    if (method == "spacemap") {
-      GammaVote <- GammaVote + (abs(foldFits[[i]][[1]]$Gamma) > vtol)
-    }
-    ParCorVote <- ParCorVote + (abs(foldFits[[i]][[1]]$ParCor) > vtol)
-  }
-  
-  voteFit <- list()
-  nconv <- length(foldFits)
-  cutoff <- floor(majorThresh*nconv)
-  if (method == "spacemap") {
-    voteFit$Gamma <- (GammaVote > cutoff) + 0
-  }
-  voteFit$ParCor <- (ParCorVote > cutoff) + 0
-  voteFit$nconv <- nconv
-  voteFit$majorThresh <- majorThresh 
-  voteFit
-}
-
-cv1sd <- function(cvScores, modelSizes) { 
-  #1-sd rule
-  sdRuleThresh <- mean(cvScores) + sd(cvScores) / sqrt(length(cvScores))
-  lessOneSd <- which(cvScores < sdRuleThresh)
-  oneSdId <- lessOneSd[which.min(modelSizes[lessOneSd])]
-  oneSdId
 }

@@ -44,6 +44,9 @@ remove.packages("spacemap")
 install.packages(pkgs = "C:/Users/topher/Shared/repos/spacemap_0.51.0.zip", 
                  repos = NULL)
 
+build(binary = TRUE, vignettes = TRUE)
+
+
 ##build on Linux an MAC OS
 setwd("~/repos/spacemap/")
 library(devtools)

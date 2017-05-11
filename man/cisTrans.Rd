@@ -33,9 +33,11 @@ Label igraph object with cis/trans
 status for x-y edges.
 }
 \details{
-This function requires the GenomicRanges package, 
-specifically 'findOverlaps' and 'countOverlaps'. The \code{ig} 
-network parameter requires vertex attributes for genome coordinates 
+This function requires the GenomicRanges package from Bioconductor. 
+See \url{http://bioconductor.org/packages/release/bioc/html/GenomicRanges.html}
+for installation details. 
+The specific functions from GenomicRanges are 'findOverlaps' and 'countOverlaps'. 
+The \code{ig} network parameter requires vertex attributes for genome coordinates 
 specified as \code{chr,start,end} 
 (see details section of \code{\link{adj2igraph}}).
 }

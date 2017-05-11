@@ -82,7 +82,7 @@ reportPerf <- function(fit, truth, YY = TRUE, aszero = 1e-6,
 #'@description Assesses the network learning performance of spaceMap (or space)
 #'against a known truth by reporting power and false discovery rate. 
 #'@param fit A list of numeric matrices named 'xy' and 'yy' 
-#' encoding the fitted model parameter estimates (or an adjacency matrix). 
+#' encoding the fitted model parameter estimates (or the true adjacency matrices). 
 #'@param truth A list of numeric matrices named 'xy' and 'yy' 
 #' encoding the true model parameters (or an adjacency matrix).
 #'@param aszero A numeric value specifying the point at which a parameter estimate should 

@@ -1,4 +1,4 @@
-template:
+git atemplate:
   params:
     bootswatch: flatly 
 
@@ -37,6 +37,7 @@ reference:
   - title: Data
     contents:
     - sim1
+    - bcpls
     
 navbar:
   left: 

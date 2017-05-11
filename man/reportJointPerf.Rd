@@ -8,7 +8,7 @@ reportJointPerf(fit, truth, aszero = 1e-06, verbose = TRUE)
 }
 \arguments{
 \item{fit}{A list of numeric matrices named 'xy' and 'yy' 
-encoding the fitted model parameter estimates (or an adjacency matrix).}
+encoding the fitted model parameter estimates (or the true adjacency matrices).}
 
 \item{truth}{A list of numeric matrices named 'xy' and 'yy' 
 encoding the true model parameters (or an adjacency matrix).}

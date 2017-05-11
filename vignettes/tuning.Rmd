@@ -182,7 +182,7 @@ grid.arrange(cvVis[[1]] +
 Since the true network is known, we can evaluate the learned SPACE network against the truth. 
 
 ```{r}
-spacePerf <- cvPerf(cvOut = cvspace, trueParCor = truth, method = "space")[1:3]
+spacePerf <- cvPerf(cvOut = cvspace, truth = truth, method = "space")[1:3]
 spacePerf
 ```
 
@@ -252,7 +252,7 @@ grid.arrange(cvVis1[[1]], cvVis2[[1]],cvVis3[[1]], ncol = 2)
 This whole tuning process took about `r round((proc.time() - ptm)[3]/60, 0)` minutes. The network learning performance of `spacemap` is listed below
 
 ```{r}
-smapPerf <- cvPerf(cvOut = cvsmap, trueParCor = truth, method = "spacemap")[1:8]
+smapPerf <- cvPerf(cvOut = cvsmap, truth = truth, method = "spacemap")[1:8]
 smapPerf
 ```
 
@@ -280,8 +280,8 @@ cvsmap$logcvScore
 cvsmap2$logcvScore
 round((proc.time() - ptm)[3]/60, 2)
 
-spacemap::cvPerf(cvOut = cvsmap, trueParCor = truth, method = "spacemap")[1:8]
-spacemap::cvPerf(cvOut = cvsmap2, trueParCor = truth, method = "spacemap")[1:8]
+spacemap::cvPerf(cvOut = cvsmap, truth = truth, method = "spacemap")[1:8]
+spacemap::cvPerf(cvOut = cvsmap2, truth = truth, method = "spacemap")[1:8]
 ```
 
 

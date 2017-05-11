@@ -233,7 +233,14 @@ bootVote <- function(bfits, thresh = 0.5, givenX = FALSE) {
   requireNamespace("foreach")
   
   if (method == "spacemap" | (method == "space" & givenX)) { 
-    bout <- foreach(bfit = bfits, .combine = spacemap::addmods, .packages = c("spacemap")) %dopar% { 
+    
+    addmods <- function(m1, m2) { 
+      list(xy = m1$xy + m2$xy, yy = m1$yy + m2$yy, 
+           dfxy = c(m1$dfxy, m2$dfxy), dfyy = c(m1$dfyy, m2$dfyy),
+           ngood = c(m1$ngood, m2$ngood))
+    }
+    
+    bout <- foreach(bfit = bfits, .combine = addmods, .packages = c("spacemap")) %dopar% { 
       bxy <- as.matrix(bfit$xy)
       byy <- as.matrix(bfit$yy)
       list(xy = bxy, yy = byy, 
@@ -249,7 +256,7 @@ bootVote <- function(bfits, thresh = 0.5, givenX = FALSE) {
     
     #degree distributions of ensembles
     degxy <- foreach(bfit = bfits, .combine = 'rbind') %dopar% { 
-        rowSums(as.matrix(bfit$xy))
+      rowSums(as.matrix(bfit$xy))
     }
     degyy <- foreach(bfit = bfits, .combine = 'rbind') %dopar% { 
       rowSums(as.matrix(bfit$yy)) + colSums(as.matrix(bfit$xy))
@@ -259,7 +266,14 @@ bootVote <- function(bfits, thresh = 0.5, givenX = FALSE) {
                 bdeg = bdeg,
                 bc = bout[!(names(bout) %in% "ngood")]))
   } else if (method == "space" & !givenX) { 
-    bout <- foreach(bfit = bfits, .combine = spacemap::addmodsyy, .packages = c("spacemap")) %dopar% { 
+    
+    addmodsyy <- function(m1, m2) { 
+      list(yy = m1$yy + m2$yy, 
+           dfyy = c(m1$dfyy, m2$dfyy),
+           ngood = c(m1$ngood, m2$ngood))
+    }
+    
+    bout <- foreach(bfit = bfits, .combine = addmodsyy, .packages = c("spacemap")) %dopar% { 
       byy <- as.matrix(bfit$yy)
       list(yy = byy, 
            dfyy = nonZeroUpper(byy, 0), ngood = bfit$convergence)
@@ -270,7 +284,7 @@ bootVote <- function(bfits, thresh = 0.5, givenX = FALSE) {
     
     #vote based on effective bootstraps replicates. 
     bv <- (bout$yy > thresh*effB) + 0
-
+    
     #degree distributions of ensembles
     bdeg <- foreach(bfit = bfits, .combine = 'rbind') %dopar% { 
       rowSums(as.matrix(bfit$yy))
@@ -282,20 +296,6 @@ bootVote <- function(bfits, thresh = 0.5, givenX = FALSE) {
   } else { 
     stop("Wrong method specified.")
   }
-}
-
-#'@export
-addmods <- function(m1, m2) { 
-  list(xy = m1$xy + m2$xy, yy = m1$yy + m2$yy, 
-       dfxy = c(m1$dfxy, m2$dfxy), dfyy = c(m1$dfyy, m2$dfyy),
-       ngood = c(m1$ngood, m2$ngood))
-}
-
-#'@export
-addmodsyy <- function(m1, m2) { 
-  list(yy = m1$yy + m2$yy, 
-       dfyy = c(m1$dfyy, m2$dfyy),
-       ngood = c(m1$ngood, m2$ngood))
 }
 
 ######################################################

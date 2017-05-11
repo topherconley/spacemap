@@ -42,26 +42,26 @@ BEGIN_RCPP
 END_RCPP
 }
 // nonZeroWhole
-unsigned int nonZeroWhole(const NumericMatrix& Gamma, const double tol);
-RcppExport SEXP spacemap_nonZeroWhole(SEXP GammaSEXP, SEXP tolSEXP) {
+unsigned int nonZeroWhole(const NumericMatrix& Gamma, const double aszero);
+RcppExport SEXP spacemap_nonZeroWhole(SEXP GammaSEXP, SEXP aszeroSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const NumericMatrix& >::type Gamma(GammaSEXP);
-    Rcpp::traits::input_parameter< const double >::type tol(tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(nonZeroWhole(Gamma, tol));
+    Rcpp::traits::input_parameter< const double >::type aszero(aszeroSEXP);
+    rcpp_result_gen = Rcpp::wrap(nonZeroWhole(Gamma, aszero));
     return rcpp_result_gen;
 END_RCPP
 }
 // nonZeroUpper
-unsigned int nonZeroUpper(const NumericMatrix& ParCor, const double tol);
-RcppExport SEXP spacemap_nonZeroUpper(SEXP ParCorSEXP, SEXP tolSEXP) {
+unsigned int nonZeroUpper(const NumericMatrix& ParCor, const double aszero);
+RcppExport SEXP spacemap_nonZeroUpper(SEXP ParCorSEXP, SEXP aszeroSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const NumericMatrix& >::type ParCor(ParCorSEXP);
-    Rcpp::traits::input_parameter< const double >::type tol(tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(nonZeroUpper(ParCor, tol));
+    Rcpp::traits::input_parameter< const double >::type aszero(aszeroSEXP);
+    rcpp_result_gen = Rcpp::wrap(nonZeroUpper(ParCor, aszero));
     return rcpp_result_gen;
 END_RCPP
 }

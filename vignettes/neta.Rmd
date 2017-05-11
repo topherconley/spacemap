@@ -135,16 +135,23 @@ tmp <- rankHub(ig = ig,  level = "x")
 ```
 
 ## Identify cis and trans
-Next label $x-y$ edges as being regulated in cis or in trans. The *GenomicRanges* package and the genomic coordinates `chr,start,end` columns of `xinfo` and `yinfo` are required for this step. 
+Next label $x-y$ edges as being regulated in cis or in trans. The *GenomicRanges* package and the genomic coordinates `chr,start,end` columns of `xinfo` and `yinfo` are required for this step. If you don't have the package  [GenomicRanges](http://bioconductor.org/packages/release/bioc/html/GenomicRanges.html) installed yet, try: 
+
+```{r, eval = FALSE}
+## try http:// if https:// URLs are not supported
+source("https://bioconductor.org/biocLite.R")
+biocLite("GenomicRanges")
+library(GenomicRanges)
+```
+
+Now we can label the $x-y$ edges with either "cis" or "trans" in the `cis_trans` edge attribute of `ig`.
 
 ```{r}
-library(GenomicRanges)
 ig <- cisTrans(ig = ig, level = "x-y")
 ```
 
 ## Report 
 We then report a well-organized table, as seen in Table 3 of the spaceMap publication. The `top` argument allows us to control how many hubs are displayed.
-
 
 ```{r}
 xhubs <- reportHubs(ig, top = 6, level = "x")
