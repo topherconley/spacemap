@@ -84,7 +84,7 @@
       <h1>Model Tuning</h1>
                         <h4 class="author">Christopher Conley, Pei Wang, Jie Peng</h4>
             
-            <h4 class="date">2017-05-10</h4>
+            <h4 class="date">2017-05-11</h4>
           </div>
 
     
@@ -96,39 +96,41 @@
 <div id="motivation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#motivation" class="anchor"></a>Motivation</h2>
-<p>The spaceMap model learns networks in the high dimension and low sample size regime by imposing a sparsity assumption on the network topology. The sparsity assumption means that most nodes in the network have very few conditional dependencies among themselves relative to the potential number of edges. Penalty terms in the multivariate regression are the technical means to impose a sparse network, which were briefly introduced in the previous vignette <a href="https://topherconley.github.io/spacemap/articles/basics#fitting-spacemap.html">spacemap basics</a>. Three penalty terms, sometimes called tuning penalties, are employed in spaceMap to more precisely control the amount of sparsity imposed on different interactions. These parameters ought to be tuned for each data set to find the appropriate amount of sparsity. Adding more specialized parameters increases the range of network topologies learned by spaceMap, just as increasing the number of strings on a musical instrument can enhance the range of the artist’s expression. However, there exists a trade-off of model complexity versus computation time expended in parameter tuning that needs to be appropriately managed. This vignette illustrates a successful strategy that helps balances computation time with improving network learning performance.</p>
-<div id="penalty-parameters" class="section level3">
+<p>The spaceMap model learns networks in the high-dimension-low-sample-size regime by imposing a sparsity assumption on the network topology. <!--The sparsity assumption means that most nodes in the network have very few conditional dependencies among themselves relative to the potential number of edges.--> Three parameters are employed in spaceMap to control the amount of sparsity on different types of interactions, which were briefly introduced in the previous vignette <a href="https://topherconley.github.io/spacemap/articles/basics.html">Model Fitting Basics</a>. These parameters ought to be tuned to find the appropriate amount of sparsity for each data set.</p>
+<!--Adding more parameters increases the range of network topologies learned by spaceMap, just as increasing the number of strings on a musical instrument can enhance the range of the artist's expression. More parameters add flexibility to the model. -->
+<p>The computation effort spent on parameter tuning needs to be appropriately managed. This vignette illustrates a strategy that helps balance between computation time and network learning performance.</p>
+<div id="tuning-parameters" class="section level3">
 <h3 class="hasAnchor">
-<a href="#penalty-parameters" class="anchor"></a>Penalty parameters</h3>
-<p>We begin by describing the special purpose of each penalty parameter that must be tuned. The first penalty parameter <span class="math inline">\(\lambda_1\)</span> controls the overall sparsity among response variable interactions <span class="math inline">\(y-y\)</span>. The second penalty parameter <span class="math inline">\(\lambda_2\)</span> limits the number of predictor-response interactions <span class="math inline">\(x-y\)</span>. Lastly, increasing the penalty parameter <span class="math inline">\(\lambda_3\)</span> will result in networks with greater representation of hub predictor nodes—possessing many interactions with response nodes—rather than reporting many predictors with very few interactions with the responses. These penalty parameters are all non-negative, where larger values impose greater sparsity in the case of <span class="math inline">\(\lambda_1, \lambda_2\)</span>, or encourage <span class="math inline">\(x\)</span>-hub structure in the case of <span class="math inline">\(\lambda_3\)</span>.</p>
+<a href="#tuning-parameters" class="anchor"></a>Tuning parameters</h3>
+<p>We begin with describing the purpose of each tuning parameter. The first tuning parameter <span class="math inline">\(\lambda_1\)</span> controls the overall sparsity among response variable interactions <span class="math inline">\(y-y\)</span> and the second tuning parameter <span class="math inline">\(\lambda_2\)</span> controls that among the predictor-response interactions <span class="math inline">\(x-y\)</span>. Lastly, increasing the tuning parameter <span class="math inline">\(\lambda_3\)</span> will result in networks with greater representation of hub predictor nodes. <!-- possessing many interactions with response nodes---rather than reporting many predictors with very few interactions with the responses. These tuning parameters are all non-negative, where larger values impose greater sparsity in the case of $\lambda_1, \lambda_2$, or encourage $x$-hub structure in the case of $\lambda_3$.--></p>
 </div>
 </div>
 <div id="tuning-strategy" class="section level2">
 <h2 class="hasAnchor">
 <a href="#tuning-strategy" class="anchor"></a>Tuning Strategy</h2>
-<p>Exploring a large grid of penalty parameters can be very computationally demanding. In this tutorial we illustrate a strategy for finding a a good neighborhood of tuning penalties. The strategy finds suitable neighborhoods of each tuning penalty by:</p>
+<p>Exploring a large grid of tuning parameters can be computationally demanding. Here, we illustrate a strategy for finding a good grid of tuning parameters:</p>
 <ol style="list-style-type: decimal">
-<li>Cross validation of SPACE model<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>, which is a special case of the spaceMap model when only <span class="math inline">\(\bf Y\)</span> input data is specified and <span class="math inline">\(\lambda_2=\lambda_3=0\)</span>. Hence, tune the SPACE model across a one-dimensional grid of tuning penalty <span class="math inline">\(\lambda_1\)</span>, parameterized as <code>lam1</code>. Identify best performing neighborhood of <span class="math inline">\(\lambda_1\)</span>.</li>
-<li>Cross validation of spaceMap model with input data <span class="math inline">\(\bf X\)</span> and <span class="math inline">\(\bf Y\)</span> across a three-dimensional grid of <span class="math inline">\(\lambda_1, \lambda_2, \lambda_3\)</span>. The neighborhood of <span class="math inline">\(\lambda_1\)</span> is specified from step 1. Explore a broad range of values for <span class="math inline">\(\lambda_2, \lambda_3\)</span>, which are parameterized as <code>lam2</code> and <code>lam3</code>.<br>
-</li>
-<li>Repeat step 2 if further refinement of the tuning penalties is needed.</li>
+<li><p>Step 1: Cross validation of SPACE model<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>, which is a special case of the spaceMap model when only <span class="math inline">\(\bf Y\)</span> input data is specified and <span class="math inline">\(\lambda_2=\lambda_3=0\)</span>. Hence, tune the SPACE model across a one-dimensional grid and identify the best performing neighborhood for <span class="math inline">\(\lambda_1\)</span>.</p></li>
+<li><p>Step 2: Cross validation of spaceMap model with input data <span class="math inline">\(\bf X\)</span> and <span class="math inline">\(\bf Y\)</span> across a three-dimensional grid of <span class="math inline">\(\lambda_1, \lambda_2, \lambda_3\)</span>. The neighborhood of <span class="math inline">\(\lambda_1\)</span> is specified from step 1. Explore a broad range of values for <span class="math inline">\(\lambda_2, \lambda_3\)</span> (arguments <code>lam2</code> and <code>lam3</code>).</p></li>
+<li><p>Step 3: Repeat step 2 while zooming into a smaller neighborhood of the grid if further refinement of the tuning parameters is needed.</p></li>
 </ol>
 </div>
 <div id="tuning-example" class="section level2">
 <h2 class="hasAnchor">
 <a href="#tuning-example" class="anchor"></a>Tuning Example</h2>
-<p>We will illustrate the details of this strategy with an example from simulation <a href="https://topherconley.github.io/spacemap/reference/sim1.html">sim1</a>, which was described earlier in <a href="https://topherconley.github.io/spacemap/articles/basics#example.html">spacemap basics</a>. The simulation has a known true network topology, which affords an evaluation of whether this tuning strategy leads to reasonably tuned parameter selection. The data has been standardized (mean-centered with unit variance) for all variables.</p>
+<p>We illustrate the above strategy with an example from simulation <a href="https://topherconley.github.io/spacemap/reference/sim1.html">sim1</a>. <!-- The simulation has a known true network topology, which affords an evaluation of whether this tuning strategy leads to reasonably tuned parameter selection. 
+The data has been standardized (mean-centered with unit variance) for all variables. --></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(spacemap)
 <span class="kw">data</span>(sim1)</code></pre></div>
-<p>Obtain the response data <span class="math inline">\(\bf Y\)</span>, an <span class="math inline">\(150 \times 171\)</span> matrix..</p>
+<p>Obtain the response data <span class="math inline">\(\bf Y\)</span>, a <span class="math inline">\(150 \times 171\)</span> matrix..</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">Y &lt;-<span class="st"> </span>sim1$Y</code></pre></div>
-<p>Obtain the predictor data <span class="math inline">\(\bf X\)</span>, an <span class="math inline">\(150 \times 14\)</span> matrix.</p>
+<p>Obtain the predictor data <span class="math inline">\(\bf X\)</span>, a <span class="math inline">\(150 \times 14\)</span> matrix.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">X &lt;-<span class="st"> </span>sim1$X</code></pre></div>
 <p>Store the dimensions and sample size.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">N &lt;-<span class="st"> </span><span class="kw">nrow</span>(X)
 P &lt;-<span class="st"> </span><span class="kw">ncol</span>(X)
 Q &lt;-<span class="st"> </span><span class="kw">ncol</span>(Y)</code></pre></div>
-<p>Extract the true network where edges <span class="math inline">\(x-y\)</span> are stored in the <code>truth$xy</code> adjacency matrix as 1’s (and 0 otherwise) and <span class="math inline">\(y-y\)</span> edges are stored in the <code>truth$yy</code> adjacency matrix similarly.</p>
+<p>Extract the true network where <span class="math inline">\(x-y\)</span> edges are stored in the <code>truth$xy</code> adjacency matrix as 1’s and <span class="math inline">\(y-y\)</span> edges are stored in the <code>truth$yy</code> adjacency matrix.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">truth &lt;-<span class="st"> </span>sim1$truth</code></pre></div>
 <p>Tuning will be much faster if parallel computation is leveraged. If you choose to set up a parallel back-end (in this case for a multicore machine), it will use all available cores minus 1.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#if dopar==true, then model tuning done in parallel </span>
@@ -140,12 +142,11 @@ if (dopar) {
   cl &lt;-<span class="st"> </span><span class="kw">makeCluster</span>(ncores)
   <span class="kw">registerDoParallel</span>(cl)
 }</code></pre></div>
-</div>
-<div id="find-a-neighborhood-for-lam1" class="section level2">
-<h2 class="hasAnchor">
-<a href="#find-a-neighborhood-for-lam1" class="anchor"></a>Find a neighborhood for <code>lam1</code>
-</h2>
-<p>Tune the <code>lam1</code> parameter by fitting the the SPACE model<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> to <span class="math inline">\(Y\)</span> over a one-dimensional tuning grid. In the current implementation, the tuning penalty scales with the sample size. Use a result from Meinshausen and Buhlmann (2006)<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a> to initialize <span class="math inline">\(\lambda_{1}\)</span><a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a>.</p>
+<div id="step-1-find-a-neighborhood-for-lam1" class="section level3">
+<h3 class="hasAnchor">
+<a href="#step-1-find-a-neighborhood-for-lam1" class="anchor"></a>Step 1: find a neighborhood for <code>lam1</code>
+</h3>
+<p>Tune <code>lam1</code> by fitting the SPACE model<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> to <span class="math inline">\(Y\)</span> over a one-dimensional tuning grid. <!--In the current implementation, the tuning parameter scales with the sample size--> We use a result from Meinshausen and Buhlmann (2006)<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a> to initialize <span class="math inline">\(\lambda_{1}\)</span><a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#initialize lam1 according to Meinshausen and Buhlmann</span>
 lam1start &lt;-<span class="st"> </span>function(n, q, alpha) { 
   <span class="kw">sqrt</span>(n) *<span class="st"> </span><span class="kw">qnorm</span>(<span class="dv">1</span> -<span class="st"> </span>(alpha/<span class="st"> </span>(<span class="dv">2</span>*q^<span class="dv">2</span>)))
@@ -171,7 +172,7 @@ tsp &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span clas
 ##  Mean   :72.95  
 ##  3rd Qu.:80.24  
 ##  Max.   :87.54</code></pre>
-<p>In preparation of 10-K cross validation, we encourage the user to determine the split of the data since the data may have some special underlying population structure that needs to be balanced across the hold-out sets. Below we illustrate one means of splitting the data through the external <code>caret</code> R package.</p>
+<p>In preparation of cross validation, we encourage the user to determine the split of the data by themselves since the data may have some special underlying population structure that needs to be balanced across the hold-out sets. Below we illustrate one way of splitting the data through the <code>caret</code> R package.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#for generating cross-validation folds</span>
 <span class="kw">library</span>(caret)
 <span class="co">#number of folds</span>
@@ -180,11 +181,11 @@ K &lt;-<span class="st"> </span>10L
 <span class="co">#no special population structure, but create randomized dummy structure of A and B</span>
 testSets &lt;-<span class="st"> </span><span class="kw">createFolds</span>(<span class="dt">y =</span> <span class="kw">sample</span>(<span class="dt">x =</span> <span class="kw">c</span>(<span class="st">"A"</span>, <span class="st">"B"</span>), <span class="dt">size =</span> N, <span class="dt">replace =</span> <span class="ot">TRUE</span>), <span class="dt">k =</span> K)
 trainSets &lt;-<span class="st"> </span><span class="kw">lapply</span>(testSets, function(s) <span class="kw">setdiff</span>(<span class="kw">seq_len</span>(N), s))</code></pre></div>
-<p>Conduct the cross-validation of the SPACE model through the <a href="https://topherconley.github.io/spacemap/reference/cvVote.html">cvVote</a> function by specifying <code>method = "space"</code>. Also input the data <span class="math inline">\(\bf Y\)</span>, the lists of test and training sample splits, and a grid of tuning penalties.</p>
+<p>Conduct the cross-validation through the <a href="https://topherconley.github.io/spacemap/reference/cvVote.html">cvVote</a> function by specifying <code>method = "space"</code>. Also input the data <span class="math inline">\(\bf Y\)</span>, the lists of test and training sample splits, and a grid for the tuning parameter.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cvspace &lt;-<span class="st"> </span><span class="kw"><a href="../reference/cvVote.html">cvVote</a></span>(<span class="dt">Y =</span> Y, 
                   <span class="dt">trainIds =</span> trainSets, <span class="dt">testIds =</span> testSets, 
                   <span class="dt">method =</span> <span class="st">"space"</span>, <span class="dt">tuneGrid =</span> tsp) </code></pre></div>
-<p>The CV-selected <span class="math inline">\(\lambda^*_1\)</span> is reported as follows.</p>
+<p>The CV-selected <span class="math inline">\(\lambda^*_1\)</span> is reported as follows:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">minLam1 &lt;-<span class="st"> </span>cvspace$minTune$lam1
 minLam1</code></pre></div>
 <pre><code>## [1] 65.40245</code></pre>
@@ -192,7 +193,7 @@ minLam1</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nyy &lt;-<span class="st"> </span><span class="kw"><a href="../reference/nonZeroUpper.html">nonZeroUpper</a></span>(cvspace$cvVote$yy,<span class="dv">0</span>)
 nyy</code></pre></div>
 <pre><code>## [1] 162</code></pre>
-<p>The <a href="https://topherconley.github.io/spacemap/reference/tuneVis.html">tuneVis</a> function generates several diagnostic plots for tuning the models, which are stored in a list.</p>
+<p>The <a href="https://topherconley.github.io/spacemap/reference/tuneVis.html">tuneVis</a> function performs diagnostics stored as a list:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#the size of each test set</span>
 nsplits &lt;-<span class="st"> </span><span class="kw">sapply</span>(testSets, length)
 <span class="co">#required for plots</span>
@@ -201,7 +202,8 @@ cvVis &lt;-<span class="st"> </span><span class="kw"><a href="../reference/tuneV
                  <span class="dt">testSetLen =</span> nsplits, 
                  <span class="dt">tuneParam1 =</span> tsp$lam1,
                  <span class="dt">tuneParam1Name =</span> <span class="st">"lam1"</span>)</code></pre></div>
-<p>In this tuning step, we only need the first and third diagnostic plots. Below the plot on the left is the first diagnostic plot, which shows the log(CV score) curve across <code>lam1</code> where the vertical line denotes the minimizer. The CV score curve has an approximately convex shape with a little bit variability at the valley. On the right is the average number of <span class="math inline">\(y-y\)</span> edges across CV training splits and is shown decreasing with increasing <code>lam1</code>. The intersecting lines indicate the optimal lambda produces a CV.vote SPACE model of 162 <span class="math inline">\(y-y\)</span> edges, which is about 15 edges lower than the average no. of edges due to the model stabilizing influence of the CV.vote procedure.</p>
+<!--In this tuning step, we only need the first and third  diagnostic plots.-->
+<p>Below the plot on the left shows the log(CV score) versus <code>lam1</code> where the vertical line denotes the minimizer. <!--The CV score curve has an approximately convex shape with a little bit variability at the valley. --> On the right is the average number of <span class="math inline">\(y-y\)</span> edges across CV training splits which is decreasing with increasing <code>lam1</code>. The intersecting lines indicate that the optimal lambda produces a CV.vote model of 162 <span class="math inline">\(y-y\)</span> edges, which is about 15 edges less than the average no. of edges due to the stabilizing effect of the CV.vote procedure.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#for combining plots</span>
 <span class="kw">library</span>(gridExtra)
 <span class="co">#geom_vline/hline for vertical/horizontal lines</span>
@@ -217,33 +219,38 @@ cvVis &lt;-<span class="st"> </span><span class="kw"><a href="../reference/tuneV
 spacePerf</code></pre></div>
 <pre><code>##     power       fdr       mcc 
 ## 0.7820513 0.2469136 0.7648620</code></pre>
-<p>The “mcc” refers to an average of the power and FDR. The power, or sensitivity, is reasonable, but the FDR is a little high. Let’s see the effect of conditioning on <span class="math inline">\(\bf X\)</span> through the spaceMap model.</p>
+<p>The “mcc” measure combines the power and FDR. In this case, the power (or sensitivity) is reasonable, but the FDR (or specificity) is a little high. Next, we will see the effect of conditioning on <span class="math inline">\(\bf X\)</span> through the spaceMap model.</p>
 </div>
-<div id="find-a-neighborhood-for-lam2-and-lam3" class="section level2">
-<h2 class="hasAnchor">
-<a href="#find-a-neighborhood-for-lam2-and-lam3" class="anchor"></a>Find a neighborhood for <code>lam2</code> and <code>lam3</code>
-</h2>
-<p>Now shifting our attention to tuning all three tuning penalties, we can make use of the information from step 1 to reduce the grid search time. Input a neighborhood of <span class="math inline">\(65 \leq \lambda_1 \leq 75\)</span> into the 3-D grid search since we know that produces a reasonable output for the <span class="math inline">\(y-y\)</span> portion of the network. Choosing an initial neighborhood for <span class="math inline">\(\lambda_2, \lambda_3\)</span> is guided by practical considerations such as how many <span class="math inline">\(x-y\)</span> edges one might expect to see at maximum. In our case, we know there are only 14 <span class="math inline">\(x\)</span> variables and so we do not expect there to be more than say, 200 <span class="math inline">\(x-y\)</span> edges, but no less than 50 <span class="math inline">\(x-y\)</span> edges in a sparse network. When <span class="math inline">\(P \leq Q\)</span> we have noticed in our experience that <span class="math inline">\(\lambda^*_1\)</span> from step 1 serves as a good upper bound for initializing <span class="math inline">\(\lambda_2,\lambda_3\)</span>—although this may not always be applicable. Also, our experience suggests the network size is more sensitive to <span class="math inline">\(\lambda_2\)</span> than <span class="math inline">\(\lambda_3\)</span>; therefore, finding an appropriate neighborhood for <span class="math inline">\(\lambda_2\)</span> is most rational. Take <span class="math inline">\(15 \leq \lambda_2 \leq 60 &lt; \lambda^*_1\)</span> and since we anticipate the existence of <span class="math inline">\(x\)</span>-hubs, fix <span class="math inline">\(\lambda_3=15 &gt; 0\)</span>.</p>
+<div id="step-2-find-a-neighborhood-for-lam2-and-lam3" class="section level3">
+<h3 class="hasAnchor">
+<a href="#step-2-find-a-neighborhood-for-lam2-and-lam3" class="anchor"></a>Step 2: find a neighborhood for <code>lam2</code> and <code>lam3</code>
+</h3>
+<p>Now shifting our attention to tuning all three parameters.</p>
+<p>Here we make use of the information from step 1 to reduce the grid search time. Input a neighborhood of <span class="math inline">\(65 \leq \lambda_1 \leq 75\)</span> into the 3-D grid since we know that produces a reasonable output for the <span class="math inline">\(y-y\)</span> part of the network from step 1.</p>
+<p>The initial neighborhood for <span class="math inline">\(\lambda_2, \lambda_3\)</span> is guided by practical considerations such as the maximum number of <span class="math inline">\(x-y\)</span> edges one might expect. In this case, since there are only 14 <span class="math inline">\(x\)</span> variables, we do not expect there to be more than say, 200 <span class="math inline">\(x-y\)</span> edges, but no less than 50 <span class="math inline">\(x-y\)</span> edges in a sparse network. When <span class="math inline">\(P \leq Q\)</span> we have noticed in our experience that the optimal <span class="math inline">\(\lambda^*_1\)</span> from step 1 serves as a good upper bound for initializing <span class="math inline">\(\lambda_2,\lambda_3\)</span>, although this may not always be the case. Also, our experience suggests that the network size is more sensitive to <span class="math inline">\(\lambda_2\)</span> than to <span class="math inline">\(\lambda_3\)</span>; therefore, finding an appropriate neighborhood for <span class="math inline">\(\lambda_2\)</span> is more critical.</p>
+<p>In the following, take <span class="math inline">\(15 \leq \lambda_2 \leq 60 (&lt; \lambda^*_1)\)</span> and fix <span class="math inline">\(\lambda_3=15 &gt; 0\)</span>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#define grid</span>
 tmap1 &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">lam1 =</span> minLam1, 
                      <span class="dt">lam2 =</span> <span class="kw">seq</span>(<span class="dv">15</span>, <span class="dv">60</span>, <span class="dt">by =</span> <span class="dv">5</span>), 
                      <span class="dt">lam3 =</span> <span class="dv">15</span>)</code></pre></div>
-<p>We can quickly obtain an approximate lower bound for <span class="math inline">\(\lambda_2\)</span> by applying the <a href="https://topherconley.github.io/spacemap/reference/initFit.html">initFit</a> function to get a sense of the number of <span class="math inline">\(x-y\)</span> edges (or <span class="math inline">\(y-y\)</span>) for specific tuning sets. This function does not do any cross-validation, but simply fits the model once for each tuning parameter set in the grid.</p>
+<p>We can obtain an approximate lower bound for <span class="math inline">\(\lambda_2\)</span> by applying the <a href="https://topherconley.github.io/spacemap/reference/initFit.html">initFit</a> function to get a sense of the number of <span class="math inline">\(x-y\)</span> edges (or <span class="math inline">\(y-y\)</span> edges) for a specific tuning set. This function does not do any cross-validation, but simply fits the model once for each tuning parameter combination in the grid.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ntmap1 &lt;-<span class="st"> </span><span class="kw"><a href="../reference/initFit.html">initFit</a></span>(<span class="dt">Y =</span> Y, <span class="dt">X =</span> X, <span class="dt">method =</span> <span class="st">"spacemap"</span>, <span class="dt">tuneGrid =</span> tmap1)
 <span class="kw">library</span>(ggplot2)
 <span class="kw">qplot</span>(<span class="dt">x =</span> tmap1$lam2, <span class="dt">y =</span> ntmap1$nxy,
       <span class="dt">ylab =</span> <span class="st">"No. of X-&gt;Y edges"</span>, <span class="dt">xlab =</span> <span class="st">"lam2"</span>) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">theme_bw</span>()</code></pre></div>
 <p><img src="tuning_files/figure-html/unnamed-chunk-18-1.png" width="672"></p>
-<p>It is evident that restricting our attention to <span class="math inline">\(20\leq \lambda_2 \leq 35\)</span> is the best course of action to limit the number of <span class="math inline">\(x-y\)</span> edges to the range we are targeting. Now that we have reasonable ranges for <span class="math inline">\(\lambda_1,\lambda_2\)</span>, we also need to define a range for <span class="math inline">\(\lambda_3\)</span>, which is helpful for encouraging <span class="math inline">\(x\)</span>-hub selection. We could use the <a href="https://topherconley.github.io/spacemap/reference/initFit.html">initFit</a> function to guide this process; however, we expect <span class="math inline">\(x\)</span>-hubs are likely to exist in the network such that the lower bound for <span class="math inline">\(\lambda_3\)</span> should be sufficiently far from 0. Now define the 3-D tuning grid:</p>
+<p>The above plot suggests restricting our attention to <span class="math inline">\(20\leq \lambda_2 \leq 35\)</span> to limit the number of <span class="math inline">\(x-y\)</span> edges to the range that we are targeting.</p>
+<p>Now that we have reasonable ranges for <span class="math inline">\(\lambda_1,\lambda_2\)</span>, we also need to find an appropriate range for <span class="math inline">\(\lambda_3\)</span>. We could use the <a href="https://topherconley.github.io/spacemap/reference/initFit.html">initFit</a> function to guide this process; however, since we expect that <span class="math inline">\(x\)</span>-hubs are likely to exist in the network, the lower bound for <span class="math inline">\(\lambda_3\)</span> should be sufficiently far away from 0.</p>
+<p>Now define the 3-D tuning grid:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tmap2 &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">lam1 =</span> <span class="kw">seq</span>(<span class="dv">65</span>, <span class="dv">75</span>, <span class="dt">length =</span> <span class="dv">5</span>), 
                     <span class="dt">lam2 =</span> <span class="kw">seq</span>(<span class="dv">21</span>, <span class="dv">35</span>, <span class="dt">length =</span> <span class="dv">5</span>), 
                     <span class="dt">lam3 =</span> <span class="kw">seq</span>(<span class="dv">10</span>, <span class="dv">40</span>, <span class="dt">length =</span> <span class="dv">5</span>))</code></pre></div>
-<p>Apply cross validation with <code>method = "spacemap"</code> to learn the best network in the tuning grid. This will take about 4 minutes on a single processor.</p>
+<p>Apply cross validation with <code>method = "spacemap"</code> to learn the optimal network in the tuning grid. For this data set, this will take about 4 minutes on a single processor.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cvsmap &lt;-<span class="st"> </span><span class="kw"><a href="../reference/cvVote.html">cvVote</a></span>(<span class="dt">Y =</span> Y, <span class="dt">X =</span> X, 
                  <span class="dt">trainIds =</span> trainSets, <span class="dt">testIds =</span> testSets, 
                  <span class="dt">method =</span> <span class="st">"spacemap"</span>, <span class="dt">tuneGrid =</span> tmap2)</code></pre></div>
-<p>The CV.vote spaceMap network is encoded into adjacency matrices <code>cvsmap$cvVote[c("xy", "yy")]</code>. The best penalties from the tuning grid are:</p>
+<p>The CV.vote spaceMap network is encoded into adjacency matrices <code>cvsmap$cvVote[c("xy", "yy")]</code>. The optimal tuning parameters from the tuning grid are:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cvsmap$minTune</code></pre></div>
 <pre><code>## $lam1
 ## [1] 70
@@ -260,28 +267,29 @@ cvVis2 &lt;-<span class="st"> </span>spacemap::<span class="kw"><a href="../refe
                             <span class="dt">tuneParam1 =</span> tmap2$lam2, <span class="dt">tuneParam1Name =</span> <span class="st">"lam2"</span>)
 cvVis3 &lt;-<span class="st"> </span>spacemap::<span class="kw"><a href="../reference/tuneVis.html">tuneVis</a></span>(<span class="dt">cvOut =</span> cvsmap, <span class="dt">testSetLen =</span> nsplits, 
                             <span class="dt">tuneParam1 =</span> tmap2$lam3, <span class="dt">tuneParam1Name =</span> <span class="st">"lam3"</span>)</code></pre></div>
-<p>Visualizing the CV scores across the 3-D grid shows the selected tuning penalties are away from their respective boundaries, which suggests the grid is suitable. If the selected penalty was on or near the boundary, it may suggest to increase (decrease) the upper (lower) bound of the penalty in the grid.</p>
+<p>Visualizing the CV scores across the 3-D grid shows that the selected tuning parameters are away from their respective boundaries, which suggests the grid is suitable. If a selected parameter is on or near the boundary, it suggests that we may increase (or decrease) the upper (or lower) bound for that parameter on the grid.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(gridExtra)
 <span class="kw">grid.arrange</span>(cvVis1[[<span class="dv">1</span>]], cvVis2[[<span class="dv">1</span>]],cvVis3[[<span class="dv">1</span>]], <span class="dt">ncol =</span> <span class="dv">2</span>)</code></pre></div>
 <p><img src="tuning_files/figure-html/unnamed-chunk-23-1.png" width="672"></p>
-<p>This whole tuning process took about 6 minutes. The network learning performance of <code>spacemap</code> is listed below</p>
+<p>This whole tuning process took about 6 minutes on a single processor. The performance of the final network is listed below</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">smapPerf &lt;-<span class="st"> </span><span class="kw"><a href="../reference/cvPerf.html">cvPerf</a></span>(<span class="dt">cvOut =</span> cvsmap, <span class="dt">truth =</span> truth, <span class="dt">method =</span> <span class="st">"spacemap"</span>)[<span class="dv">1</span>:<span class="dv">8</span>]
 smapPerf</code></pre></div>
 <pre><code>##      power        fdr        mcc    powerXY      fdrXY    powerYY 
 ## 0.76666667 0.07471264 0.84049251 0.87037037 0.07843137 0.73076923 
 ##      fdrYY      mccYY 
 ## 0.07317073 0.82133452</code></pre>
-<p>The spaceMap model dramatically lowers the <span class="math inline">\(y-y\)</span> FDR when compared with the SPACE model in this example. The FDR is lowered from over 25% to below 8%, while experiencing a small drop in <span class="math inline">\(y-y\)</span> power. This benefit is believed to be because spaceMap learns the <span class="math inline">\(x-y\)</span> edges that encode predictor variable perturbations to the response variables. With a relatively high <span class="math inline">\(x-y\)</span> power and limited overall FDR, spaceMap is a real improvement upon SPACE.</p>
-<div id="refinement-of-grid" class="section level3">
+<p>Note that, the spaceMap model dramatically lowers the <span class="math inline">\(y-y\)</span> FDR when compared with the SPACE model with only a small drop in power. <!--The FDR is lowered from  over 25% to below 8%, while experiencing a small drop in $y-y$ power. This benefit is believed to be because spaceMap learns the $x-y$ edges that encode predictor variable perturbations to the response variables.  With a relatively high $x-y$ power and low overall FDR, spaceMap is a real improvement upon SPACE.--></p>
+</div>
+<div id="step-3-optional-refinement-of-the-grid" class="section level3">
 <h3 class="hasAnchor">
-<a href="#refinement-of-grid" class="anchor"></a>Refinement of Grid</h3>
-<p>If time allows, further refinement of the tuning grid could be explored by narrowing the neighborhood about the previously optimal tuning set. However, note that refining the grid may lead to a better CV score, but worse performance due to over-fitting.</p>
+<a href="#step-3-optional-refinement-of-the-grid" class="anchor"></a>Step 3 (optional): refinement of the grid</h3>
+<p>Further refinement could be explored by narrowing the neighborhood around the previously found optimal tuning set and using a finer grid. <!--However, note that refining the grid may lead to a better CV score, but worse performance due to over-fitting.--></p>
 </div>
 </div>
 <div id="further-reading" class="section level2">
 <h2 class="hasAnchor">
 <a href="#further-reading" class="anchor"></a>Further Reading</h2>
-<p>Completion of this vignette ought to have taught how to tune penalty parameters to near optimal settings for the <code>spacemap</code> model. We recommend looking at the <a href="https://topherconley.github.io/spacemap/articles/ensemble.html">next vignette</a> which illustrates how to have more precise control of the FDR through an ensemble network.</p>
+<p>This vignette discusses how to choose tuning parameters for the spaceMap model. We recommend looking at the <a href="https://topherconley.github.io/spacemap/articles/ensemble.html">next vignette</a> which illustrates how to further control FDR through an ensemble of networks learned on bootstrap replicates of the data.</p>
 </div>
 <div class="footnotes">
 <hr>
@@ -302,8 +310,6 @@ smapPerf</code></pre></div>
 <li><a href="#motivation">Motivation</a></li>
       <li><a href="#tuning-strategy">Tuning Strategy</a></li>
       <li><a href="#tuning-example">Tuning Example</a></li>
-      <li><a href="#find-a-neighborhood-for-lam1">Find a neighborhood for <code>lam1</code></a></li>
-      <li><a href="#find-a-neighborhood-for-lam2-and-lam3">Find a neighborhood for <code>lam2</code> and <code>lam3</code></a></li>
       <li><a href="#further-reading">Further Reading</a></li>
       </ul>
 </div>

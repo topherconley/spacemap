@@ -64,7 +64,7 @@ biocLite(biocpkgs)
 # "C:\Program Files\R\R-3.3.3\bin\R.exe" CMD INSTALL --build --compile-both spacemap/
 #STEP 4: check that binary installs.
 install.packages(pkgs = "C:/Users/topher/Shared/repos/spacemap_0.52.0.zip", 
-                 lib = "C:/Users/topher/Shared/R/win-library/3.3",
+                 lib = "C:/Program Files/R/R-3.4.0/library/",
                  repos = NULL)
 library(spacemap)
 
