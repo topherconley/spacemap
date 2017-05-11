@@ -35,17 +35,36 @@ install.packages(c("Rcpp", "RcppArmadillo",
                    "foreach", "doRNG", 
                    "Matrix", "igraph"))
 
-### build on windows
-#build_win()
+########
+#WINDOWS
+########
 
-#run this in command prompt
-"C:\Program Files\R\R-3.3.3\bin\R.exe CMD INSTALL --build compile-both spacemap/"
+#STEP 1: remove dynamically linked libraries
+devtools::clean_dll()
+#STEP 2: remove any installed version of spacemap,
+#and make sure dependencies are installed.
 remove.packages("spacemap")
-install.packages(pkgs = "C:/Users/topher/Shared/repos/spacemap_0.51.0.zip", 
+
+
+cranpkgs <- c("Rcpp","RcppArmadillo",
+             "foreach","Matrix",
+             "rngtools", "ggplot2",
+             "reshape2")
+install.packages(pkgs = cranpkgs)
+
+## try http:// if https:// URLs are not supported
+source("https://bioconductor.org/biocLite.R")
+biocpkgs <- c("GenomicRanges")
+biocLite(biocpkgs)
+
+#STEP 3: build binary
+# Run verbatim as administrator in Windows Command Prompt
+# "C:\Program Files\R\R-3.3.3\bin\R.exe CMD INSTALL" --build --compile-both spacemap/
+#STEP 4: check that binary installs.
+install.packages(pkgs = "C:/Users/topher/Shared/repos/spacemap_0.52.0.zip", 
+                 lib = "C:/Users/topher/Shared/R/win-library/3.3",
                  repos = NULL)
-
-build(binary = TRUE, vignettes = TRUE)
-
+library(spacemap)
 
 ##build on Linux an MAC OS
 setwd("~/repos/spacemap/")
