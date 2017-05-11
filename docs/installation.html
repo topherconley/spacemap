@@ -98,37 +98,40 @@
 <h2 class="hasAnchor">
 <a href="#binaries" class="anchor"></a>Binary Release</h2>
 
-<p>Download the platform-specific binary, which was built on R version 3.3.3. We recommend upgrading to the most recent version of R before installing spacemap.</p>
+<p>Download the platform-specific binary, which was built on R version 3.4.0. We recommend upgrading to the most recent version of R before installing spacemap.</p>
 
  <ul class="list-group">
   <li class="list-group-item">
-    <a href="#"> 
-      <strong>Mac OS X</strong> <small class="text-gray float-right">(Size MB)</small>
+    <a href="https://github.com/topherconley/spacemap/releases/download/v0.53.0-beta/spacemap_0.53.0.tgz"> 
+      <strong>Mac OS X</strong> <small class="text-gray float-right">(1.58 MB)</small>
     </a> 
   </li>
   <li class="list-group-item">
-    <a href="#">
-      <strong>Linux</strong> <small class="text-gray float-right">(Size MB)</small>
+    <a href="https://github.com/topherconley/spacemap/releases/download/v0.53.0-beta/spacemap_0.53.0_R_x86_64-pc-linux-gnu.tar.gz">
+      <strong>Linux (Ubuntu)</strong> <small class="text-gray float-right">(2.89 MB)</small>
     </a> 
   </li>
   <li class="list-group-item">
-    <a href="#"> 
-      <strong>Windows</strong> <small class="text-gray float-right">(Size MB)</small>
+    <a href="https://github.com/topherconley/spacemap/releases/download/v0.53.0-beta/spacemap_0.53.0.zip"> 
+      <strong>Windows 10</strong> <small class="text-gray float-right">(2.15 MB)</small>
     </a> 
   </li>
 </ul>
 
 
-<div id="oldreleases" class="sub section level 1">
+<div id="dependencies" class="sub section level 1">
 <h4 class="hasAnchor">
 <a href="#dependencies" class="anchor"></a>R Package Dependencies</h4>
 
 <p>Prior to using a spacemap binary, please be sure to install package dependencies in R's console as follows: </p>
 
 <div class="highlight highlight-source-r"><pre>install.packages(c(<span class="pl-s"><span class="pl-pds">"</span>Rcpp<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>RcppArmadillo<span class="pl-pds">"</span></span>, 
-                   <span class="pl-s"><span class="pl-pds">"</span>foreach<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>doRNG<span class="pl-pds">"</span></span>, 
-                   <span class="pl-s"><span class="pl-pds">"</span>Matrix<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>igraph<span class="pl-pds">"</span></span>))</pre></div>
-</div>
+                   <span class="pl-s"><span class="pl-pds">"</span>foreach<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>rngtools<span class="pl-pds">"</span></span>, 
+                   <span class="pl-s"><span class="pl-pds">"</span>Matrix<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>igraph<span class="pl-pds">"</span></span>, 
+                   <span class="pl-s"><span class="pl-pds">"</span>ggplot2<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>reshape2<span class="pl-pds">"</span></span>))
+## try http:// if https:// URLs are not supported
+source("http://bioconductor.org/biocLite.R")
+biocLite("GenomicRanges")</pre></div></div>
 
 <div id="oldreleases" class="sub section level 2">
 <h4 class="hasAnchor">
