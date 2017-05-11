@@ -8,7 +8,7 @@ output:
 
 [![Travis-CI Build Status](https://travis-ci.org/topherconley/spacemap.svg?branch=master)](https://travis-ci.org/topherconley/spacemap)
 
-The spaceMap R package constructs _de novo_ networks from multiple data types in a high-dimensional context by applying a novel conditional graphical model. spaceMap is motivated by applications in integrative genomics, where two (or more) -omic data profiles are modeled jointly to discover their interactions. spaceMap is particularly effective in learning networks that exhibit hub topology ---a commonly encountered feature of many large networks. In an application to breast cancer tumor data, spaceMap learned regulatory networks which generated novel hypotheses of cancer drivers and confirmed known risk factors. In addition to learning network structure, an accompanying network analysis toolkit is also provided. The toolkit has been developed with genomics applications in mind---but may be adapted for other applications ---and maps scientic domain knowledge onto networks. The flowchart below provides an overview of the spaceMap analysis pipeline including model fitting, network analysis  and visualization in an integrative genomic context. 
+The spaceMap R package constructs _de novo_ networks from multiple data types in a high-dimensional context by applying a novel conditional graphical model. spaceMap is motivated by applications in integrative genomics, where two (or more) -omic data profiles are modeled jointly to discover their interactions. spaceMap is particularly effective in learning networks that exhibit hub topology ---a commonly encountered feature of many large networks.  In addition to learning network structure, an accompanying network analysis toolkit is also provided. The toolkit has been developed with genomics applications in mind---but may be adapted for other applications ---and maps scientic domain knowledge onto networks. The flowchart below provides an overview of the spaceMap analysis pipeline including model fitting, network analysis  and visualization in an integrative genomic context. 
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ![](figures/flow-chart-4.png)
 
-The spaceMap analysis pipeline is illustrated  through the analysis of [The Breast Cancer Proteogomics Landscape Study data](https://cptac-data-portal.georgetown.edu/cptac/s/S029), which is hosted on the GitHub repository [neta-bcpls](https://topherconley.github.io/neta-bcpls/). 
+The spaceMap analysis pipeline has been  applied to [The Breast Cancer Proteogomics Landscape Study data](https://cptac-data-portal.georgetown.edu/cptac/s/S029), where it learned regulatory networks which generated novel hypotheses of cancer drivers and confirmed known risk factors. Detailed analysis is hosted on the GitHub repository [neta-bcpls](https://topherconley.github.io/neta-bcpls/). 
 
 
 ## Installation
@@ -57,9 +57,7 @@ Once a network has been learned, interpretation can be challenging. Thus, we inc
 - module analysis
 - functional enrichment analysis (GO/KEGG)
 
-All these features  are reported through structured tables and are easily incorporated into technical reports. Moreover, the network analysis toolkit integrates the results into a network file (e.g. `.graphml` format) that can be exported  to existing tools such as the [Cytoscape ecosystem](http://www.cytoscape.org/what_is_cytoscape.html). 
-<!--In this sense, spaceMap is not just a model; rather it is a tool for deriving meaning from  data. -->
-This toolkit is illustrated by [network analysis toolkit](https://topherconley.github.io/spacemap/articles/neta.html) under the Vignettes tab.
+All these features  are reported through structured tables and are easily incorporated into technical reports. Moreover, the network analysis toolkit integrates the results into a network file (e.g. `.graphml` format) that can be exported  to existing tools such as the [Cytoscape ecosystem](http://www.cytoscape.org/what_is_cytoscape.html). <!--In this sense, spaceMap is not just a model; rather it is a tool for deriving meaning from  data. --> This toolkit is illustrated by [network analysis toolkit](https://topherconley.github.io/spacemap/articles/neta.html) under the Vignettes tab.
 
 
 
