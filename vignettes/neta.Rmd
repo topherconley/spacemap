@@ -26,7 +26,7 @@ Our interest is to use the spaceMap model to find major impacts of DNA copy numb
 
 <!--We take a moment to review  the required (and optional) input data to the network analysis toolkit.  -->
 Before conducting the network analysis, you should have completed the model fitting step such that you have a network ensemble or a final network to analyze (e.g. output from [bootVote](https://topherconley.github.io/spacemap/reference/bootVote.html)). 
-To fully realize the capability of the toolkit,  you also should have node annotations. 
+To fully realize the capability of the toolkit,  you should also have annotations for the nodes. 
 
 Load the `bcpls` list.
 
@@ -37,7 +37,7 @@ data("bcpls")
 attach(bcpls)
 ```
 
-Next we list the contents of `bcpls` and outline each input argument to the toolkit.
+Next we list the contents of `bcpls`.
 
 ```{r}
 names(bcpls)
@@ -48,11 +48,11 @@ names(bcpls)
 
 + The annotation objects `xinfo` and `yinfo` are of type `data.frame`, whose rows should correspond to the rows of `net$xy` and `net$yy`, respectively. <!--If no annotation exists for the nodes $\bf x$ or $\bf y$, then the bare minimum expected is a character vector 'id' for labeling the nodes. -->Let us look at the contents of `yinfo`: 
 
-++ The first column, `id`,  is always required and must be unique for each node; 
-++ The second column, `alias`, is optional and may be used for more human-readable labels. For example, two protein isoforms must have different `id` but may have the same gene symbol alias. 
-++ If genome coordinates are supplied for cis/trans identification, then we need three additional columns: `chr` a character for the chromosome number, `start` an integer for the starting of the chromsome location, and `end` for the ending of the chromsome location. 
-++ The users can also add other (optional) columns such as `strand` (for DNA strand),  `description` for additional annotations, etc., which will be exported to visulization software such [cytoscrape](http://cytoscape.org/index.html).
-++ Finally, missing information should be denoted by 'NA'. 
+1. The first column, `id`,  is always required and must be unique for each node; 
+2. The second column, `alias`, is optional and may be used for more human-readable labels. For example, two protein isoforms must have different `id` but may have the same gene symbol alias. 
+3. If genome coordinates are supplied for cis/trans identification, then we need three additional columns: `chr` a character for the chromosome number, `start` an integer for the starting of the chromsome location, and `end` for the ending of the chromsome location. 
+4. The users can also add other (optional) columns such as `strand` (for DNA strand),  `description` for additional annotations, etc., which will be exported to visulization software such [cytoscrape](http://cytoscape.org/index.html).
+5. Finally, missing information should be denoted by 'NA'. 
 
 ```{r,eval=FALSE}
 head(yinfo,5)
