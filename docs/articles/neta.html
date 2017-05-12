@@ -84,32 +84,41 @@
       <h1>Network analysis toolkit</h1>
                         <h4 class="author">Christopher Conley, Pei Wang, Jie Peng</h4>
             
-            <h4 class="date">2017-05-10</h4>
+            <h4 class="date">2017-05-12</h4>
           </div>
 
     
     
 <div class="contents">
 <!--While there exist many general tools for network analysis, it can be difficult to adapt those tools for specific needs of integrative genomic networks. --->
-<p>The goal of this vignette is to illustrate the network analysis toolkit in the spaceMap analysis pipeline. We use the fitted spaceMap networks to the <code>bcpls</code> data <a href="https://topherconley.github.io/neta-bcpls/">neta-bcpls webpage</a> as an example.</p>
+<p>The goal of this vignette is to illustrate the network analysis toolkit in the spaceMap analysis pipeline. We use the fitted spaceMap networks to the <a href="https://topherconley.github.io/neta-bcpls/">bcpls data</a> as an example.</p>
 <!--
 We use the a data set from the Breast Cancer Proteogenomics Landscape Study [BCPLS](http://www.nature.com/nature/journal/v534/n7605/full/nature18003.html). 
 Our interest is to use the spaceMap model to find major impacts of DNA copy number alterations (CNA) on protein abundance from 77 breast cancer tumors. The data from the original study has been reduced in dimension and further processed to find the interactions between 1662 CNA (i.e. predictors $\bf x$) and 1595 protein expressions (i.e. responses $\bf y$), as well as the interactions between the protein expressions themselves. The pre-processing and organization of node annotations have been previously completed and is described in more detail on the [neta-bcpls webpage](https://topherconley.github.io/neta-bcpls/) so that the focus of this vignette is on the network analysis. -->
-<div id="input" class="section level1">
-<h1 class="hasAnchor">
-<a href="#input" class="anchor"></a>Input</h1>
+<div id="input" class="section level2">
+<h2 class="hasAnchor">
+<a href="#input" class="anchor"></a>Input</h2>
 <!--We take a moment to review  the required (and optional) input data to the network analysis toolkit.  -->
-<p>Before conducting the network analysis, you should have completed the model fitting step such that you have a network ensemble or one final network to analyze (e.g. output from <a href="https://topherconley.github.io/spacemap/reference/bootVote.html">bootVote</a>). To fully realize the capability of the toolkit, you also should have node annotations mapped onto the network.</p>
-<p>Load the <code>bcpls</code> list, which contains the example input arguments for the toolkit.</p>
+<p>Before conducting the network analysis, you should have completed the model fitting step such that you have a network ensemble or a final network to analyze (e.g. output from <a href="https://topherconley.github.io/spacemap/reference/bootVote.html">bootVote</a>). To fully realize the capability of the toolkit, you should also have annotations for the nodes.</p>
+<p>Load the <code>bcpls</code> list.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(spacemap)
 <span class="kw">data</span>(<span class="st">"bcpls"</span>)
 <span class="co">#Attach "bcpls" data objects to the R Global Environment</span>
 <span class="kw">attach</span>(bcpls)</code></pre></div>
-<p>Next we list the contents of <code>bcpls</code> and outline each input argument to the toolkit.</p>
+<p>Next we list the contents of <code>bcpls</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(bcpls)</code></pre></div>
 <pre><code>## [1] "net"   "yinfo" "xinfo" "bdeg"  "go2eg"</code></pre>
-<p>The <code>net</code> object is a list of two adjacency matrices that is output from <a href="https://topherconley.github.io/spacemap/reference/bootVote.html">bootVote</a>. The protein–protein edges are encoded with 1’s in <code>net$yy</code>. Likewise, the CNA–protein edges are encoded with 1’s in <code>net$xy</code>.</p>
-<p>The annotation objects <code>xinfo</code> and <code>yinfo</code> are of type <code>data.frame</code>, whose rows should correspond to the rows of <code>net$xy</code> and <code>net$yy</code>, respectively. <!--If no annotation exists for the nodes $\bf x$ or $\bf y$, then the bare minimum expected is a character vector 'id' for labeling the nodes. --> Let us look at the contents of <code>yinfo</code>: The first column, <code>id</code>, is always required and must be unique for each node; The second column, <code>alias</code>, is optional and may be used for more human-readable labels. For example, two protein isoforms must have different ID’s but may have the same gene symbol alias. If genome coordinates are supplied for cis/trans identification, then we need three additional columns: <code>chr</code> a character for the chromosome number, <code>start</code> an integer for the beginning of the chromsome location, and <code>end</code> for the end of the chromsome location. The users can also add other (optional) columns such as <code>strand</code> (for DNA strand), <code>description</code> for additional annotations, etc., which will be exported to visulization software such cytoscrape. Finally, missing information should be denoted by ‘NA’.</p>
+<ul>
+<li><p>The <code>net</code> object is a list of two adjacency matrices that is output from <a href="https://topherconley.github.io/spacemap/reference/bootVote.html">bootVote</a>. The protein–protein edges are encoded with 1’s in <code>net$yy</code>. Likewise, the CNA–protein edges are encoded with 1’s in <code>net$xy</code>.</p></li>
+<li><p>The annotation objects <code>xinfo</code> and <code>yinfo</code> are of type <code>data.frame</code>, whose rows should correspond to the rows of <code>net$xy</code> and <code>net$yy</code>, respectively. <!--If no annotation exists for the nodes $\bf x$ or $\bf y$, then the bare minimum expected is a character vector 'id' for labeling the nodes. -->Let us look at the contents of <code>yinfo</code>:</p></li>
+</ul>
+<ol style="list-style-type: decimal">
+<li>The first column, <code>id</code>, is always required and must be unique for each node;</li>
+<li>The second column, <code>alias</code>, is optional and may be used for more human-readable labels. For example, two protein isoforms must have different <code>id</code> but may have the same gene symbol alias.</li>
+<li><p>If genome coordinates are supplied for cis/trans identification, then we need three additional columns: <code>chr</code> a character for the chromosome number, <code>start</code> an integer for the starting positiion, and <code>end</code> for the ending position.</p></li>
+<li>The users can also add other (optional) columns such as <code>strand</code> (for DNA strand), <code>description</code> for additional annotations, etc., which will be exported to visulization software such <a href="http://cytoscape.org/index.html">cytoscrape</a>.</li>
+<li><p>Finally, missing information should be denoted by ‘NA’.</p></li>
+</ol>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(yinfo,<span class="dv">5</span>)</code></pre></div>
 <table class="table">
 <thead><tr class="header">
@@ -169,7 +178,7 @@ Our interest is to use the spaceMap model to find major impacts of DNA copy numb
 </tr>
 </tbody>
 </table>
-<p>The same column and row rules are applicable for <code>xinfo</code>. Here, <code>id</code> contains precise genomic coordinates, while the <code>alias</code> contains cytoband information.</p>
+<p>Similar rules are applicable for <code>xinfo</code>. In this example, <code>id</code> contains genomic coordinates, while <code>alias</code> contains cytoband information.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(xinfo,<span class="dv">5</span>)</code></pre></div>
 <table class="table">
 <thead><tr class="header">
@@ -217,7 +226,9 @@ Our interest is to use the spaceMap model to find major impacts of DNA copy numb
 </tr>
 </tbody>
 </table>
-<p>The mapping between the proteins and their biological process term in the Gene Ontology (GO) is specified in the list <code>go2eg</code>, which has named each element with a GO ID; and each element is a character vector specifying all the proteins that map to this GO ID. Proteins can map to multiple GO IDs. The mapping <code>go2eg</code> will be used for conducting functional enrichment analysis of CNA-hubs and network modules, but is otherwise optional.</p>
+<ul>
+<li>The mapping between the proteins and their Gene Ontology (GO) terms is specified in the list <code>go2eg</code>: each element is associated with a GO ID and is a character vector specifying all the proteins that map to this GO ID. Proteins can map to multiple GO terms. The mapping <code>go2eg</code> will be used for conducting functional enrichment analysis, but is otherwise optional.</li>
+</ul>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(go2eg,<span class="dv">2</span>)</code></pre></div>
 <pre><code>## $`GO:0000122`
 ##  [1] "NP_009330"    "NP_644671"    "NP_001120"    "NP_056082"   
@@ -237,7 +248,7 @@ Our interest is to use the spaceMap model to find major impacts of DNA copy numb
 ##  [9] "NP_001356"    "NP_005535"    "NP_057726"    "NP_001553"   
 ## [13] "NP_000213"    "NP_001744"    "NP_000791"    "NP_620590"</code></pre>
 <!--The GO ID is useful for an abbreviated mapping, but the actual biological process name is often more informative at the cost of being very verbose.-->
-<p>We can also create a biologically informative alias for each GO ID that will be useful for reporting enriched hubs/modules later.</p>
+<p>We can also create a biologically informative alias for each GO ID, which will be useful for reporting enriched hubs/modules later.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(AnnotationDbi)
 <span class="kw">library</span>(GO.db)
 process_alias &lt;-<span class="st"> </span>AnnotationDbi::<span class="kw">Term</span>(<span class="kw">names</span>(go2eg))
@@ -248,11 +259,18 @@ process_alias &lt;-<span class="st"> </span>AnnotationDbi::<span class="kw">Term
 ##                                                         "MAPK cascade" 
 ##                                                             GO:0000278 
 ##                                                   "mitotic cell cycle"</code></pre>
-<p>The list <code>bdeg</code> comes from <a href="https://topherconley.github.io/spacemap/reference/bootVote.html">bootVote</a>, which is optional for network analysis, but would be useful for prioritizing both CNA- and protein- hubs. <code>bdeg$yy[b,]</code> is an integer vector representing the degree distribution of the proteins in the network fitted on the <span class="math inline">\(b\)</span>th bootstrap replicate. Similarly, element <code>bdeg$xy[b,]</code> is an integer vector representing the degree distribution of the CNAs. If <code>bdeg</code> is provided in the function “rankHub”, the CNA-hubs will be prioritized according to their average degree rank across the <span class="math inline">\(B\)</span> bootstrap replicates, so that highly ranked hubs would consistently have a large degree across the network ensemble.</p>
+<ul>
+<li>The list <code>bdeg</code> comes from <a href="https://topherconley.github.io/spacemap/reference/bootVote.html">bootVote</a>. It is optional for network analysis, but would be useful for prioritizing both CNA- and protein- hubs.</li>
+</ul>
+<ol style="list-style-type: decimal">
+<li><p><code>bdeg$yy[b,]</code> is an integer vector representing the degree distribution of the proteins in the network fitted on the <span class="math inline">\(b\)</span>th bootstrap replicate.</p></li>
+<li><p>Similarly, element <code>bdeg$xy[b,]</code> is an integer vector representing the degree distribution of the CNAs.</p></li>
+<li><p>If <code>bdeg</code> is provided in the function <code>rankHub</code>, then hubs will be prioritized according to their average degree rank, so that highly ranked hubs would consistently have a large degree across the network ensemble.</p></li>
+</ol>
 </div>
-<div id="map-annotations" class="section level1">
-<h1 class="hasAnchor">
-<a href="#map-annotations" class="anchor"></a>Map Annotations</h1>
+<div id="map-annotations" class="section level2">
+<h2 class="hasAnchor">
+<a href="#map-annotations" class="anchor"></a>Map Annotations</h2>
 <p>Convert the final network into an <em>igraph</em> object and map the annotations onto the network.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(igraph)
 ig &lt;-<span class="st"> </span>spacemap::<span class="kw"><a href="../reference/adj2igraph.html">adj2igraph</a></span>(<span class="dt">yy =</span> net$yy, <span class="dt">xy =</span> net$xy, <span class="dt">yinfo =</span> yinfo, <span class="dt">xinfo =</span> xinfo)</code></pre></div>
@@ -263,21 +281,21 @@ ig &lt;-<span class="st"> </span>spacemap::<span class="kw"><a href="../referenc
 <p>The igraph package has a number of ways to access the annotation information. For example, if we wish to confirm the chromosome location of ERBB2, we can easily query:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">vertex_attr</span>(<span class="dt">graph =</span> ig, <span class="dt">name =</span> <span class="st">"chr"</span>, <span class="dt">index =</span> <span class="kw">V</span>(ig)[alias %in%<span class="st"> "ERBB2"</span>])</code></pre></div>
 <pre><code>## [1] "chr17"</code></pre>
-<p>Our toolkit adds value by quickly summarizing annotations in a format that is publication ready. The next section illustrates how.</p>
+<!--Our toolkit adds value by quickly summarizing annotations in a format that is publication ready. The next section illustrates how. -->
 </div>
-<div id="hub-analysis" class="section level1">
-<h1 class="hasAnchor">
-<a href="#hub-analysis" class="anchor"></a>Hub Analysis</h1>
-<p>We first prioritize the CNA- and protein- hubs. If the degree distributions from the network ensemble are available in the <code>bdeg</code> argument, then we rank the hubs according to the average degree rank. Accordingly, the most highly ranked hubs will have the most consistently high degree across network ensemble.</p>
+<div id="hub-analysis" class="section level2">
+<h2 class="hasAnchor">
+<a href="#hub-analysis" class="anchor"></a>Hub Analysis</h2>
+<p>We first prioritize the CNA- and protein- hubs. If the <code>bdeg</code> argument is specified, then we rank the hubs according to the average degree rank. Accordingly, the most highly ranked hubs will have the most consistently high degree across network ensemble.</p>
 <p>To rank the protein nodes, use the <code>rankHub</code> command and simply specify the <code>level = "y"</code> argument.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ig &lt;-<span class="st"> </span><span class="kw"><a href="../reference/rankHub.html">rankHub</a></span>(<span class="dt">ig =</span> ig, <span class="dt">bdeg =</span> bdeg$yy, <span class="dt">level =</span> <span class="st">"y"</span>)</code></pre></div>
 <p>To rank the CNA nodes, specify the <code>level = "x"</code> argument.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ig &lt;-<span class="st"> </span><span class="kw"><a href="../reference/rankHub.html">rankHub</a></span>(<span class="dt">ig =</span> ig, <span class="dt">bdeg =</span> bdeg$xy, <span class="dt">level =</span> <span class="st">"x"</span>)</code></pre></div>
 <p>Alternatively, if the <code>bdeg</code> argument is not available, the ranking is according to degree in the final network (coded by “ig”).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tmp &lt;-<span class="st"> </span><span class="kw"><a href="../reference/rankHub.html">rankHub</a></span>(<span class="dt">ig =</span> ig,  <span class="dt">level =</span> <span class="st">"x"</span>)</code></pre></div>
-<div id="identify-cis-and-trans" class="section level2">
-<h2 class="hasAnchor">
-<a href="#identify-cis-and-trans" class="anchor"></a>Identify cis and trans</h2>
+<div id="identify-cis-and-trans" class="section level3">
+<h3 class="hasAnchor">
+<a href="#identify-cis-and-trans" class="anchor"></a>Identify cis and trans</h3>
 <p>Next label <span class="math inline">\(x-y\)</span> edges as being regulated in cis or in trans. The <em>GenomicRanges</em> package and the genomic coordinates <code>chr,start,end</code> columns of <code>xinfo</code> and <code>yinfo</code> are required for this step. If you don’t have the package <a href="http://bioconductor.org/packages/release/bioc/html/GenomicRanges.html">GenomicRanges</a> installed yet, try:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## try http:// if https:// URLs are not supported
 <span class="kw">source</span>(<span class="st">"https://bioconductor.org/biocLite.R"</span>)
@@ -286,9 +304,9 @@ ig &lt;-<span class="st"> </span>spacemap::<span class="kw"><a href="../referenc
 <p>Now we can label the <span class="math inline">\(x-y\)</span> edges with either “cis” or “trans” in the <code>cis_trans</code> edge attribute of <code>ig</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ig &lt;-<span class="st"> </span><span class="kw"><a href="../reference/cisTrans.html">cisTrans</a></span>(<span class="dt">ig =</span> ig, <span class="dt">level =</span> <span class="st">"x-y"</span>)</code></pre></div>
 </div>
-<div id="report" class="section level2">
-<h2 class="hasAnchor">
-<a href="#report" class="anchor"></a>Report</h2>
+<div id="report" class="section level3">
+<h3 class="hasAnchor">
+<a href="#report" class="anchor"></a>Report</h3>
 <p>We then report a well-organized table, as seen in Table 3 of the spaceMap publication. The <code>top</code> argument allows us to control how many hubs are displayed.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">xhubs &lt;-<span class="st"> </span><span class="kw"><a href="../reference/reportHubs.html">reportHubs</a></span>(ig, <span class="dt">top =</span> <span class="dv">6</span>, <span class="dt">level =</span> <span class="st">"x"</span>)</code></pre></div>
 <table class="table">
@@ -337,7 +355,7 @@ ig &lt;-<span class="st"> </span>spacemap::<span class="kw"><a href="../referenc
 </tr>
 </tbody>
 </table>
-<p>Similarly, we can report the top 10 protein hubs, as well as the final network degree, and a description of each hub, if the <code>description</code> column was specified in <code>yinfo</code>.</p>
+<p>Similarly, we can report the top 10 protein hubs, their degrees in the final network, and a description of each hub, if the <code>description</code> column was specified in <code>yinfo</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">yhubs &lt;-<span class="st"> </span><span class="kw"><a href="../reference/reportHubs.html">reportHubs</a></span>(ig, <span class="dt">top =</span> <span class="dv">10</span>, <span class="dt">level =</span> <span class="st">"y"</span>)</code></pre></div>
 <table class="table">
 <thead><tr class="header">
@@ -399,10 +417,10 @@ ig &lt;-<span class="st"> </span>spacemap::<span class="kw"><a href="../referenc
 </tbody>
 </table>
 </div>
-<div id="go-neighbor-percentage" class="section level2">
-<h2 class="hasAnchor">
-<a href="#go-neighbor-percentage" class="anchor"></a>GO-neighbor Percentage</h2>
-<p>A CNA neighborhood comprises all protein nodes that are directly connected to a CNA hub by an edge. CNA neighborhoods represent direct perturbations to the proteome by amplifications or deletions in the DNA. To quantify their functional relevance, we compute a score called the <em>GO-neighbor</em> percentage. Two protein nodes are called GO-neighbors if they share a common GO term in the same CNA neighborhood. We postulate that a high percentage of GO-neighbors within a CNA neighborhood associates the CNA hub with more functional meaning. These scores, as presented in figure 5 of the publication, can be generated with a GO mapping to the proteins as follows.</p>
+<div id="go-neighbor-percentage" class="section level3">
+<h3 class="hasAnchor">
+<a href="#go-neighbor-percentage" class="anchor"></a>GO-neighbor percentage</h3>
+<p>A <em>CNA neighborhood</em> comprises all protein nodes that are directly connected to a CNA hub by an edge. CNA neighborhoods represent direct perturbations to the proteome by amplifications or deletions in the DNA. To quantify their functional relevance, we compute a score called the <em>GO-neighbor percentage</em>. Two protein nodes are called GO-neighbors if they share a common GO term in the same CNA neighborhood. We postulate that a high percentage of GO-neighbors within a CNA neighborhood associates the CNA hub with more functional meaning. These scores, as presented in Figure 5 of the publication, can be generated with a GO mapping to the proteins as follows.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">hgp &lt;-<span class="st"> </span><span class="kw"><a href="../reference/xHubEnrich.html">xHubEnrich</a></span>(<span class="dt">ig =</span> ig, <span class="dt">go2eg =</span> go2eg)</code></pre></div>
 <table class="table">
 <thead><tr class="header">
@@ -485,19 +503,22 @@ ig &lt;-<span class="st"> </span>spacemap::<span class="kw"><a href="../referenc
 </table>
 </div>
 </div>
-<div id="module-analysis" class="section level1">
-<h1 class="hasAnchor">
-<a href="#module-analysis" class="anchor"></a>Module Analysis</h1>
-<p>There are many criteria to define modules of a network. This toolkit does not require a specific algorithm for finding modules and allows users to import the module membership information (see <code>mods</code> argument in <a href="https://topherconley.github.io/spacemap/reference/modEnrich.html">modEnrich</a>). In the spaceMap publication, we use the edge-betweenness algorithm in <em>igraph</em>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mods &lt;-<span class="st"> </span><span class="kw">cluster_edge_betweenness</span>(ig)</code></pre></div>
-<p>The main goal of module analysis is identifying modules that are functionally enriched. The <code>modEnrich</code> function will test for significantly over-represented GO-terms (or any other valid functional grouping) in a module using hyper-geometric tests. In this application, only the protein nodes have a functional mapping and we specify this through the <code>levels = "y"</code> argument. If both predictors and responses have a functional mapping in the <code>go2eg</code> argument, then we can specify <code>levels = c("y","x")</code>. Other arguments are available to control the enrichment testing; see the docs of <a href="https://topherconley.github.io/spacemap/reference/modEnrich.html">modEnrich</a> for more details.</p>
+<div id="module-analysis" class="section level2">
+<h2 class="hasAnchor">
+<a href="#module-analysis" class="anchor"></a>Module Analysis</h2>
+<p>There are many criteria to define modules of a network. This toolkit allows users to import the module membership information by themselves (see <code>mods</code> argument in <a href="https://topherconley.github.io/spacemap/reference/modEnrich.html">modEnrich</a>).</p>
+<p>In the spaceMap publication, we use the edge-betweenness algorithm in <em>igraph</em>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(igraph)
+mods &lt;-<span class="st"> </span><span class="kw">cluster_edge_betweenness</span>(ig)</code></pre></div>
+<p>The main goal of module analysis is identifying modules that are functionally enriched. The <code>modEnrich</code> function will test for significantly over-represented GO-terms (or any other valid functional grouping) within a module using hyper-geometric tests.</p>
+<p>In the current example, only the protein nodes have functional mapping and we specify this through the <code>levels = "y"</code> argument. If both predictors and responses have functional mapping in the <code>go2eg</code> argument, then we can specify <code>levels = c("y","x")</code>. Other arguments are available to control the enrichment testing; see <a href="https://topherconley.github.io/spacemap/reference/modEnrich.html">modEnrich</a> for more details.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">outmod &lt;-<span class="st"> </span><span class="kw"><a href="../reference/modEnrich.html">modEnrich</a></span>(<span class="dt">ig =</span> ig, <span class="dt">mods =</span> mods, <span class="dt">levels =</span> <span class="st">"y"</span>, <span class="dt">go2eg =</span> go2eg, <span class="dt">process_alias =</span> process_alias)</code></pre></div>
 <p>The output of the module analysis is a list of 3 objects.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(outmod)</code></pre></div>
 <pre><code>## [1] "ig"   "etab" "eraw"</code></pre>
 <ul>
 <li><p><code>ig</code> is the input igraph network object updated with a “process_id” attribute for nodes affiliated with a significant GO-term. The “process_id” and “module” attributes together are useful for visualizing which nodes are enriched for a specific biological function.</p></li>
-<li><p><code>etab</code> is the polished module enrichment table to report significant GO terms, the representation of the GO term in the module relative to the size of the GO term, and which CNA hubs belong to the module. The top ten hits appear as follows as in Table S.5 of the spaceMap publication’s supplementary materials.</p></li>
+<li><p><code>etab</code> is the polished module enrichment table to report significant GO terms, the representation of the GO term in the module relative to the size of the GO term, and which CNA hubs belong to the module. The top ten hits as in Table S.5 of the spaceMap publication’s supplementary materials are as follows:</p></li>
 </ul>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">outmod$etab[<span class="dv">1</span>:<span class="dv">10</span>,]</code></pre></div>
 <table class="table">
@@ -628,12 +649,12 @@ ig &lt;-<span class="st"> </span>spacemap::<span class="kw"><a href="../referenc
 </tbody>
 </table>
 </div>
-<div id="export-for-network-visualization" class="section level1">
-<h1 class="hasAnchor">
-<a href="#export-for-network-visualization" class="anchor"></a>Export for Network Visualization</h1>
-<p>There exist many tools for network visualization. In the publication of spaceMap, we exported the annotated <em>igraph</em> network object <code>ig</code> to the “graphml” format, which maintained all the attributes associated with nodes when read into <em>Cytoscape</em> for visualization.</p>
+<div id="export-for-visualization" class="section level2">
+<h2 class="hasAnchor">
+<a href="#export-for-visualization" class="anchor"></a>Export for Visualization</h2>
+<p>There are many tools for network visualization. In the publication of spaceMap, we exported the annotated <em>igraph</em> network object <code>ig</code> to the “graphml” format, which maintained all the attributes associated with nodes when read into <em>Cytoscape</em> for visualization.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">igraph::<span class="kw">write_graph</span>(<span class="dt">graph =</span> outmod$ig, <span class="dt">file =</span> <span class="kw">tempfile</span>(), <span class="dt">format =</span> <span class="st">"graphml"</span>)</code></pre></div>
-<p>Here we list all the attributes associated with the nodes (i.e. vertices) that can be used in tandem with Cytoscape’s filtering functions to identify specific nodes of interest.</p>
+<p>Here we list all the attributes associated with the nodes that can be used in tandem with Cytoscape’s filtering functions to identify specific nodes of interest.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">vertex_attr_names</span>(outmod$ig)</code></pre></div>
 <pre><code>##  [1] "name"             "alias"            "chr"             
 ##  [4] "start"            "end"              "strand"          
@@ -641,31 +662,30 @@ ig &lt;-<span class="st"> </span>spacemap::<span class="kw"><a href="../referenc
 ## [10] "mean_rank_hub"    "sd_rank_hub"      "ncis"            
 ## [13] "ntrans"           "regulates_in_cis" "potential_cis"   
 ## [16] "module"           "process_id"</code></pre>
-<p>We describe some of the most useful attributes for visualization.</p>
+<p>We describe some of the most useful attributes for visualization:</p>
 <ul>
 <li>‘name’: the unique node ID</li>
 <li>‘alias’: the node alias (e.g. gene symbol ERBB2)</li>
 <li>‘chr,start,end,strand’: the gene coordinates of nodes</li>
 <li>‘description’: any note (e.g. breast cancer oncogene)</li>
-<li>‘levels’: indicates the node belongs to predictors “x” or response level “y”</li>
-<li>‘rank_hub’: the rank of the hub within level (e.g. a value of “1” for a node of level x implies the most consistently high degree <span class="math inline">\(x\)</span> node in the network. )</li>
+<li>‘levels’: indicates whether the node belongs to predictors “x” or responses “y”</li>
+<li>‘rank_hub’: the rank of the hub within its level (e.g. a value of “1” for a node of level “x” means that it is the most consistently high degree <span class="math inline">\(x\)</span> node in the network. )</li>
 <li>‘regulates_in_cis’: list of genes regulated in cis</li>
-<li>‘module’: the module ID the node belongs to.</li>
+<li>‘module’: the module ID that the node belongs to.</li>
 <li>‘process_id’: the significant GO-term(s) associated with the node.</li>
 </ul>
 <p>Also the edge attributes are exported to ‘graphml’ format.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">edge_attr_names</span>(outmod$ig)</code></pre></div>
 <pre><code>## [1] "levels"    "cis_trans"</code></pre>
 <ul>
-<li>‘levels’ indicates an edge is <span class="math inline">\(x-y\)</span> or <span class="math inline">\(y-y\)</span>
-</li>
-<li>‘cis_trans’ indicates an edge is either regulated cis or trans.</li>
+<li>‘levels’ indicates whether an edge is <span class="math inline">\(x-y\)</span> or <span class="math inline">\(y-y\)</span>.</li>
+<li>‘cis_trans’ indicates whether an edge is regulated in cis or in trans.</li>
 </ul>
 </div>
-<div id="summary" class="section level1">
-<h1 class="hasAnchor">
-<a href="#summary" class="anchor"></a>Summary</h1>
-<p>This toolkit is useful and convenient for analyzing and summarizing the output of spaceMap in the context of integrative genomics. The biological context mapped onto the network object can easily be exported to existing network visualization tools like <em>Cytoscape</em>.</p>
+<div id="summary" class="section level2">
+<h2 class="hasAnchor">
+<a href="#summary" class="anchor"></a>Summary</h2>
+<p>This toolkit is useful for analyzing and summarizing the output of the spaceMap model fit in the context of integrative genomics. The biological context mapped onto the network object can easily be exported to existing network visualization tools like <em>Cytoscape</em>.</p>
 </div>
 </div>
   </div>
@@ -676,15 +696,9 @@ ig &lt;-<span class="st"> </span>spacemap::<span class="kw"><a href="../referenc
       <ul class="nav nav-pills nav-stacked">
 <li><a href="#input">Input</a></li>
       <li><a href="#map-annotations">Map Annotations</a></li>
-      <li>
-<a href="#hub-analysis">Hub Analysis</a><ul class="nav nav-pills nav-stacked">
-<li><a href="#identify-cis-and-trans">Identify cis and trans</a></li>
-      <li><a href="#report">Report</a></li>
-      <li><a href="#go-neighbor-percentage">GO-neighbor Percentage</a></li>
-      </ul>
-</li>
+      <li><a href="#hub-analysis">Hub Analysis</a></li>
       <li><a href="#module-analysis">Module Analysis</a></li>
-      <li><a href="#export-for-network-visualization">Export for Network Visualization</a></li>
+      <li><a href="#export-for-visualization">Export for Visualization</a></li>
       <li><a href="#summary">Summary</a></li>
       </ul>
 </div>
