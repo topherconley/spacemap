@@ -82,23 +82,25 @@
   <div class="col-md-9">
     <div class="page-header toc-ignore">
       <h1>Boostrap Ensemble Network</h1>
+                        <h4 class="author">Christopher Conley, Pei Wang, Jie Peng</h4>
             
-            <h4 class="date">2017-05-10</h4>
+            <h4 class="date">2017-05-11</h4>
           </div>
 
     
     
 <div class="contents">
-<p>Bootstrap aggregation, or bagging, is known to be a powerful tool for stabilizing machine learning models (i.e. reducing the model variability) without incurring additional bias. Learning networks from data is related to classification, where ensemble methods like bagging were first employed<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. In this case, each potential edge must effectively be classified as no edge or edge. Bootstrap aggregation ought to increase the accuracy of the network structure when the model output varies dramatically after being subject to small perturbations to the data input.</p>
-<div id="purpose-and-scope" class="section level2">
+<!--Bootstrap aggregation, or bagging, is known to be a powerful tool for stabilizing machine learning models (i.e. reducing the model variability) without incurring additional bias. Learning networks from data is related to classification, where ensemble methods like bagging were first employed^[Breiman, Leo (1996). "Bagging predictors". Machine Learning. 24 (2): 123–140. doi:10.1007/BF00058655.]. In this case, each potential edge must effectively be classified as no edge or edge. Bootstrap aggregation ought to increase the accuracy of the network structure when the model output varies dramatically after being subject to small perturbations to the data input. -->
+<div id="purpose" class="section level2">
 <h2 class="hasAnchor">
-<a href="#purpose-and-scope" class="anchor"></a>Purpose and Scope</h2>
-<p>Motivated by the advantages of bagging, we implemented the “Boot.Vote” procedure as an additional option to CV.Vote for both spaceMap and SPACE models. The Boot.Vote procedure fits the model on <span class="math inline">\(B\)</span> bootstrapped re-samples. If the majority of the bootstrapped model fits report the same edge, then that edge is considered sufficiently reliable to include in the Boot.Vote network output. While the voting component is similar to CV.Vote, Boot.Vote differs in the data sampling. In bootstrap re-sampling, the model is fit to <span class="math inline">\(N\)</span> samples drawn with replacement (i.e., any sample can be drawn more than once in a bootstrapped re-sample), while CV.Vote sub-samples without replacement depending on the number of hold out sets. In simulations and in an application to breast cancer, we have seen Boot.Vote lower the FDR on average at limited cost to the power compared to the CV.vote procedure. However, Boot.Vote may not always be preferable to CV.Vote. The scope of this article is to demonstrate the application of Boot.Vote and leave it to the user to decide if Boot.Vote enhances the CV.Vote selected model depending on the nature of the application.</p>
+<a href="#purpose" class="anchor"></a>Purpose</h2>
+<p>Motivated by Bagging<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>, we implemented the <code>Boot.Vote</code> procedure as an alternative to <code>CV.Vote</code> for the purpose of variance reduction and FDR control.</p>
+<p>The <code>Boot.Vote</code> procedure fits the spaceMap model on <span class="math inline">\(B\)</span> bootstrapped re-samples of the data, which results in an ensemble of <span class="math inline">\(B\)</span> fitted networks. If an edge appears in the majority of these networks, then it is considered sufficiently reliable to be included in the final network. <!--While the voting component is similar to CV.Vote, Boot.Vote differs in the data sampling. In bootstrap re-sampling, the model is fit to $N$ samples drawn with replacement (i.e., any sample can be drawn more than once in a bootstrapped re-sample), while CV.Vote sub-samples without replacement depending on the number of hold out sets.--> In our experience,<code>Boot.Vote</code> often lowers the FDR at a small cost to the power compared to the <code>CV.vote</code> procedure. <!--However, Boot.Vote may not always be preferable to CV.Vote. The scope of this article is to demonstrate the application of Boot.Vote and leave it to the user to decide if Boot.Vote enhances the CV.Vote selected model depending on the nature of the application. --></p>
 </div>
 <div id="example" class="section level2">
 <h2 class="hasAnchor">
 <a href="#example" class="anchor"></a>Example</h2>
-<p>This section contains a basic illustration on how to build ensemble networks for the spaceMap model and the SPACE model. Load the <a href="https://topherconley.github.io/spacemap/reference/sim1.html">sim1</a> simulation data, which is further described in the <a href="https://topherconley.github.io/spacemap/articles/tuning#tuning-example.html">tuning</a> vignette .</p>
+<p>This section contains a basic illustration on how to build an ensemble of networks for the spaceMap model through the <a href="https://topherconley.github.io/spacemap/reference/sim1.html">sim1</a> simulation data.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(spacemap)
 <span class="kw">data</span>(sim1)</code></pre></div>
 <p>Model fitting is much faster if parallel computation is leveraged. If you choose to set up a parallel back-end (in this case for a multicore machine), it will use all available cores minus 1.</p>
@@ -111,41 +113,53 @@ if (dopar) {
   cl &lt;-<span class="st"> </span><span class="kw">makeCluster</span>(ncores)
   <span class="kw">registerDoParallel</span>(cl)
 }</code></pre></div>
-<div id="spacemap" class="section level3">
-<h3 class="hasAnchor">
-<a href="#spacemap" class="anchor"></a>spaceMap</h3>
-<p>Fit an ensemble network for the spaceMap model (i.e. <code>method="spacemap"</code>) with 100 bootstrap replicates with the <a href="https://topherconley.github.io/spacemap/reference/bootEnsemble.html">bootEnsemble</a> and <a href="https://topherconley.github.io/spacemap/reference/bootVote.html">bootVote</a> functions.</p>
+<p>Fit an ensemble of networks for the spaceMap model with 100 bootstrap replicates by the <a href="https://topherconley.github.io/spacemap/reference/bootEnsemble.html">bootEnsemble</a> and <a href="https://topherconley.github.io/spacemap/reference/bootVote.html">bootVote</a> functions.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#define tune penalty parameters</span>
 tune &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">lam1 =</span> <span class="dv">73</span>, <span class="dt">lam2 =</span> <span class="dv">31</span>, <span class="dt">lam3 =</span> <span class="fl">20.5</span>)
 smapens &lt;-<span class="st"> </span><span class="kw"><a href="../reference/bootEnsemble.html">bootEnsemble</a></span>(<span class="dt">Y =</span> sim1$Y, <span class="dt">X =</span> sim1$X, <span class="dt">tune =</span> tune,
                     <span class="dt">method =</span> <span class="st">"spacemap"</span>, <span class="dt">B =</span> <span class="dv">100</span>)
 smapbv &lt;-<span class="st"> </span><span class="kw"><a href="../reference/bootVote.html">bootVote</a></span>(smapens)</code></pre></div>
-<p>Below the ensemble network is stored as a list of adjacency matrices.</p>
+<p>The final network is stored as a list of two adjacency matrices.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">str</span>(smapbv$bv)</code></pre></div>
 <pre><code>## List of 2
 ##  $ yy: num [1:171, 1:171] 0 0 0 0 0 0 0 0 0 0 ...
 ##   ..- attr(*, "dimnames")=List of 2
 ##   .. ..$ : NULL
 ##   .. ..$ : NULL
-##  $ xy: num [1:14, 1:171] 1 0 0 0 0 0 0 0 0 0 ...
+##  $ xy: num [1:14, 1:171] 0 0 0 0 0 0 0 0 0 0 ...
 ##   ..- attr(*, "dimnames")=List of 2
 ##   .. ..$ : NULL
 ##   .. ..$ : NULL</code></pre>
-</div>
-<div id="space" class="section level3">
-<h3 class="hasAnchor">
-<a href="#space" class="anchor"></a>SPACE</h3>
-<p>Fit an ensemble network for the SPACE model (i.e. <code>method="space"</code>) with 100 bootstrap replicates.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sens &lt;-<span class="st"> </span><span class="kw"><a href="../reference/bootEnsemble.html">bootEnsemble</a></span>(<span class="dt">Y =</span> sim1$Y, <span class="dt">tune =</span> <span class="kw">list</span>(<span class="dt">lam1 =</span> <span class="dv">70</span>), 
-                    <span class="dt">method =</span> <span class="st">"space"</span>, <span class="dt">B =</span> <span class="dv">100</span>)
-spacebv &lt;-<span class="st"> </span><span class="kw"><a href="../reference/bootVote.html">bootVote</a></span>(sens)</code></pre></div>
-<p>Below the ensemble network is stored as an adjacency matrix .</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">str</span>(spacebv$bv$yy)</code></pre></div>
-<pre><code>##  num [1:171, 1:171] 0 0 0 0 0 0 0 0 0 0 ...
+<!--
+### SPACE 
+
+Fit an ensemble network for the SPACE model (i.e. `method="space"`) with 100 bootstrap replicates.
+
+
+```r
+sens <- bootEnsemble(Y = sim1$Y, tune = list(lam1 = 70), 
+                    method = "space", B = 100)
+spacebv <- bootVote(sens)
+```
+
+
+Below the ensemble network is stored as an adjacency matrix . 
+
+
+```r
+str(spacebv$bv$yy)
+```
+
+```
+##  num [1:171, 1:171] 0 0 0 0 0 0 0 0 0 0 ...
 ##  - attr(*, "dimnames")=List of 2
 ##   ..$ : NULL
-##   ..$ : NULL</code></pre>
-</div>
+##   ..$ : NULL
+```
+
+
+
+-->
 </div>
 <div class="footnotes">
 <hr>
@@ -160,7 +174,7 @@ spacebv &lt;-<span class="st"> </span><span class="kw"><a href="../reference/boo
         <div id="tocnav">
       <h2>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
-<li><a href="#purpose-and-scope">Purpose and Scope</a></li>
+<li><a href="#purpose">Purpose</a></li>
       <li><a href="#example">Example</a></li>
       </ul>
 </div>
