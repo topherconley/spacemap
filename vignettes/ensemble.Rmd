@@ -21,15 +21,14 @@ ptm <- proc.time()
 
 ## Purpose
 
-Motivated bagging^[Breiman, Leo (1996). "Bagging predictors". Machine Learning. 24 (2): 123–140. doi:10.1007/BF00058655.], we implemented the `Boot.Vote` procedure as an alternative to `CV.Vote` for the purpose of variance reduction and FDR control. 
+Motivated by Bagging^[Breiman, Leo (1996). "Bagging predictors". Machine Learning. 24 (2): 123–140. doi:10.1007/BF00058655.], we implemented the `Boot.Vote` procedure as an alternative to `CV.Vote` for the purpose of variance reduction and FDR control. 
 
-The `Boot.Vote` procedure fits the spaceMap model on $B$ bootstrapped re-samples of the data, which results in an ensemble of $B$ fitted networks. If an edge appears in the majority of these networks,  then it is considered sufficiently reliable to be included in the Boot.Vote network output. 
-<!--While the voting component is similar to CV.Vote, Boot.Vote differs in the data sampling. In bootstrap re-sampling, the model is fit to $N$ samples drawn with replacement (i.e., any sample can be drawn more than once in a bootstrapped re-sample), while CV.Vote sub-samples without replacement depending on the number of hold out sets.--> In our experience, `Boot.Vote` often  lowers the FDR at a small cost to the power compared to the `CV.vote` procedure. 
+The `Boot.Vote` procedure fits the spaceMap model on $B$ bootstrapped re-samples of the data, which results in an ensemble of $B$ fitted networks. If an edge appears in the majority of these networks,  then it is considered sufficiently reliable to be included in the final network. <!--While the voting component is similar to CV.Vote, Boot.Vote differs in the data sampling. In bootstrap re-sampling, the model is fit to $N$ samples drawn with replacement (i.e., any sample can be drawn more than once in a bootstrapped re-sample), while CV.Vote sub-samples without replacement depending on the number of hold out sets.--> In our experience,`Boot.Vote` often  lowers the FDR at a small cost to the power compared to the `CV.vote` procedure. 
 <!--However, Boot.Vote may not always be preferable to CV.Vote. The scope of this article is to demonstrate the application of Boot.Vote and leave it to the user to decide if Boot.Vote enhances the CV.Vote selected model depending on the nature of the application. -->
 
 ## Example 
 
-This section contains a basic illustration on how to build ensemble networks for the spaceMap model through the  [sim1](https://topherconley.github.io/spacemap/reference/sim1.html) simulation data. 
+This section contains a basic illustration on how to build an ensemble of networks for the spaceMap model through the  [sim1](https://topherconley.github.io/spacemap/reference/sim1.html) simulation data. 
 
 ```{r}
 library(spacemap)
@@ -50,7 +49,7 @@ if (dopar) {
 }
 ```
 
-#### Fit an ensemble of networks
+
 
 Fit an ensemble of networks for the spaceMap model with 100 bootstrap replicates by the  [bootEnsemble](https://topherconley.github.io/spacemap/reference/bootEnsemble.html) and [bootVote](https://topherconley.github.io/spacemap/reference/bootVote.html ) functions. 
 
@@ -62,7 +61,7 @@ smapens <- bootEnsemble(Y = sim1$Y, X = sim1$X, tune = tune,
 smapbv <- bootVote(smapens)
 ```
 
-The ensemble network is stored as a list of adjacency matrices.
+The final network is stored as a list of two adjacency matrices.
 
 ```{r}
 str(smapbv$bv)
