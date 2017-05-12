@@ -50,7 +50,8 @@ names(bcpls)
 
 1. The first column, `id`,  is always required and must be unique for each node; 
 2. The second column, `alias`, is optional and may be used for more human-readable labels. For example, two protein isoforms must have different `id` but may have the same gene symbol alias. 
-3. If genome coordinates are supplied for cis/trans identification, then we need three additional columns: `chr` a character for the chromosome number, `start` an integer for the starting of the chromsome location, and `end` for the ending of the chromsome location. 
+3. If genome coordinates are supplied for cis/trans identification, then we need three additional columns: `chr` a character for the chromosome number, `start` an integer for the starting positiion, and `end` for the ending position.
+
 4. The users can also add other (optional) columns such as `strand` (for DNA strand),  `description` for additional annotations, etc., which will be exported to visulization software such [cytoscrape](http://cytoscape.org/index.html).
 5. Finally, missing information should be denoted by 'NA'. 
 
@@ -90,9 +91,12 @@ head(process_alias,3)
 ```
 
 + The list `bdeg` comes from  [bootVote](https://topherconley.github.io/spacemap/reference/bootVote.html). It is optional for network analysis, but would be useful for prioritizing both CNA- and protein- hubs.
-++ `bdeg$yy[b,]` is an integer vector representing the degree distribution of the proteins in the network fitted on the $b$th bootstrap replicate.  
-++ Similarly, element `bdeg$xy[b,]` is an integer vector representing the degree distribution of the CNAs. 
-++ If `bdeg` is provided in the function `rankHub`, then CNA-hubs will be prioritized according to their average degree rank, so that highly ranked hubs  would  consistently have a large degree across the network ensemble. 
+
+1. `bdeg$yy[b,]` is an integer vector representing the degree distribution of the proteins in the network fitted on the $b$th bootstrap replicate.  
+
+2. Similarly, element `bdeg$xy[b,]` is an integer vector representing the degree distribution of the CNAs. 
+
+3. If `bdeg` is provided in the function `rankHub`, then hubs will be prioritized according to their average degree rank, so that highly ranked hubs  would  consistently have a large degree across the network ensemble. 
 
 ## Map Annotations
 
@@ -120,7 +124,7 @@ vertex_attr(graph = ig, name = "chr", index = V(ig)[alias %in% "ERBB2"])
 
 ## Hub Analysis
 
-We first prioritize the CNA- and protein- hubs. If the degree distributions from the network ensemble are available in the `bdeg` argument, then we rank the hubs according to the average degree rank. Accordingly, the most highly ranked hubs will have the most consistently high degree across network ensemble. 
+We first prioritize the CNA- and protein- hubs. If  the `bdeg` argument is specified, then we rank the hubs according to the average degree rank. Accordingly, the most highly ranked hubs will have the most consistently high degree across network ensemble. 
 
 To rank the protein nodes, use the `rankHub` command and simply specify the `level = "y"` argument. 
 
@@ -167,7 +171,7 @@ xhubs <- reportHubs(ig, top = 6, level = "x")
 kable(xhubs, row.names = FALSE)
 ```
 
-Similarly, we can report the top 10 protein hubs, as well as the final network degree, and a description of each hub, if the `description` column was specified in `yinfo`. 
+Similarly, we can report the top 10 protein hubs,  their degrees in the  final network, and a description of each hub, if the `description` column was specified in `yinfo`. 
 
 ```{r}
 yhubs <- reportHubs(ig, top = 10, level = "y")
@@ -178,7 +182,7 @@ kable(yhubs, row.names = FALSE)
 ```
 
 ### GO-neighbor percentage
-A CNA neighborhood comprises all protein nodes that are directly connected to a CNA hub by an edge. CNA neighborhoods  represent direct perturbations to the proteome by amplifications or deletions in the DNA. To quantify their functional relevance, we compute a score called the *GO-neighbor* percentage. Two protein nodes are called GO-neighbors if they share a common GO term in the same CNA neighborhood. We postulate that a high percentage of GO-neighbors within a CNA neighborhood associates the CNA hub with more functional meaning. These scores, as presented in Figure 5 of the publication, can be generated with a GO mapping to the proteins as follows. 
+A _CNA neighborhood_ comprises all protein nodes that are directly connected to a CNA hub by an edge. CNA neighborhoods  represent direct perturbations to the proteome by amplifications or deletions in the DNA. To quantify their functional relevance, we compute a score called the _GO-neighbor percentage_. Two protein nodes are called GO-neighbors if they share a common GO term in the same CNA neighborhood. We postulate that a high percentage of GO-neighbors within a CNA neighborhood associates the CNA hub with more functional meaning. These scores, as presented in Figure 5 of the publication, can be generated with a GO mapping to the proteins as follows. 
 
 ```{r}
 hgp <- xHubEnrich(ig = ig, go2eg = go2eg)
@@ -190,11 +194,12 @@ kable(hgp, row.names = FALSE)
 
 ## Module Analysis
 
-There are many criteria to define modules of a network. This toolkit does not require a specific algorithm for finding modules and allows users to import the module membership information (see `mods` argument in [modEnrich](https://topherconley.github.io/spacemap/reference/modEnrich.html)).  
+There are many criteria to define modules of a network. This toolkit  allows users to import the module membership information by themselves (see `mods` argument in [modEnrich](https://topherconley.github.io/spacemap/reference/modEnrich.html)).  
 
 In the spaceMap publication, we use the edge-betweenness algorithm in *igraph*.
 
 ```{r}
+library(igraph)
 mods <- cluster_edge_betweenness(ig)
 ```
 
@@ -202,7 +207,7 @@ The main goal of module analysis is identifying modules that are functionally en
 The `modEnrich` function will test for significantly over-represented GO-terms (or any other valid functional grouping) within a module using hyper-geometric tests.  
 
 
-In  this application, only the protein nodes have a functional mapping and we specify this through the `levels = "y"` argument. If both predictors and responses have a functional mapping in the `go2eg` argument, then we can specify `levels = c("y","x")`.  Other arguments are available to control the enrichment testing; see the docs of [modEnrich](https://topherconley.github.io/spacemap/reference/modEnrich.html) for more details. 
+In  the current example, only the protein nodes have functional mapping and we specify this through the `levels = "y"` argument. If both predictors and responses have functional mapping in the `go2eg` argument, then we can specify `levels = c("y","x")`.  Other arguments are available to control the enrichment testing; see [modEnrich](https://topherconley.github.io/spacemap/reference/modEnrich.html) for more details. 
 
 ```{r}
 outmod <- modEnrich(ig = ig, mods = mods, levels = "y", go2eg = go2eg, process_alias = process_alias)
@@ -217,7 +222,7 @@ names(outmod)
 +  `ig` is the input igraph network object updated with a "process_id" attribute for nodes affiliated with a significant GO-term. The "process_id" and "module" attributes together are
 useful for visualizing which nodes are enriched for a specific biological function. 
 
-+ `etab` is the polished module enrichment table to report significant GO terms, the representation of the GO term in the module relative to the size of the GO term, and which CNA hubs  belong to the module. The top ten hits appear as follows as in Table S.5 of the spaceMap publication's supplementary materials. 
++ `etab` is the polished module enrichment table to report significant GO terms, the representation of the GO term in the module relative to the size of the GO term, and which CNA hubs  belong to the module. The top ten hits as in Table S.5 of the spaceMap publication's supplementary materials are as follows: 
 
 
 ```{r, eval = FALSE}
@@ -253,7 +258,7 @@ Here we list all the attributes associated with the nodes that can be used in ta
 vertex_attr_names(outmod$ig)
 ```
 
-We describe some of the most useful attributes for visualization.
+We describe some of the most useful attributes for visualization:
 
 + 'name': the unique node ID 
 + 'alias': the node alias (e.g. gene symbol ERBB2)
@@ -272,7 +277,7 @@ Also the edge attributes are exported to 'graphml' format.
 edge_attr_names(outmod$ig)
 ```
 
-+ 'levels' indicates whether an edge is $x-y$ or $y-y$
++ 'levels' indicates whether an edge is $x-y$ or $y-y$.
 + 'cis_trans' indicates whether an edge is regulated in cis or in trans. 
 
 ## Summary
