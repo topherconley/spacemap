@@ -84,7 +84,7 @@
       <h1>Network analysis toolkit</h1>
                         <h4 class="author">Christopher Conley, Pei Wang, Jie Peng</h4>
             
-            <h4 class="date">2017-05-12</h4>
+            <h4 class="date">2017-05-19</h4>
           </div>
 
     
@@ -108,17 +108,44 @@ Our interest is to use the spaceMap model to find major impacts of DNA copy numb
 <p>Next we list the contents of <code>bcpls</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(bcpls)</code></pre></div>
 <pre><code>## [1] "net"   "yinfo" "xinfo" "bdeg"  "go2eg"</code></pre>
+<p>The following bullets go into detail of how each item of <code>bcpls</code> is used by the toolkit.</p>
 <ul>
-<li><p>The <code>net</code> object is a list of two adjacency matrices that is output from <a href="https://topherconley.github.io/spacemap/reference/bootVote.html">bootVote</a>. The protein–protein edges are encoded with 1’s in <code>net$yy</code>. Likewise, the CNA–protein edges are encoded with 1’s in <code>net$xy</code>.</p></li>
-<li><p>The annotation objects <code>xinfo</code> and <code>yinfo</code> are of type <code>data.frame</code>, whose rows should correspond to the rows of <code>net$xy</code> and <code>net$yy</code>, respectively. <!--If no annotation exists for the nodes $\bf x$ or $\bf y$, then the bare minimum expected is a character vector 'id' for labeling the nodes. -->Let us look at the contents of <code>yinfo</code>:</p></li>
+<li><p><strong>net:</strong> a list of two adjacency matrices that is output from <a href="https://topherconley.github.io/spacemap/reference/bootVote.html">bootVote</a>. The protein–protein edges are encoded with 1’s in <code>net$yy</code>. Likewise, the CNA–protein edges are encoded with 1’s in <code>net$xy</code>.</p></li>
+<li>
+<strong>yinfo:</strong> a <code>data.frame</code> of annotations, whose rows should correspond to the rows of and <code>net$yy</code>. We organize the columns by level of necessity for the toolkit. Columns with missing values are denoted with ‘NA’.
+<ul>
+<li>required variables
+<ul>
+<li>
+<em>id:</em> a character vector for uniquely identifying each node (e.g. an Entrez gene accession).</li>
 </ul>
-<ol style="list-style-type: decimal">
-<li>The first column, <code>id</code>, is always required and must be unique for each node;</li>
-<li>The second column, <code>alias</code>, is optional and may be used for more human-readable labels. For example, two protein isoforms must have different <code>id</code> but may have the same gene symbol alias.</li>
-<li><p>If genome coordinates are supplied for cis/trans identification, then we need three additional columns: <code>chr</code> a character for the chromosome number, <code>start</code> an integer for the starting positiion, and <code>end</code> for the ending position.</p></li>
-<li>The users can also add other (optional) columns such as <code>strand</code> (for DNA strand), <code>description</code> for additional annotations, etc., which will be exported to visulization software such <a href="http://cytoscape.org/index.html">cytoscrape</a>.</li>
-<li><p>Finally, missing information should be denoted by ‘NA’.</p></li>
-</ol>
+</li>
+<li>required variables for cis/trans identification
+<ul>
+<li>
+<em>chr:</em> a character vector for the chromosome numbe (e.g. “chr17”).</li>
+<li>
+<em>start:</em> an integer for the starting positiion of the genomic feature (e.g. transcription start site).</li>
+<li>
+<em>end:</em> an integer for the terminal positiion of the genomic feature (e.g. stop codon location).</li>
+</ul>
+</li>
+<li>optional variables
+<ul>
+<li>
+<em>alias:</em> a character vector of human-readable labels for <em>id</em> column. For example, a gene symbol. Two protein isoforms must have different <em>id</em> but may have the same gene symbol.</li>
+<li>
+<em>strand:</em> a vector of ’+/-/*‘indicating the 5’ to 3’ DNA strand direction.</li>
+<li>
+<em>description:</em> additional functional description of gene product</li>
+<li>
+<em><any variable>:</any></em> other variables of interest will be exported to visulization software such <a href="http://cytoscape.org/index.html">Cytoscape</a>.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>See the contents of <code>yinfo</code> for the BCPLS data set below.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(yinfo,<span class="dv">5</span>)</code></pre></div>
 <table class="table">
 <thead><tr class="header">
@@ -178,7 +205,10 @@ Our interest is to use the spaceMap model to find major impacts of DNA copy numb
 </tr>
 </tbody>
 </table>
-<p>Similar rules are applicable for <code>xinfo</code>. In this example, <code>id</code> contains genomic coordinates, while <code>alias</code> contains cytoband information.</p>
+<ul>
+<li>
+<strong>xinfo:</strong> Same required variables as <code>yinfo</code> but the optional variables differ. See the contents of <code>xinfo</code> for the BCPLS data set below.</li>
+</ul>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(xinfo,<span class="dv">5</span>)</code></pre></div>
 <table class="table">
 <thead><tr class="header">
@@ -227,7 +257,8 @@ Our interest is to use the spaceMap model to find major impacts of DNA copy numb
 </tbody>
 </table>
 <ul>
-<li>The mapping between the proteins and their Gene Ontology (GO) terms is specified in the list <code>go2eg</code>: each element is associated with a GO ID and is a character vector specifying all the proteins that map to this GO ID. Proteins can map to multiple GO terms. The mapping <code>go2eg</code> will be used for conducting functional enrichment analysis, but is otherwise optional.</li>
+<li>
+<strong>go2eg:</strong> A list of functional mappings where each key is associated with a GO ID and the value is a character vector specifying all the proteins that map to this GO ID. Proteins can map to multiple GO terms. The mapping <code>go2eg</code> will be used for conducting functional enrichment analysis, but is otherwise optional.</li>
 </ul>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(go2eg,<span class="dv">2</span>)</code></pre></div>
 <pre><code>## $`GO:0000122`
@@ -260,13 +291,17 @@ process_alias &lt;-<span class="st"> </span>AnnotationDbi::<span class="kw">Term
 ##                                                             GO:0000278 
 ##                                                   "mitotic cell cycle"</code></pre>
 <ul>
-<li>The list <code>bdeg</code> comes from <a href="https://topherconley.github.io/spacemap/reference/bootVote.html">bootVote</a>. It is optional for network analysis, but would be useful for prioritizing both CNA- and protein- hubs.</li>
+<li>
+<strong>bdeg:</strong> A list from <a href="https://topherconley.github.io/spacemap/reference/bootVote.html">bootVote</a>. It is optional for network analysis, but is useful for prioritizing both CNA- and protein- hubs. If <code>bdeg</code> is provided in the function <code>rankHub</code>, then hubs will be prioritized according to their average degree rank, so that highly ranked hubs would consistently have a large degree across the network ensemble. The contents of <code>bdeg</code> are two matrices <code>yy</code> and <code>xy</code> where the bth row is:
+<ul>
+<li>
+<code>yy[b,]</code> an integer vector representing the degree distribution of the proteins in the network fitted on the <span class="math inline">\(b\)</span>th bootstrap replicate.<br>
+</li>
+<li>
+<code>xy[b,]</code> an integer vector representing the degree distribution of the CNAs.</li>
 </ul>
-<ol style="list-style-type: decimal">
-<li><p><code>bdeg$yy[b,]</code> is an integer vector representing the degree distribution of the proteins in the network fitted on the <span class="math inline">\(b\)</span>th bootstrap replicate.</p></li>
-<li><p>Similarly, element <code>bdeg$xy[b,]</code> is an integer vector representing the degree distribution of the CNAs.</p></li>
-<li><p>If <code>bdeg</code> is provided in the function <code>rankHub</code>, then hubs will be prioritized according to their average degree rank, so that highly ranked hubs would consistently have a large degree across the network ensemble.</p></li>
-</ol>
+</li>
+</ul>
 </div>
 <div id="map-annotations" class="section level2">
 <h2 class="hasAnchor">
@@ -308,7 +343,7 @@ ig &lt;-<span class="st"> </span>spacemap::<span class="kw"><a href="../referenc
 <h3 class="hasAnchor">
 <a href="#report" class="anchor"></a>Report</h3>
 <p>We then report a well-organized table, as seen in Table 3 of the spaceMap publication. The <code>top</code> argument allows us to control how many hubs are displayed.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">xhubs &lt;-<span class="st"> </span><span class="kw"><a href="../reference/reportHubs.html">reportHubs</a></span>(ig, <span class="dt">top =</span> <span class="dv">6</span>, <span class="dt">level =</span> <span class="st">"x"</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">xhubs &lt;-<span class="st"> </span><span class="kw"><a href="../reference/reportHubs.html">reportHubs</a></span>(ig, <span class="dt">top =</span> <span class="dv">50</span>, <span class="dt">level =</span> <span class="st">"x"</span>)</code></pre></div>
 <table class="table">
 <thead><tr class="header">
 <th align="left">hub</th>
@@ -352,6 +387,60 @@ ig &lt;-<span class="st"> </span>spacemap::<span class="kw"><a href="../referenc
 <td align="left">2 / 70</td>
 <td align="right">13</td>
 <td align="left">CDH1, CYB5B</td>
+</tr>
+<tr class="odd">
+<td align="left">11q13.5-14.1 (76-78 Mb)</td>
+<td align="left">4 / 7</td>
+<td align="right">7</td>
+<td align="left">RSF1, PGM2L1, GAB2, AAMDC</td>
+</tr>
+<tr class="even">
+<td align="left">17q23.1-23.2 (58-59 Mb)</td>
+<td align="left">2 / 19</td>
+<td align="right">8</td>
+<td align="left">HEATR6, PTRH2</td>
+</tr>
+<tr class="odd">
+<td align="left">16p12.1-12.3 (19-27 Mb)</td>
+<td align="left">2 / 19</td>
+<td align="right">17</td>
+<td align="left">KNOP1, DCTPP1</td>
+</tr>
+<tr class="even">
+<td align="left">5p12-5q11.1 (45-50 Mb)</td>
+<td align="left">1 / 24</td>
+<td align="right">4</td>
+<td align="left">NNT</td>
+</tr>
+<tr class="odd">
+<td align="left">16q22.1 (68-68 Mb)</td>
+<td align="left">0 / 16</td>
+<td align="right">8</td>
+<td align="left">–</td>
+</tr>
+<tr class="even">
+<td align="left">17p11.2 (20-21 Mb)</td>
+<td align="left">0 / 5</td>
+<td align="right">11</td>
+<td align="left">–</td>
+</tr>
+<tr class="odd">
+<td align="left">17p11.2 (20-20 Mb)</td>
+<td align="left">1 / 6</td>
+<td align="right">11</td>
+<td align="left">SHMT1</td>
+</tr>
+<tr class="even">
+<td align="left">12q21.1 (74-74 Mb)</td>
+<td align="left">0 / 4</td>
+<td align="right">2</td>
+<td align="left">–</td>
+</tr>
+<tr class="odd">
+<td align="left">8q21.2-22.1 (87-96 Mb)</td>
+<td align="left">1 / 0</td>
+<td align="right">10</td>
+<td align="left">RIDA</td>
 </tr>
 </tbody>
 </table>
@@ -512,7 +601,9 @@ ig &lt;-<span class="st"> </span>spacemap::<span class="kw"><a href="../referenc
 mods &lt;-<span class="st"> </span><span class="kw">cluster_edge_betweenness</span>(ig)</code></pre></div>
 <p>The main goal of module analysis is identifying modules that are functionally enriched. The <code>modEnrich</code> function will test for significantly over-represented GO-terms (or any other valid functional grouping) within a module using hyper-geometric tests.</p>
 <p>In the current example, only the protein nodes have functional mapping and we specify this through the <code>levels = "y"</code> argument. If both predictors and responses have functional mapping in the <code>go2eg</code> argument, then we can specify <code>levels = c("y","x")</code>. Other arguments are available to control the enrichment testing; see <a href="https://topherconley.github.io/spacemap/reference/modEnrich.html">modEnrich</a> for more details.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">outmod &lt;-<span class="st"> </span><span class="kw"><a href="../reference/modEnrich.html">modEnrich</a></span>(<span class="dt">ig =</span> ig, <span class="dt">mods =</span> mods, <span class="dt">levels =</span> <span class="st">"y"</span>, <span class="dt">go2eg =</span> go2eg, <span class="dt">process_alias =</span> process_alias)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">outmod &lt;-<span class="st"> </span><span class="kw"><a href="../reference/modEnrich.html">modEnrich</a></span>(<span class="dt">ig =</span> ig, <span class="dt">mods =</span> mods, <span class="dt">levels =</span> <span class="st">"y"</span>, 
+                    <span class="dt">go2eg =</span> go2eg, 
+                    <span class="dt">prefix =</span> <span class="st">"P"</span>, <span class="dt">process_alias =</span> process_alias)</code></pre></div>
 <p>The output of the module analysis is a list of 3 objects.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(outmod)</code></pre></div>
 <pre><code>## [1] "ig"   "etab" "eraw"</code></pre>
@@ -530,7 +621,7 @@ mods &lt;-<span class="st"> </span><span class="kw">cluster_edge_betweenness</sp
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td align="left">M1 (244)</td>
+<td align="left">P1 (244)</td>
 <td align="left">small molecule metabolic process</td>
 <td align="left">61/280</td>
 <td align="left">5q34 (111); 10p15.1-15.3 (79)</td>
@@ -554,7 +645,7 @@ mods &lt;-<span class="st"> </span><span class="kw">cluster_edge_betweenness</sp
 <td align="left"></td>
 </tr>
 <tr class="odd">
-<td align="left">M10 (28)</td>
+<td align="left">P10 (28)</td>
 <td align="left">transcription, DNA-templated</td>
 <td align="left">11/77</td>
 <td align="left"></td>
@@ -566,7 +657,7 @@ mods &lt;-<span class="st"> </span><span class="kw">cluster_edge_betweenness</sp
 <td align="left"></td>
 </tr>
 <tr class="odd">
-<td align="left">M2 (25)</td>
+<td align="left">P2 (25)</td>
 <td align="left">negative regulation of cell growth</td>
 <td align="left">6/22</td>
 <td align="left"></td>
@@ -578,13 +669,13 @@ mods &lt;-<span class="st"> </span><span class="kw">cluster_edge_betweenness</sp
 <td align="left"></td>
 </tr>
 <tr class="odd">
-<td align="left">M3 (57)</td>
+<td align="left">P3 (57)</td>
 <td align="left">cell proliferation</td>
 <td align="left">6/37</td>
 <td align="left">17q12 (50)</td>
 </tr>
 <tr class="even">
-<td align="left">M4 (97)</td>
+<td align="left">P4 (97)</td>
 <td align="left">ion transmembrane transport</td>
 <td align="left">10/21</td>
 <td align="left">17q21.32 (79)</td>
@@ -607,7 +698,7 @@ mods &lt;-<span class="st"> </span><span class="kw">cluster_edge_betweenness</sp
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td align="left">M1</td>
+<td align="left">P1</td>
 <td align="left"><a href="GO:0044281" class="uri">GO:0044281</a></td>
 <td align="left">small molecule metabolic process</td>
 <td align="left">61/280</td>
@@ -615,7 +706,7 @@ mods &lt;-<span class="st"> </span><span class="kw">cluster_edge_betweenness</sp
 <td align="right">0.0139429</td>
 </tr>
 <tr class="even">
-<td align="left">M1</td>
+<td align="left">P1</td>
 <td align="left"><a href="GO:0055114" class="uri">GO:0055114</a></td>
 <td align="left">oxidation-reduction process</td>
 <td align="left">28/106</td>
@@ -623,7 +714,7 @@ mods &lt;-<span class="st"> </span><span class="kw">cluster_edge_betweenness</sp
 <td align="right">0.0327023</td>
 </tr>
 <tr class="odd">
-<td align="left">M1</td>
+<td align="left">P1</td>
 <td align="left"><a href="GO:0006366" class="uri">GO:0006366</a></td>
 <td align="left">transcription from RNA polymerase II promoter</td>
 <td align="left">9/20</td>
@@ -631,7 +722,7 @@ mods &lt;-<span class="st"> </span><span class="kw">cluster_edge_betweenness</sp
 <td align="right">0.0398029</td>
 </tr>
 <tr class="even">
-<td align="left">M1</td>
+<td align="left">P1</td>
 <td align="left"><a href="GO:0051289" class="uri">GO:0051289</a></td>
 <td align="left">protein homotetramerization</td>
 <td align="left">9/20</td>
@@ -639,7 +730,7 @@ mods &lt;-<span class="st"> </span><span class="kw">cluster_edge_betweenness</sp
 <td align="right">0.0398029</td>
 </tr>
 <tr class="odd">
-<td align="left">M1</td>
+<td align="left">P1</td>
 <td align="left"><a href="GO:0034641" class="uri">GO:0034641</a></td>
 <td align="left">cellular nitrogen compound metabolic process</td>
 <td align="left">17/61</td>
@@ -653,7 +744,10 @@ mods &lt;-<span class="st"> </span><span class="kw">cluster_edge_betweenness</sp
 <h2 class="hasAnchor">
 <a href="#export-for-visualization" class="anchor"></a>Export for Visualization</h2>
 <p>There are many tools for network visualization. In the publication of spaceMap, we exported the annotated <em>igraph</em> network object <code>ig</code> to the “graphml” format, which maintained all the attributes associated with nodes when read into <em>Cytoscape</em> for visualization.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">igraph::<span class="kw">write_graph</span>(<span class="dt">graph =</span> outmod$ig, <span class="dt">file =</span> <span class="kw">tempfile</span>(), <span class="dt">format =</span> <span class="st">"graphml"</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">filename &lt;-<span class="st"> "~/repos/neta-bcpls/neta/spacemap-prot-boot-vote.graphml"</span>
+<span class="co">#only keep vertices that have edges for visualization</span>
+vis &lt;-<span class="st"> </span><span class="kw">delete_vertices</span>(<span class="dt">graph =</span> outmod$ig, <span class="dt">v =</span> <span class="kw">V</span>(outmod$ig)[igraph::<span class="kw">degree</span>(outmod$ig) ==<span class="st"> </span><span class="dv">0</span>])
+igraph::<span class="kw">write_graph</span>(<span class="dt">graph =</span> vis, <span class="dt">file =</span> filename, <span class="dt">format =</span> <span class="st">"graphml"</span>)</code></pre></div>
 <p>Here we list all the attributes associated with the nodes that can be used in tandem with Cytoscape’s filtering functions to identify specific nodes of interest.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">vertex_attr_names</span>(outmod$ig)</code></pre></div>
 <pre><code>##  [1] "name"             "alias"            "chr"             

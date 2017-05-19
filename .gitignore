@@ -18,4 +18,8 @@ vignettes/*.Rpres
 #windows build files
 src-*
 #R session files
-.Rhistory
+*Rhistory
+*RData
+*Rproj.user/
+#website
+docs/articles/*.Rmd

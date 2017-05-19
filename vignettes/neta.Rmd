@@ -37,23 +37,30 @@ data("bcpls")
 attach(bcpls)
 ```
 
-Next we list the contents of `bcpls`.
+Next we list the contents of `bcpls`. 
 
 ```{r}
 names(bcpls)
 ```
 
+The following bullets go into detail of how each item of `bcpls` is used by the toolkit. 
 
-+ The `net` object is a list of two adjacency matrices that is output from [bootVote](https://topherconley.github.io/spacemap/reference/bootVote.html). The protein--protein edges are encoded with 1's in `net$yy`. Likewise, the CNA--protein edges are encoded with 1's in `net$xy`.  
++ **net:** a list of two adjacency matrices that is output from [bootVote](https://topherconley.github.io/spacemap/reference/bootVote.html).    The protein--protein edges are encoded with 1's in `net$yy`. Likewise, the CNA--protein edges are encoded with 1's in `net$xy`.  
 
-+ The annotation objects `xinfo` and `yinfo` are of type `data.frame`, whose rows should correspond to the rows of `net$xy` and `net$yy`, respectively. <!--If no annotation exists for the nodes $\bf x$ or $\bf y$, then the bare minimum expected is a character vector 'id' for labeling the nodes. -->Let us look at the contents of `yinfo`: 
++ **yinfo:** a `data.frame` of annotations, whose rows should correspond to the rows of and `net$yy`. We organize the columns by level of necessity for the toolkit. Columns with missing values are denoted with 'NA'.
+    * required variables
+        - *id:* a character vector for uniquely identifying each node (e.g.  an Entrez gene accession). 
+    * required variables for cis/trans identification
+        - *chr:* a character vector for the chromosome numbe (e.g. "chr17").
+        - *start:* an integer for the starting positiion of the genomic feature (e.g. transcription start site).
+        - *end:* an integer for the terminal positiion of the genomic feature (e.g. stop codon location). 
+    * optional variables 
+        - *alias:* a character vector of human-readable labels for *id* column. For example, a gene symbol. Two protein isoforms must have            different *id* but may have the same gene symbol.
+        - *strand:* a vector of '+/-/*' indicating the 5' to 3' DNA strand direction. 
+        - *description:* additional functional description of gene product 
+        - *<any variable>:* other variables of interest will be exported to visulization software such                                                [Cytoscape](http://cytoscape.org/index.html).
 
-1. The first column, `id`,  is always required and must be unique for each node; 
-2. The second column, `alias`, is optional and may be used for more human-readable labels. For example, two protein isoforms must have different `id` but may have the same gene symbol alias. 
-3. If genome coordinates are supplied for cis/trans identification, then we need three additional columns: `chr` a character for the chromosome number, `start` an integer for the starting positiion, and `end` for the ending position.
-
-4. The users can also add other (optional) columns such as `strand` (for DNA strand),  `description` for additional annotations, etc., which will be exported to visulization software such [cytoscrape](http://cytoscape.org/index.html).
-5. Finally, missing information should be denoted by 'NA'. 
+See the contents of `yinfo` for the BCPLS data set below. 
 
 ```{r,eval=FALSE}
 head(yinfo,5)
@@ -62,10 +69,8 @@ head(yinfo,5)
 ```{r, echo=FALSE}
 knitr::kable(yinfo[1:5,], row.names = FALSE)
 ```
-
-Similar rules are applicable for `xinfo`. In this example, `id` contains genomic coordinates, while `alias` contains cytoband information. 
-
-
+   
++ **xinfo:** Same required variables as `yinfo` but the optional variables differ. See the contents of `xinfo` for the BCPLS data set below. 
 ```{r,eval=FALSE}
 head(xinfo,5)
 ```
@@ -74,7 +79,10 @@ head(xinfo,5)
 knitr::kable(xinfo[1:5,], row.names = FALSE)
 ```
 
-+ The mapping between the proteins and their  Gene Ontology (GO) terms is  specified in the list `go2eg`: each element is associated with a GO ID and is a character vector specifying all the proteins that map to this GO ID. Proteins can map to multiple GO terms. The mapping `go2eg` will be used for conducting functional enrichment analysis, but is otherwise optional. 
++ **go2eg:** A list of functional mappings where each key is associated with a GO ID 
+  and the value is a character vector specifying all the proteins that map to this GO ID.
+  Proteins can map to multiple GO terms. The mapping `go2eg` will be used for conducting 
+  functional enrichment analysis, but is otherwise optional. 
 
 ```{r}
 head(go2eg,2)
@@ -90,13 +98,14 @@ process_alias <- AnnotationDbi::Term(names(go2eg))
 head(process_alias,3)
 ```
 
-+ The list `bdeg` comes from  [bootVote](https://topherconley.github.io/spacemap/reference/bootVote.html). It is optional for network analysis, but would be useful for prioritizing both CNA- and protein- hubs.
-
-1. `bdeg$yy[b,]` is an integer vector representing the degree distribution of the proteins in the network fitted on the $b$th bootstrap replicate.  
-
-2. Similarly, element `bdeg$xy[b,]` is an integer vector representing the degree distribution of the CNAs. 
-
-3. If `bdeg` is provided in the function `rankHub`, then hubs will be prioritized according to their average degree rank, so that highly ranked hubs  would  consistently have a large degree across the network ensemble. 
++ **bdeg:** A list from [bootVote](https://topherconley.github.io/spacemap/reference/bootVote.html). 
+  It is optional for network analysis, but is useful for prioritizing both CNA- and protein- hubs.
+  If `bdeg` is provided in the function `rankHub`, then hubs will be prioritized according to their 
+  average degree rank, so that highly ranked hubs would consistently have a large degree across 
+  the network ensemble. The contents of `bdeg` are two matrices `yy` and `xy` where the bth row is: 
+    * `yy[b,]` an integer vector representing the degree distribution of the proteins in the network 
+        fitted on the $b$th bootstrap replicate.  
+    * `xy[b,]` an integer vector representing the degree distribution of the CNAs. 
 
 ## Map Annotations
 
@@ -164,7 +173,7 @@ ig <- cisTrans(ig = ig, level = "x-y")
 We then report a well-organized table, as seen in Table 3 of the spaceMap publication. The `top` argument allows us to control how many hubs are displayed.
 
 ```{r}
-xhubs <- reportHubs(ig, top = 6, level = "x")
+xhubs <- reportHubs(ig, top = 50, level = "x")
 ```
 
 ```{r, echo=FALSE}
@@ -210,7 +219,9 @@ The `modEnrich` function will test for significantly over-represented GO-terms (
 In  the current example, only the protein nodes have functional mapping and we specify this through the `levels = "y"` argument. If both predictors and responses have functional mapping in the `go2eg` argument, then we can specify `levels = c("y","x")`.  Other arguments are available to control the enrichment testing; see [modEnrich](https://topherconley.github.io/spacemap/reference/modEnrich.html) for more details. 
 
 ```{r}
-outmod <- modEnrich(ig = ig, mods = mods, levels = "y", go2eg = go2eg, process_alias = process_alias)
+outmod <- modEnrich(ig = ig, mods = mods, levels = "y", 
+                    go2eg = go2eg, 
+                    prefix = "P", process_alias = process_alias)
 ```
 
 The output of the module analysis is a list of 3 objects.
@@ -249,7 +260,10 @@ knitr::kable(outmod$eraw[1:5,], row.names = FALSE)
 There are many tools for network visualization. In the publication of spaceMap, we exported the annotated *igraph* network object `ig` to the "graphml" format, which maintained all the attributes associated with nodes when read into *Cytoscape* for visualization. 
 
 ```{r}
-igraph::write_graph(graph = outmod$ig, file = tempfile(), format = "graphml")
+filename <- "~/repos/neta-bcpls/neta/spacemap-prot-boot-vote.graphml"
+#only keep vertices that have edges for visualization
+vis <- delete_vertices(graph = outmod$ig, v = V(outmod$ig)[igraph::degree(outmod$ig) == 0])
+igraph::write_graph(graph = vis, file = filename, format = "graphml")
 ```
 
 Here we list all the attributes associated with the nodes that can be used in tandem with Cytoscape's filtering functions to identify specific nodes of interest. 
