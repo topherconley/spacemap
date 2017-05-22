@@ -59,14 +59,12 @@ initFit <- function(Y, X = NULL, tuneGrid, method = c("spacemap", "space"), isca
     l <- NULL;
     nedges <- foreach(l = seq_len(nrow(tuneGrid)), .combine = 'rbind') %dopar% {
       fit <- spacemap(Y = Y, X = X, 
-                      lam1 = tuneGrid$lam1[l], 
-                      lam2 = tuneGrid$lam2[l], 
-                      lam3 = tuneGrid$lam3[l], 
-                      sig=opt$sig, rho = opt$rho, 
-                      iter= opt$iter,
-                      tol = opt$tol,
-                      iscale = FALSE,
-                      cdmax = opt$cdmax, ...)
+                      lam1 = tuneGrid$lam1[l], sridge = opt$sridge, 
+                      lam2 = tuneGrid$lam2[l], lam3 = tuneGrid$lam3[l], 
+                      sig=opt$sig,  rho = opt$rho, 
+                      weight=opt$weight, remWeight = opt$remWeight,
+                      iter= opt$iter, tol = opt$tol, cdmax = opt$cdmax,
+                      iscale = FALSE)
       if (fit$convergence) {
         net <- adjacency(net = fit, aszero = aszero)
         matrix(c(nyy = nonZeroUpper(net$yy,0.0), 

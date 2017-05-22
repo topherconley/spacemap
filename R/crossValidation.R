@@ -28,8 +28,10 @@ trainModel <- function(train, method, tuneGrid, refit = TRUE, fold_id, tune_id, 
     fit <- spacemap(Y = train$Y, X = train$X, 
                     lam1 = tuneGrid$lam1, sridge = opt$sridge, 
                     lam2 = tuneGrid$lam2, lam3 = tuneGrid$lam3, 
-                    sig=opt$sig, weight=opt$weight, remWeight = opt$remWeight, iter= opt$iter,
-                    tol = opt$tol, cdmax = opt$cdmax, iscale = FALSE)
+                    sig=opt$sig, rho=opt$rho, 
+                    weight=opt$weight, remWeight = opt$remWeight, 
+                    iter= opt$iter, tol = opt$tol, cdmax = opt$cdmax, 
+                    iscale = FALSE)
     #zero out those below tolerance. 
     fit$ParCor[abs(fit$ParCor) <= aszero ] <- 0.0
     fit$Gamma[abs(fit$Gamma) <= aszero ] <- 0.0
