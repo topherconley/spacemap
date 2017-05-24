@@ -165,11 +165,11 @@ dataPart <- function(f, trainIds, testIds, data,
 
 structureScores <- function(cvScores, fold, method) { 
 
-  metrics <- c("rss", "df", "dfParCor", "dfGamma", "deltaMax")
+  metrics <- c("rss", "df", "dfPqarCor", "dfGamma", "deltaMax")
   requireNamespace("foreach")
   #for R CMD check NOTE passing
   m <- NULL; f <- NULL;
-  metricScores <- foreach(m = seq_along(metrics)) %do% {
+  metricScores <- foreach(m = seq_along(metrics)) %:% {
     metricMatrix <- foreach(f = seq_len(fold), .combine = 'cbind') %do% {
       cvScores[[f]][,m]
     } 
