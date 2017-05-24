@@ -169,11 +169,10 @@ structureScores <- function(cvScores, fold, method) {
   requireNamespace("foreach")
   #for R CMD check NOTE passing
   m <- NULL; f <- NULL;
-  metricScores <- foreach(m = seq_along(metrics)) %:% {
+  metricScores <- foreach(m = seq_along(metrics)) %:% 
     metricMatrix <- foreach(f = seq_len(fold), .combine = 'cbind') %do% {
       cvScores[[f]][,m]
     } 
-  }
   names(metricScores) <- metrics
   metricScores
 }
