@@ -165,7 +165,7 @@ dataPart <- function(f, trainIds, testIds, data,
 
 structureScores <- function(cvScores, fold, method) { 
 
-  metrics <- c("rss", "df", "dfPqarCor", "dfGamma", "deltaMax")
+  metrics <- c("rss", "df", "dfParCor", "dfGamma", "deltaMax")
   requireNamespace("foreach")
   #for R CMD check NOTE passing
   m <- NULL; f <- NULL;
