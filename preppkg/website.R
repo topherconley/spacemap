@@ -10,7 +10,7 @@ document()
 
 library(roxygen2)
 roxygenize(clean = TRUE)
-install(quick = TRUE, dependencies = T)
+install(quick = TRUE, dependencies = F)
 devtools::clean_dll()
 devtools::check()
 #############################
@@ -61,9 +61,9 @@ biocLite(biocpkgs)
 
 #STEP 3: build binary
 # Run verbatim as administrator in Windows Command Prompt
-# "C:\Program Files\R\R-3.3.3\bin\R.exe" CMD INSTALL --build --compile-both spacemap/
+# "C:\Program Files\R\R-3.4.0\bin\R.exe" CMD INSTALL --build --compile-both spacemap/
 #STEP 4: check that binary installs.
-install.packages(pkgs = "C:/Users/topher/Shared/repos/spacemap_0.52.0.zip", 
+install.packages(pkgs = "C:/Users/topher/Shared/repos/spacemap_0.53.1.zip", 
                  lib = "C:/Program Files/R/R-3.4.0/library/",
                  repos = NULL)
 library(spacemap)
