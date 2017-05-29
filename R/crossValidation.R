@@ -373,7 +373,7 @@ cvVote <- function(Y, X = NULL, trainIds, testIds,
   
   #obtain model fit files from best tune index
   files <- list.files(path = resPath, 
-                           pattern =  paste0("tuneid_", sprintf("%03d", minIndex)),
+                           pattern =  paste0("tuneid_", sprintf("%03d", minIndex), "_fold"),
                            full.names = TRUE)
   voteFit <- cvVoteRDS(files = files, tol = 0.0, 
                        thresh = thresh, method = method,
