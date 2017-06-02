@@ -1,6 +1,6 @@
 Package: spacemap
 Title: A novel conditional graphical model for integrative genomics
-Version: 0.53.1
+Version: 0.53.2
 Authors@R: c(person("Christopher Conley", role = c("aut", "cre"),
     email = "conley.christopher@gmail.com"),
     person("Pei Wang", role = c("aut")),
