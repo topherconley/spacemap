@@ -5,8 +5,8 @@
 \title{Ensemble networks through boostrapping.}
 \usage{
 bootEnsemble(Y, X = NULL, tune, method = c("spacemap", "space"),
-  boot = TRUE, B = 1000L, iscale = TRUE, aszero = 1e-06,
-  seed = sample.int(n = 1e+06, size = 1), p0 = 1, ...)
+  boot = TRUE, B = 100L, resPath = tempdir(), iscale = TRUE,
+  aszero = 1e-06, seed = sample.int(n = 1e+06, size = 1), p0 = 1, ...)
 }
 \arguments{
 \item{Y}{Numeric matrix \eqn{(N \times Q)} containing N iid samples of the response vector \eqn{\textbf{y}}.}
@@ -26,6 +26,11 @@ consider the output from \code{\link{cvVote}} (i.e. list \code{minTune}) as inpu
 \item{B}{Positive integer denoting the number of model fits making up the ensemble. Default is 1000, but can 
 be lowered to save time.}
 
+\item{resPath}{Character vector specifying the directory where each 
+each model fit to bootstrap replicate data is written to file through serialization by \code{saveRDS}. 
+Defaults to temporary directory that will be deleted at end of the R session. 
+It is recommended to specify a directory where results can be stored permanently.}
+
 \item{iscale}{Logical indicating to standardize the whole input data. Defaults to TRUE. 
 See \code{base::scale(x, center = TRUE, scale = TRUE)} for details of standardization.}
 
@@ -40,10 +45,12 @@ samples that will be down-sampled for each model fitting iteration of the ensemb
 \item{...}{Additional arguments for \code{\link{spacemap}} or  \code{\link{space}}.}
 }
 \value{
-A list up to length \code{B} of convergent and sparse model fits from 
-either \code{\link{spacemap}} or \code{\link{space}}. The list object should typically
-not be modified by the user, but passed on to the  \code{\link{bootVote}} function.
-Model fits that are not convergent or produce networks that are not sparse are not reported.
+A list, call it \code{ens}, up to length \code{B} of convergent model fits from 
+either \code{\link{spacemap}} or \code{\link{space}}. \code{ens} should typically
+not be modified by the user, but passed on to the \code{\link{bootVote}} function.
+Non-convergent model fits to bootstrap replciates are not included in list `ens`, 
+but can be inspected individually at location \code{resPath} and are identified  
+by \code{attr(good, which = "not_conv_bootids")}.
 }
 \description{
 Fits spacemap model to B bootstrapped data replicates to create an ensemble network.
