@@ -12,16 +12,22 @@
 #' \code{boot=FALSE} will resample without replacement. 
 #' @param B Positive integer denoting the number of model fits making up the ensemble. Default is 1000, but can 
 #' be lowered to save time. 
+#' @param resPath Character vector specifying the directory where each 
+#' each model fit to bootstrap replicate data is written to file through serialization by \code{saveRDS}. 
+#' Defaults to temporary directory that will be deleted at end of the R session. 
+#' It is recommended to specify a directory where results can be stored permanently. 
 #' @param aszero Positive numeric value (defaults to 1e-6) indicating at what point to consider extremely 
 #' small parameter estimates of \eqn{\Gamma} and \eqn{\rho} as zero. 
 #' @param seed Positive integer allowing user to set the random seed for reproducing the network ensemble. 
 #' @param p0 Positive numeric not exceeding the default of 1, which represents the proportion of the original 
 #' samples that will be down-sampled for each model fitting iteration of the ensemble. 
 #' @param ... Additional arguments for \code{\link{spacemap}} or  \code{\link{space}}.
-#' @return A list up to length \code{B} of convergent and sparse model fits from 
-#' either \code{\link{spacemap}} or \code{\link{space}}. The list object should typically
-#' not be modified by the user, but passed on to the  \code{\link{bootVote}} function.
-#' Model fits that are not convergent or produce networks that are not sparse are not reported. 
+#' @return A list, call it \code{ens}, up to length \code{B} of convergent model fits from 
+#' either \code{\link{spacemap}} or \code{\link{space}}. \code{ens} should typically
+#' not be modified by the user, but passed on to the \code{\link{bootVote}} function.
+#' Non-convergent model fits to bootstrap replciates are not included in list `ens`, 
+#' but can be inspected individually at location \code{resPath} and are identified  
+#' by \code{attr(good, which = "not_conv_bootids")}.
 #' @importFrom rngtools RNGseq setRNG
 #' @importFrom Matrix Matrix
 #' @import RcppArmadillo
@@ -40,7 +46,8 @@
 #' 
 #' 
 bootEnsemble <- function(Y, X = NULL, tune, method = c("spacemap", "space"), 
-                         boot = TRUE, B =  1000L, iscale = TRUE, aszero = 1e-6,  
+                         boot = TRUE, B =  100L, resPath = tempdir(),
+                         iscale = TRUE, aszero = 1e-6,  
                          seed = sample.int(n = 1e6, size = 1), 
                          p0 = 1.0, ...) {
   
@@ -98,17 +105,28 @@ bootEnsemble <- function(Y, X = NULL, tune, method = c("spacemap", "space"),
       #zero out those below tolerance
       fit$ParCor[abs(fit$ParCor) <= aszero] <- 0.0
       fit$Gamma[abs(fit$Gamma) <= aszero] <- 0.0
+      
+      #write to file
+      out <- list(ThetaXY = Matrix(fit$Gamma), ThetaYY = Matrix(fit$ParCor), sig = fit$sig.fit,
+                  boot_id = j, convergence = fit$convergence)
+      outfile <- file.path(resPath, paste0("spacemap_bootid_", sprintf("%03d", j), 
+                                           ".rds"))
+      saveRDS(out, file = outfile)
+      
       if (!fit$convergence) { 
         fit$sparse <- FALSE
         return(fit[c("convergence", "sparse")])
       }
-      fit$sparse <- olsRefitSpacemap(Y = Y[sidx,], X = X[sidx,], 
-                                     ParCor = fit$ParCor, Gamma = fit$Gamma, 
-                                     sigma = fit$sig.fit, RSS = fit$rss, tol = opt$tol, 
-                                     ridge = opt$refitRidge)
-      if (!fit$sparse) { 
-        return(fit[c("convergence", "sparse")])
-      } 
+      
+      fit$sparse <- TRUE
+      # fit$sparse <- olsRefitSpacemap(Y = Y[sidx,], X = X[sidx,],
+      #                                ParCor = fit$ParCor, Gamma = fit$Gamma,
+      #                                sigma = fit$sig.fit, RSS = fit$rss, tol = opt$tol,
+      #                                ridge = opt$refitRidge)
+      # if (!fit$sparse) { 
+      #   return(fit[c("convergence", "sparse")])
+      # } 
+      
       fit$xy <- sparseAdjMat(fit$Gamma)
       fit$yy <- sparseAdjMat(fit$ParCor)
       fit[c("xy", "yy", "convergence", "sparse")]
@@ -123,18 +141,37 @@ bootEnsemble <- function(Y, X = NULL, tune, method = c("spacemap", "space"),
                                    iscale = FALSE)
       #zero out those below tolerance. 
       fit$ParCor[abs(fit$ParCor) <= aszero] <- 0.0
+    
+      #write to file
+      out <- list(sig = fit$sig.fit,
+                  boot_id = j,
+                  convergence = fit$convergence)
+      
+      if (givenX) { 
+        xy <- fit$ParCor[Xindex,Yindex]
+        yy <- fit$ParCor[Yindex,Yindex]
+        out$ThetaXY = Matrix(xy) 
+        out$ThetaYY = Matrix(yy)
+      } else {
+        out$ThetaYY = Matrix(fit$ParCor) 
+      }
+      outfile <- file.path(resPath, paste0("space_bootid_", sprintf("%03d", j), 
+                                           ".rds"))
+      saveRDS(out, file = outfile)
+      
       if (!fit$convergence) { 
         fit$sparse <- FALSE
         return(fit[c("convergence", "sparse")])
       }
       
-      fit$sparse <- olsRefitSpace(Y = XY[sidx,],
-                                  ParCor = fit$ParCor, 
-                                  sigma = fit$sig.fit, RSS = fit$rss, tol = opt$tol,
-                                  ridge = opt$refitRidge)
-      if (!fit$sparse) { 
-        return(fit[c("convergence", "sparse")])
-      } 
+      fit$sparse <- TRUE
+      # fit$sparse <- olsRefitSpace(Y = XY[sidx,],
+      #                             ParCor = fit$ParCor, 
+      #                             sigma = fit$sig.fit, RSS = fit$rss, tol = opt$tol,
+      #                             ridge = opt$refitRidge)
+      # if (!fit$sparse) { 
+      #   return(fit[c("convergence", "sparse")])
+      # } 
       
       if (givenX) { 
         fit$xy <- sparseAdjMat(fit$ParCor[Xindex,Yindex])
@@ -154,6 +191,7 @@ bootEnsemble <- function(Y, X = NULL, tune, method = c("spacemap", "space"),
   }
   good <- ens[goodIndex]
   attr(good, which = "method") <- method
+  attr(good, which = "not_conv_bootids") <- setdiff(seq_len(B),goodIndex)
   good
 }  
 
