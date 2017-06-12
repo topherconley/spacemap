@@ -8,8 +8,8 @@ authors:
   Jie Peng:
     href: http://www.stat.ucdavis.edu/~jie/
   Pei Wang:
-    href: http://research.mssm.edu/wanglab/index.htm
-
+    href: http://labs.icahn.mssm.edu/pei-wang-lab/
+ 
 reference:
   - title: R package overview
     desc: The functions of the spaceMap R package are perhaps best conceptualized in four categories. The model fitting category concerns functions that learn a network from input data. The model selection category encompasses functions that select the optimal tuning parameters and build robust networks through aggregation. The  network analysis category contains tools to annotate and interpret inferred networks. The Utils category provides convenient functions such as evaluating simulation performance.  

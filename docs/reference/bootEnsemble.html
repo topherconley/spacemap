@@ -111,8 +111,8 @@
     
 
     <pre><span class='fu'>bootEnsemble</span>(<span class='no'>Y</span>, <span class='kw'>X</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='no'>tune</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='fu'>c</span>(<span class='st'>"spacemap"</span>, <span class='st'>"space"</span>),
-  <span class='kw'>boot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>B</span> <span class='kw'>=</span> <span class='fl'>1000L</span>, <span class='kw'>iscale</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>aszero</span> <span class='kw'>=</span> <span class='fl'>1e-06</span>,
-  <span class='kw'>seed</span> <span class='kw'>=</span> <span class='fu'>sample.int</span>(<span class='kw'>n</span> <span class='kw'>=</span> <span class='fl'>1e+06</span>, <span class='kw'>size</span> <span class='kw'>=</span> <span class='fl'>1</span>), <span class='kw'>p0</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='no'>...</span>)</pre>
+  <span class='kw'>boot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>B</span> <span class='kw'>=</span> <span class='fl'>100L</span>, <span class='kw'>resPath</span> <span class='kw'>=</span> <span class='fu'>tempdir</span>(), <span class='kw'>iscale</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>aszero</span> <span class='kw'>=</span> <span class='fl'>1e-06</span>, <span class='kw'>seed</span> <span class='kw'>=</span> <span class='fu'>sample.int</span>(<span class='kw'>n</span> <span class='kw'>=</span> <span class='fl'>1e+06</span>, <span class='kw'>size</span> <span class='kw'>=</span> <span class='fl'>1</span>), <span class='kw'>p0</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
@@ -147,6 +147,13 @@ consider the output from <code><a href='cvVote.html'>cvVote</a></code> (i.e. lis
 be lowered to save time.</p></td>
     </tr>
     <tr>
+      <th>resPath</th>
+      <td><p>Character vector specifying the directory where each 
+each model fit to bootstrap replicate data is written to file through serialization by <code>saveRDS</code>. 
+Defaults to temporary directory that will be deleted at end of the R session. 
+It is recommended to specify a directory where results can be stored permanently.</p></td>
+    </tr>
+    <tr>
       <th>iscale</th>
       <td><p>Logical indicating to standardize the whole input data. Defaults to TRUE. 
 See <code>base::scale(x, center = TRUE, scale = TRUE)</code> for details of standardization.</p></td>
@@ -173,10 +180,12 @@ samples that will be down-sampled for each model fitting iteration of the ensemb
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A list up to length <code>B</code> of convergent and sparse model fits from 
-either <code><a href='spacemap.html'>spacemap</a></code> or <code><a href='space.html'>space</a></code>. The list object should typically
-not be modified by the user, but passed on to the  <code><a href='bootVote.html'>bootVote</a></code> function.
-Model fits that are not convergent or produce networks that are not sparse are not reported.</p>
+    <p>A list, call it <code>ens</code>, up to length <code>B</code> of convergent model fits from 
+either <code><a href='spacemap.html'>spacemap</a></code> or <code><a href='space.html'>space</a></code>. <code>ens</code> should typically
+not be modified by the user, but passed on to the <code><a href='bootVote.html'>bootVote</a></code> function.
+Non-convergent model fits to bootstrap replciates are not included in list `ens`, 
+but can be inspected individually at location <code>resPath</code> and are identified  
+by <code>attr(good, which = "not_conv_bootids")</code>.</p>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
@@ -192,7 +201,10 @@ Model fits that are not convergent or produce networks that are not sparse are n
 <span class='co'>#Boostrap Ensemble (B = 10) for illustration only</span>
 <span class='no'>tune</span> <span class='kw'>&lt;-</span> <span class='fu'>data.frame</span>(<span class='kw'>lam1</span> <span class='kw'>=</span> <span class='fl'>70</span>, <span class='kw'>lam2</span> <span class='kw'>=</span> <span class='fl'>28</span>, <span class='kw'>lam3</span> <span class='kw'>=</span> <span class='fl'>17.5</span>)
 <span class='no'>ens</span> <span class='kw'>&lt;-</span> <span class='fu'>bootEnsemble</span>(<span class='kw'>Y</span> <span class='kw'>=</span> <span class='no'>sim1</span>$<span class='no'>Y</span>, <span class='kw'>X</span> <span class='kw'>=</span> <span class='no'>sim1</span>$<span class='no'>X</span>, <span class='kw'>tune</span> <span class='kw'>=</span> <span class='no'>tune</span>,
-                    <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"spacemap"</span>, <span class='kw'>B</span> <span class='kw'>=</span> <span class='fl'>10</span>)</div></pre>
+                    <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"spacemap"</span>, <span class='kw'>B</span> <span class='kw'>=</span> <span class='fl'>10</span>)</div><div class='output co'>#&gt; <span class='warning'>Warning: executing %dopar% sequentially: no parallel backend registered</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: pkgmaker</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: registry</span></div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>Attaching package: ‘pkgmaker’</span></div><div class='output co'>#&gt; <span class='message'>The following object is masked from ‘package:base’:</span>
+#&gt; <span class='message'></span>
+#&gt; <span class='message'>    isNamespaceLoaded</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -211,7 +223,7 @@ Model fits that are not convergent or produce networks that are not sparse are n
 
       <footer>
       <div class="copyright">
-  <p>Developed by <a href='https://github.com/topherconley/'>Christopher Conley</a>, <a href='http://research.mssm.edu/wanglab/index.htm'>Pei Wang</a>, <a href='http://www.stat.ucdavis.edu/~jie/'>Jie Peng</a>, UC Davis.</p>
+  <p>Developed by <a href='https://github.com/topherconley/'>Christopher Conley</a>, <a href='http://labs.icahn.mssm.edu/pei-wang-lab/'>Pei Wang</a>, <a href='http://www.stat.ucdavis.edu/~jie/'>Jie Peng</a>, UC Davis.</p>
 </div>
 
 <div class="pkgdown">
