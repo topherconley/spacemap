@@ -66,13 +66,17 @@ tuneVis <- function(cvOut, testSetLen,
   if (is.null(tuneParam2)) {
     dat <- as.data.frame(avgScores)
     g1 <- qplot(data = dat, x = tuneParam1, y = log(rss), geom = "point") + 
-      ylab("log (CV Score)") + xlab(tuneParam1Name) + theme_bw()
+      ylab("log (CV Score)") + xlab(tuneParam1Name) + theme_bw() + 
+      geom_vline(xintercept = cvOut$minTune[[tuneParam1Name]])
     g2 <- qplot(data = dat, x = tuneParam1, y = df, geom = "point") +
-      ylab("Avg. Total # of Edges") + xlab(tuneParam1Name) + theme_bw()
+      ylab("Avg. Total # of Edges") + xlab(tuneParam1Name) + theme_bw() + 
+      geom_vline(xintercept = cvOut$minTune[[tuneParam1Name]])
     g3 <- qplot(data = dat, x = tuneParam1, y = dfParCor, geom = "point") + 
-      ylab("Avg. # of Edges (Y -- Y)") + xlab(tuneParam1Name) + theme_bw()
+      ylab("Avg. # of Edges (Y -- Y)") + xlab(tuneParam1Name) + theme_bw() + 
+      geom_vline(xintercept = cvOut$minTune[[tuneParam1Name]])
     g4 <- qplot(data = dat, x = tuneParam1, y = dfGamma, geom = "point") + 
-      ylab("Avg. # of Edges (X -> Y)") + xlab(tuneParam1Name) + theme_bw()
+      ylab("Avg. # of Edges (X -> Y)") + xlab(tuneParam1Name) + theme_bw() + 
+      geom_vline(xintercept = cvOut$minTune[[tuneParam1Name]])
     #requireNamespace("gridExtra")
     #gg1 <- grid.arrange(g1,g2,g3,g4, ncol = 2)
     gg1 <- list(g1,g2,g3,g4)

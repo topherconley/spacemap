@@ -303,7 +303,11 @@ cisTrans <- function(ig, level = c("x-y"), cw = 2e6, ignoreStrand = TRUE) {
   #remove features that have missing values in genome coordinates that 
   #does not permite cis/trans identification
   rmNA <- na.omit(dv[,requiredAttr])
-  dgc <- dv[-attr(rmNA, "na.action"),requiredAttr]
+  if(!is.null(attr(rmNA, "na.action"))) { 
+    dgc <- dv[-attr(rmNA, "na.action"),requiredAttr]  
+  } else { 
+    dgc <- dv[,requiredAttr]  
+  }
   
   if(!is.null(dgc$strand)) { 
     dgc$strand <- as.character(dgc$strand)
